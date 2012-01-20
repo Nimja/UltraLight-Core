@@ -13,7 +13,7 @@
  */
 function show($var, $title = 'Export Variable', $color = 'neutral', $return = FALSE)
 {
-#Choose a color.
+	#Choose a color.
 	$colors = array(
 		'fatal' => '#f99',
 		'error' => '#fdd',
@@ -23,9 +23,9 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 	);
 	$color = !empty($colors[$color]) ? $colors[$color] : $color;
 
-#Make the content HTML compatible. 
+	#Make the content HTML compatible. 
 	$display = htmlentities(trim(print_r($var, TRUE)));
-#Format content per line.
+	#Format content per line.
 	$lines = explode("\n", $display);
 	$display = '';
 	$count = 0;
@@ -35,7 +35,7 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 	foreach ($lines as $line) {
 		$line = rtrim($line);
 
-#If we are in a hidden block, check for a [ on the current line.
+		#If we are in a hidden block, check for a [ on the current line.
 		if ($hide > 0) {
 			if (substr($line, $hide, 1) == '[') {
 				$hide = 0;
@@ -44,7 +44,7 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 			}
 		}
 
-#If the current 'block' matches :protected or :private in the first [] thing.
+		#If the current 'block' matches :protected or :private in the first [] thing.
 		if (preg_match("/^(\s+)\[[^\]]*\:(protected|private)\]/", $line, $matches)) {
 			$spaces = $matches[1];
 			$hide = strlen($spaces);
@@ -65,13 +65,13 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 		$display .= '<div style="' . $bg . ' margin: 0px; padding: 1px 5px;" >' . $line . '</div>';
 	}
 
-#Create result.
+	#Create result.
 	$result = '<div style="border-radius: 5px; border: 2px solid #999; background: '
 			. $color . '; margin: 5px; padding: 3px 5px; text-align: left; font-family: verdana; font-size: 14px; ">'
 			. $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
 			. $display . '</div></div>';
 
-#Switch between returning or echoing. (echo is default);
+	#Switch between returning or echoing. (echo is default);
 	if ($return) {
 		return $result;
 	} else {
@@ -169,54 +169,55 @@ function redirect($url = '', $code = 302)
 
 # Minimal class for loading libraries, templates, etc.
 
-class Load {
+class Load
+{
 
 	/**
 	 * List of included files
 	 * @var array
 	 */
-	static private $included = array();
+	private static $included = array();
 
 	/**
 	 * Actual request url.
 	 * @var string
 	 */
-	static public $url = '';
+	public static $url = '';
 
 	/**
 	 * Remainder of the url after routing. (url - route)
 	 * @var string 
 	 */
-	static public $rest = '';
+	public static $rest = '';
 
 	/**
 	 * Current controller we're loading.
 	 * @var string
 	 */
-	static public $page = '';
+	public static $page = '';
 
 	/**
 	 * THe route we used for this controller (url - rest);
 	 * @var string 
 	 */
-	static public $route = '';
+	public static $route = '';
 
 	/**
 	 * Storing execution time.
 	 * @var int
 	 */
-	static public $start = 0;
+	public static $start = 0;
 
 	/**
 	 * The main initialization function, can only be called ONCE!
 	 */
-	static public function init()
+	public static function init()
 	{
 		self::$start = microtime(TRUE);
 		if (!empty(self::$included['page']))
 			show_exit(NULL, 'Load Init double called');
 
-#Set Base URL.
+		#Set Base URL.
 		$config = &$GLOBALS['config'];
 		if (empty($config['base_url'])) {
 			$base_url = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
@@ -224,20 +225,22 @@ class Load {
 			$config['base_url'] = $base_url;
 		}
 
-#Get IP address of visitor.
+		#Get IP address of visitor.
 		$remote_addr = $_SERVER['REMOTE_ADDR'];
+		/**
+		 * There may be multiple comma-separated IPs for the X-Forwarded-For header
+		 * if the traffic is passing through more than one explict proxy.  Take the
+		 * last one as being valid.  This is arbitrary, but there is no way to know
+		 * which IP relates to the client computer.  We pick the first client IP as
+		 * this is the client closest to our upstream proxy.
+		 */
 		if (( $remote_addr == '127.0.0.1' || $remote_addr == $_SERVER['SERVER_ADDR'] ) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-// There may be multiple comma-separated IPs for the X-Forwarded-For header
-// if the traffic is passing through more than one explict proxy.  Take the
-// last one as being valid.  This is arbitrary, but there is no way to know
-// which IP relates to the client computer.  We pick the first client IP as
-// this is the client closest to our upstream proxy.
 			$remote_addrs = explode(', ', $_SERVER['HTTP_X_FORWARDED_FOR']);
 			$remote_addr = $remote_addrs[0];
 		}
 		define('REMOTE_IP', $remote_addr);
 
-#Start logic to find what page we load (without starting slash)
+		#Start logic to find what page we load (without starting slash)
 		$uri = !empty($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 
 		$pos = strpos($uri, '?');
@@ -247,20 +250,20 @@ class Load {
 
 		$request = preg_replace('/\/+/', '/', trim($uri, '/ '));
 
-#Redirect for double, trailing and leading slashes.
+		#Redirect for double, trailing and leading slashes.
 		if ($uri != '/' . $request)
 			redirect($request);
 
-#Store it away for other uses.
+		#Store it away for other uses.
 		self::$url = $request;
 
-#Array of url parts
+		#Array of url parts
 		$request = !empty($request) ? explode('/', $request) : array();
 
 		if (DEBUG)
 			show($request, 'Checking route');
 
-#Start lookup, this 
+		#Start lookup, this 
 
 		if (empty($request)) {
 			$load = 'index';
@@ -272,7 +275,7 @@ class Load {
 			$routes = $config['routes'];
 
 			$rest = array();
-# Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
+			# Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
 			while (!empty($request) && empty($load)) {
 				$cur = implode('/', $request);
 
@@ -280,17 +283,17 @@ class Load {
 					$load = $cur;
 				} elseif (!empty($routes[$cur])) {
 					$load = $routes[$cur];
-#Store which route we're taking.
+					#Store which route we're taking.
 					self::$route = $cur;
 				}
 				if (empty($load)) {
-#All we don't find, we put into the rest.
+					#All we don't find, we put into the rest.
 					array_unshift($rest, array_pop($request));
 					if (DEBUG)
 						show($cur, 'Not found');
 				}
 			}
-#Put the remainder of the url in here.
+			#Put the remainder of the url in here.
 			self::$rest = implode('/', $rest);
 
 			if (empty($load)) {
@@ -303,7 +306,7 @@ class Load {
 
 		self::controller($load);
 
-#Autoload libraries that the application has specified.
+		#Autoload libraries that the application has specified.
 		if (!empty($config['autoload_libraries'])) {
 			self::library($config['autoload_libraries']);
 		}
@@ -314,7 +317,7 @@ class Load {
 	 * @param int $int Segment part.
 	 * @return string THe specified segment of the url. 
 	 */
-	static public function segment($int)
+	public static function segment($int)
 	{
 		return!empty(self::$url[$int]) ? self::$url[$int] : FALSE;
 	}
@@ -323,7 +326,7 @@ class Load {
 	 * Include a page, can only be done once per page load!
 	 * @param string $file 
 	 */
-	static private function controller($file)
+	private static function controller($file)
 	{
 		$filesrc = PATH_CONTROLLERS . self::sanitizeFileName($file) . '.php';
 		if (!empty(self::$page))
@@ -337,7 +340,7 @@ class Load {
 		if (empty(self::$route))
 			self::$route = $file;
 
-#Check if the pagefile has the proper definition.
+		#Check if the pagefile has the proper definition.
 		if (!class_exists('Page'))
 			show_exit($file, 'Controller class not defined properly (missing class "Page")');
 	}
@@ -348,39 +351,60 @@ class Load {
 	 * @param string $type A type, must be defined in the index.
 	 * @return type 
 	 */
-	static public function library($file, $type = 'library')
+	public static function library($file, $type = 'library')
 	{
 		$type = strtolower($type);
-#Switch between different library paths.
-		if ($type == 'library') {
-			$path = PATH_LIBRARIES;
-		} else if (!empty($GLOBALS['config']['paths'])) {
-			$paths = $GLOBALS['config']['paths'];
-			if (is_array($paths)) {
-				$path = !empty($paths[$type]) ? PATH_APP . $paths[$type] : NULL;
-			}
+		$path = NULL;
+		/**
+		 * Switch between different library paths.
+		 */
+		switch ($type) {
+			case 'library': $path = 'libraries';
+				break;
+			case 'vendor': $path = 'vendor';
+				break;
+			default:
+				if (!empty($GLOBALS['config']['paths'])) {
+					$paths = $GLOBALS['config']['paths'];
+					if (is_array($paths)) {
+						$path = !empty($paths[$type]) ? $paths[$type] : NULL;
+					}
+				}
 		}
 
-#If we don't have a path exit out of here.
+		/**
+		 * If we don't have a path show error and stop processing.
+		 */
 		if (empty($path)) {
 			show_exit(ucfirst($type) . ' has no path defined.');
-		} else if (!file_exists($path)) {
-			show_exit($path, 'Could not be found');
 		}
 
 		$files = (!is_array($file)) ? explode(',', $file) : $file;
 		foreach ($files as $file) {
 			$file = self::sanitizeFileName($file);
-			$filesrc = $path . $file . '.php';
-#Skip previously loaded libraries.
-			if (empty(self::$included[$filesrc])) {
 
-				if (!file_exists($filesrc))
-					show_exit($file, ucfirst($type) . ' not found');
+			$filesrc = $path . '/' . $file . '.php';
 
-				require_once($filesrc);
-				self::$included[$filesrc] = TRUE;
+			/**
+			 * Skip previously loaded libraries.
+			 */
+			if (!empty(self::$included[$filesrc]))
+				return TRUE;
+
+			/**
+			 * Load the file from the Core folder OR App folder.
+			 */
+			$core = PATH_CORE . $filesrc;
+			$app = PATH_CORE . $filesrc;
+			if (file_exists($core)) {
+				require_once($core);
+			} else if (file_exists($app)) {
+				require_once($app);
+			} else {
+				show_exit($filesrc, ucfirst($type) . ' not found');
 			}
+
+			self::$included[$filesrc] = TRUE;
 		}
 		return TRUE;
 	}
@@ -390,12 +414,12 @@ class Load {
 	 * @param string $file
 	 * @return string content 
 	 */
-	static public function view($file)
+	public static function view($file)
 	{
 		$filesrc = PATH_VIEWS . self::sanitizeFileName($file) . '.html';
 		$result = '';
 
-#Reuse the one in memory (if we have it)
+		#Reuse the one in memory (if we have it)
 		if (!empty(self::$included[$filesrc]))
 			return self::$included[$filesrc];
 
@@ -414,11 +438,12 @@ class Load {
 
 	/**
 	 * Output data with proper headers (length, etc.) and mime type.
+	 * 
 	 * @param string $mime The mime-type. (ie. image/jpeg, text/plain, ...)
-	 * @param mixed $data File data or filename
+	 * @param mixed $data File data or filename to output .
 	 * @param int $modified Unix timestamp of last modified date.
 	 * @param string $filename Filename for the output
-	 * @param boolean $isFile True if data is a filename.
+	 * @param boolean $isFile True if data is a filename. (if TRUE, it will output a file directly to the browser)
 	 */
 	public static function output($mime, $data, $modified = 0, $filename = NULL, $isFile = FALSE)
 	{
@@ -464,14 +489,12 @@ class Load {
 	 */
 	public static function output_same($expires = '+30 days')
 	{
-//Status Code:304 Not Modified
-		header('HTTP/1.1 304 Not Modified');
+		//Status Code:304 Not Modified
+		header('HTTP/1.1 304 Not Modified', NULL, 304);
 
 		$expires = intval($expires);
 		header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
 		header('Connection: close');
-
-		echo $data;
 		exit;
 	}
 
@@ -480,7 +503,7 @@ class Load {
 	 * @param string $string
 	 * @return string The cleaned filename. 
 	 */
-	static public function sanitizeFileName($string)
+	public static function sanitizeFileName($string)
 	{
 		$string = preg_replace('/[^a-z0-9\_\/\.]/', '', strtolower(trim($string)));
 		$string = trim($string, './');
@@ -491,11 +514,19 @@ class Load {
 	 * Does a redirect if desiredUrl is different from the current Url.
 	 * @param type $desiredUrl 
 	 */
-	static public function force_url($desiredUrl = '')
+	public static function force_url($desiredUrl = '')
 	{
 		$desiredUrl = ltrim($desiredUrl, '/');
 		if ($desiredUrl != self::$url)
 			redirect($desiredUrl);
+	}
+
+	public static function getFeatures()
+	{
+		$features = PATH_CORE . 'base/features.php';
+		if (!file_exists($features))
+			return '';
+		return file_get_contents($features);
 	}
 
 }

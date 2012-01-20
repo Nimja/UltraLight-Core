@@ -1,16 +1,20 @@
 <?php
-
-# Set this to true for debugging info on screen.
+/**
+ * Enable DEBUG for error showing.
+ */
 if (!defined('DEBUG'))
 	define('DEBUG', FALSE);
 
-# This file is ALWAYS loaded.
+/**
+ * Basic PHP settings.
+ */
 mb_internal_encoding('UTF-8');
 date_default_timezone_set('Europe/Paris');
 
-# Main config object
-# Available through $GLOBALS['config']
-
+/**
+ * Main config object
+ * Available through $GLOBALS['config']
+ */
 $GLOBALS['config'] = array(
 # ----------- Main config ----------
 	#Automatically gotten. -> Needs to have trailing slash!

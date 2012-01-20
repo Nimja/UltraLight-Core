@@ -18,7 +18,7 @@ class Common {
 	 * @param string $filter Filter works like "in string"
 	 * @return array Result is a named array with filenames as keys and values or dir contents as value.
 	 */
-	static public function listFiles($path, $options = 0, $filter = NULL)
+	public static function listFiles($path, $options = 0, $filter = NULL)
 	{
 		$files = array();
 		$dirs = array();
@@ -99,7 +99,7 @@ class Common {
 
 	#Get extension of file, if any, can be any length
 
-	static public function getExtension($file)
+	public static function getExtension($file)
 	{
 		$parts = pathinfo($file);
 		return $parts['extension'];
@@ -107,7 +107,7 @@ class Common {
 
 	#Strip extension of file, can be any length
 
-	static public function stripExtension($file)
+	public static function stripExtension($file)
 	{
 		$parts = pathinfo($file);
 		$len = 0;
@@ -118,14 +118,14 @@ class Common {
 	}
 
 	//Bytes to Human readable format.
-	static public function bytesToHuman($size)
+	public static function bytesToHuman($size)
 	{
 		$unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
 		return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
 	}
 
 	//Make new path, or just check it.
-	static public function mkpath($path)
+	public static function mkpath($path)
 	{
 		$result = true;
 		if (!file_exists($path))
@@ -135,7 +135,7 @@ class Common {
 
 	#Write log.
 
-	static public function log($text, $log = 'log')
+	public static function log($text, $log = 'log')
 	{
 		#sanity checks
 		$logfile = PATH_LOGS . $log . '.txt';
@@ -159,13 +159,13 @@ class Common {
 
 	#Easy get session var function.
 
-	static public function session($name, $default = '')
+	public static function session($name, $default = '')
 	{
 		$result = !empty($_SESSION[$name]) ? $_SESSION[$name] : $default;
 		return $result;
 	}
 
-	static public function session_set($name, $value)
+	public static function session_set($name, $value)
 	{
 		$_SESSION[$name] = $value;
 	}
@@ -175,7 +175,7 @@ class Common {
 	 * 
 	 * @return array Post/Get values, POST has preference, but empty post vars can be overwritten.
 	 */
-	static public function request()
+	public static function request()
 	{
 		$result = array();
 
@@ -200,18 +200,18 @@ class Common {
 		return $result;
 	}
 
-	static public function value($name, $default = '')
+	public static function value($name, $default = '')
 	{
 		return isset($_POST[$name]) ? self::value_post($name, $default) : self::value_get($name, $default);
 	}
 
-	static public function value_post($name, $default = '')
+	public static function value_post($name, $default = '')
 	{
 		$result = !blank($_POST[$name]) ? $_POST[$name] : $default;
 		return sanitize($result);
 	}
 
-	static public function value_get($name, $default = '')
+	public static function value_get($name, $default = '')
 	{
 		$result = !blank($_GET[$name]) ? $_GET[$name] : $default;
 		return sanitize($result);
@@ -219,13 +219,13 @@ class Common {
 
 	#Return true if value is valid e-mail address.
 
-	static public function isEmail($value)
+	public static function isEmail($value)
 	{
 		$result = preg_match("/^" . self::PREG_EMAIL . "$/i", $value);
 		return $result;
 	}
 
-	static public function insertSwf($file, $width, $height, $bgcolor = '#FFFFFF', $quality = 'medium')
+	public static function insertSwf($file, $width, $height, $bgcolor = '#FFFFFF', $quality = 'medium')
 	{
 		return '<div class="flashmovie" style="width: ' . $width . 'px; height: ' . $height . 'px;"><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" id="' . $file . '" width="' . $width . '" height="' . $height . '" codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
 			<param name="movie" value="' . $file . '" />
