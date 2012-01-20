@@ -363,6 +363,8 @@ class Load
 				break;
 			case 'vendor': $path = 'vendor';
 				break;
+			case 'model': $path = 'models';
+				break;
 			default:
 				if (!empty($GLOBALS['config']['paths'])) {
 					$paths = $GLOBALS['config']['paths'];
@@ -394,12 +396,12 @@ class Load
 			/**
 			 * Load the file from the Core folder OR App folder.
 			 */
-			$core = PATH_CORE . $filesrc;
-			$app = PATH_CORE . $filesrc;
-			if (file_exists($core)) {
-				require_once($core);
-			} else if (file_exists($app)) {
-				require_once($app);
+			$file_core = PATH_CORE . $filesrc;
+			$file_app = PATH_APP . $filesrc;
+			if (file_exists($file_core)) {
+				require_once($file_core);
+			} else if (file_exists($file_app)) {
+				require_once($file_app);
 			} else {
 				show_exit($filesrc, ucfirst($type) . ' not found');
 			}
