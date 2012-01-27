@@ -1,7 +1,6 @@
 <?php
 
 Load::library('Common');
-session_start();
 
 //Loading an image file.
 class User

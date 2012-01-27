@@ -8,6 +8,7 @@ if (!defined('DEBUG'))
 /**
  * Basic PHP settings.
  */
+session_start();
 mb_internal_encoding('UTF-8');
 date_default_timezone_set('Europe/Paris');
 
