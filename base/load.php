@@ -348,10 +348,11 @@ class Load
 	/**
 	 * Include a library, will only be done once per library. Either single or array with libraries.
 	 * @param type $file
-	 * @param string $type A type, must be defined in the index.
+	 * @param string $type The type of library we're loading (the directory, basically)
+	 * @param boolean $class_force Force loading of this class, skipping the classname check.
 	 * @return type 
 	 */
-	public static function library($file, $type = 'library')
+	public static function library($file, $type = 'library', $class_force = FALSE)
 	{
 		$type = strtolower($type);
 		$path = NULL;
@@ -383,7 +384,9 @@ class Load
 
 		$files = (!is_array($file)) ? explode(',', $file) : $file;
 		foreach ($files as $file) {
-			$file = self::sanitizeFileName($file);
+			$info = self::getNames($file);
+			$file = $info['file'];
+			$class = $info['class'];
 
 			$filesrc = $path . '/' . $file . '.php';
 
@@ -391,7 +394,7 @@ class Load
 			 * Skip previously loaded libraries.
 			 */
 			if (!empty(self::$included[$filesrc]))
-				return TRUE;
+				continue;
 
 			/**
 			 * Load the file from the Core folder OR App folder.
@@ -404,6 +407,14 @@ class Load
 				require_once($file_app);
 			} else {
 				show_exit($filesrc, ucfirst($type) . ' not found');
+			}
+
+			
+			/**
+			 * The file should contain a class directly related to the filename.
+			 */
+			if (!$class_force && !class_exists($class)) {
+				show_exit($class, 'Could not find class in ' . $type . ': ' . $file);
 			}
 
 			self::$included[$filesrc] = TRUE;
@@ -513,6 +524,23 @@ class Load
 	}
 
 	/**
+	 * Insert a classname and/or filename, and get the filename/classname in proper format back.
+	 * 
+	 * @param type $string 
+	 * @return array With 'class' and 'file'
+	 */
+	public static function getNames($string)
+	{
+		$filename = self::sanitizeFileName($string);
+		$classname = ucwords(str_replace(array('_', '/', '.'), ' ', $filename));
+		$classname = str_replace(' ', '_', $classname);
+		return array(
+			'file' => $filename,
+			'class' => $classname
+		);
+	}
+
+	/**
 	 * Does a redirect if desiredUrl is different from the current Url.
 	 * @param type $desiredUrl 
 	 */
@@ -523,6 +551,10 @@ class Load
 			redirect($desiredUrl);
 	}
 
+	/**
+	 * Get feature file.
+	 * @return type 
+	 */
 	public static function getFeatures()
 	{
 		$features = PATH_CORE . 'base/features.php';

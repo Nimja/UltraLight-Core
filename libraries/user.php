@@ -1,7 +1,5 @@
 <?php
 
-Load::library('Common');
-
 //Loading an image file.
 class User
 {

@@ -1,4 +1,5 @@
 <?php
+
 Load::library('database,user');
 
 /* - This is a simple class-holder for a model, using a DB connection.
@@ -574,7 +575,7 @@ abstract class Model
 					if ($fieldClass == 'parent')
 						$fieldClass = strtolower($this->_class);
 
-					$list = self::getModelForClass($fieldClass);
+					$list = self::getModelForType($fieldClass);
 
 					$ref = $fieldClass . '-' . intval($this->$field);
 
@@ -649,6 +650,50 @@ abstract class Model
 		return $alias;
 	}
 
+	/* ------------------------------------------------------------
+	 * 			STATIC FUNCTIONS
+	 * ------------------------------------------------------------
+	 */
+
+	/**
+	 * Get a basic array of objects for this class.
+	 * 
+	 * @param string $where Basic SQL where structure.
+	 * @param string $orderBy And order by.
+	 * @return array Field structure.
+	 */
+	public static function getModels($type, $where = '', $orderBy = NULL, $limit = NULL)
+	{
+		if (empty(self::$db))
+			self::connect();
+
+		$info = Load::getNames($type);
+		$table = self::$prefix . $info['file'];
+		$class = $info['class'];
+		if (!class_exists($class)) {
+			self::loadModel($class);
+		}
+
+		$orderBy = !empty($orderBy) ? $orderBy : 'id ASC';
+
+		$extra = '';
+		if (!empty($where)) {
+			$extra .= ' WHERE ' . $where;
+		}
+		if (!empty($orderBy)) {
+			$extra .= ' ORDER BY ' . $orderBy;
+		}
+		if (!empty($limit)) {
+			$extra .= ' LIMIT ' . $limit;
+		}
+		$res = self::$db->query('SELECT * FROM `' . $table . '` ' . $extra);
+		$result = array();
+		while ($row = $this->_db->getRow($res)) {
+			$result[$row['id']] = new $class($row);
+		}
+		return $result;
+	}
+
 	/**
 	 * Load multiple models at once.
 	 * @param string|array $classNames 
@@ -668,45 +713,24 @@ abstract class Model
 	 * Load model file for this class.
 	 * @param string $className 
 	 */
-	public static function loadModel($className)
+	public static function loadModel($type)
 	{
-		$pclass = preg_replace('/[^a-z\_]/', '', strtolower($className));
-		#Check if we have loaded this class before.
-		if (!empty(self::$loadedClasses[$pclass]))
-			return self::$loadedClasses[$pclass];
+		$info = Load::getNames($type);
+		$file = $info['file'];
+		$class = $info['class'];
 
-		if (empty($GLOBALS['config']['models']))
-			show_exit('Models not configured');
-
-		$models = $GLOBALS['config']['models'];
-
-		#Get the lookup array.
-		if (empty(self::$classLookup)) {
-			$lookup = array();
-			foreach ($models as $class => $file) {
-				$lookup[strtolower($class)] = $class;
-			}
-			self::$classLookup = $lookup;
-		} else {
-			$lookup = self::$classLookup;
-		}
-
-
-		$realClass = !empty($lookup[$pclass]) ? $lookup[$pclass] : NULL;
-
-		if (empty($realClass)) {
-			show_error($className, 'Could not find Classname');
-			return NULL;
+		if (!empty(self::$loadedClasses[$file])) {
+			return self::$loadedClasses[$file];
 		}
 
 		#Load the model if needs be.
-		if (!class_exists($realClass))
-			Load::library($models[$realClass], 'model');
+		if (!class_exists($class))
+			Load::library($file, 'model');
 
-		self::$loadedClasses[$pclass] = $realClass;
+		self::$loadedClasses[$file] = $class;
 
 		#Return the real classname.
-		return $realClass;
+		return $class;
 	}
 
 	/**
@@ -716,12 +740,12 @@ abstract class Model
 	 * @param array|int $values
 	 * @return Model A class, derived from model, based on $class.
 	 */
-	public static function getModelForClass($className, $values = NULL)
+	public static function getModelForType($type, $values = NULL)
 	{
-		$realClass = self::loadModel($className);
+		$class = self::loadModel($type);
 
 		#Return the object.
-		return new $realClass($values);
+		return new $class($values);
 	}
 
 }
