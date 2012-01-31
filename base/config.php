@@ -2,8 +2,22 @@
 /**
  * Enable DEBUG for error showing.
  */
-if (!defined('DEBUG'))
+if (!defined('DEBUG')) {
 	define('DEBUG', FALSE);
+}
+
+/**
+ * The HASH Type for making passwords. (SHA256 is fairly secure.)
+ */
+if (!defined('HASH_TYPE')) {
+	define('HASH_TYPE', 'sha256');
+}
+/**
+ * The HASH Key for making password. CHANGE THIS! 
+ */
+if (!defined('HASH_KEY')) {
+	define('HASH_KEY', 'UltraLight');
+}
 
 /**
  * Basic PHP settings.

@@ -409,14 +409,17 @@ class Load
 				show_exit($filesrc, ucfirst($type) . ' not found');
 			}
 
-			
+
 			/**
 			 * The file should contain a class directly related to the filename.
 			 */
 			if (!$class_force && !class_exists($class)) {
 				show_exit($class, 'Could not find class in ' . $type . ': ' . $file);
 			}
-
+			#Debug code.
+			if (DEBUG) {
+				show($file, ucfirst($type) . ' imported');
+			}
 			self::$included[$filesrc] = TRUE;
 		}
 		return TRUE;

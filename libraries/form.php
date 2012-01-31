@@ -431,7 +431,7 @@ class Form {
 	 * alpha = Alpha only, at least 2 letters.<br />
 	 * ignore = Will not count in validation.
 	 * 
-	 * @param string $countrycode ISO Country code
+	 * @param string $countrycode ISO Country code (for postal code checking, only NL/BE supported so far)
 	 * 
 	 */
 	public function validate($validate, $countrycode = 'nl')
@@ -477,8 +477,8 @@ class Form {
 				} else {
 					switch ($type) {
 						case 'alpha': #Alpha only
-							if (!preg_match('/^[a-z \-\.]+$/i', $value))
-								$text = 'can not contain any special symbols or numbers';
+							if (!preg_match('/^[a-z\ ]+$/i', $value))
+								$text = 'Can only be letters and single spaces';
 							break;
 						case 'other':
 							if (empty($value) || ($value == 'other' && empty($post[$field . '_other']) ))

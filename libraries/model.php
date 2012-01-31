@@ -1,6 +1,6 @@
 <?php
 
-Load::library('database,user');
+Load::library('database');
 
 /* - This is a simple class-holder for a model, using a DB connection.
  * Containing many useful functions for insert, delete, etc. 
@@ -22,11 +22,11 @@ abstract class Model
 	private static $db;
 
 	/**
-	 * plain to proper lookup.
+	 * Static database object.
 	 * 
-	 * @var array 
+	 * @var DataBase 
 	 */
-	private static $classLookup;
+	private static $prefix = NULL;
 
 	/**
 	 * plain to proper lookup.
@@ -97,40 +97,55 @@ abstract class Model
 	 * @var array 
 	 */
 	protected $_validate = array();
-	protected static $cache = array();
 
 	/**
-	 * Internal caching.
+	 * Internal memory caching for models.
 	 * 
 	 * @var array 
 	 */
 	protected $_cache = NULL;
 
-	#Basic constructor, with error messages.
+	/**
+	 * Static memory caching.
+	 * @var array 
+	 */
+	protected static $cache = array();
 
 	/**
-	 * Basic constructor.
+	 * Flag for editing.
+	 * 
+	 * @var boolean 
+	 */
+	protected $_edit = FALSE;
+
+	/**
+	 * Basic constructor, with error messages.
 	 * 
 	 * @param array|int $values 
 	 */
-	function __construct($values = array())
+	function __construct($values = NULL)
 	{
+		if (class_exists('Login')) {
+			$this->_edit = Login::$role > Login::ROLE_NEUTRAL;
+		}
+
 		$this->_class = get_class($this);
 
-		#Get cache.
-		if (empty(self::$cache[$this->_class]))
+		#Get cache, or make one for this class if it didn't exist.
+		if (!isset(self::$cache[$this->_class])) {
 			self::$cache[$this->_class] = array();
-
+		}
+		#Set the cache.
 		$this->_cache = &self::$cache[$this->_class];
 
-		if (empty($this->_table))
-			show_exit('Cannot create model unless table is defined.', $this->_class);
 		if (empty($this->_fields) || !is_array($this->_fields))
 			show_exit('Cannot create model unless fields is defined.', $this->_class);
 
-		$config = &$GLOBALS['config'];
-		$prefix = !empty($config['table_prefix']) ? $config['table_prefix'] : '';
-		$this->_table = $prefix . $this->_table;
+		$info = Load::getNames($this->_class);
+		if (self::$prefix === NULL) {
+			self::getPrefix();
+		}
+		$this->_table = self::$prefix . $info['file'];
 
 		#Set the values, either by ID (int) or values(array);
 		if (is_numeric($values)) {
@@ -151,7 +166,9 @@ abstract class Model
 	 */
 	protected function getDefaults()
 	{
-		return NULL;
+		Load::library('defaults');
+		$function = 'for' . $this->_class;
+		return Defaults::$function();
 	}
 
 	/**
@@ -263,9 +280,6 @@ abstract class Model
 		if (empty($values) || !is_array($values))
 			return FALSE;
 
-		if (!empty($values['id']))
-			$this->id = intval($values['id']);
-
 		foreach ($this->_fields as $field => $type) {
 			if ($type == 'bool') {
 				$this->$field = !empty($values[$field]) ? 0 : 1;
@@ -273,6 +287,24 @@ abstract class Model
 				$this->$field = !blank($values[$field]) ? $values[$field] : '';
 			}
 		}
+
+		if (!empty($values['id'])) {
+			$this->id = intval($values['id']);
+			$this->_cache[$this->_class . '-' . $this->id] = $this;
+		}
+	}
+
+	protected function fromCache($id)
+	{
+		if (empty($this->_cache[$this->_class . '-' . $id])) {
+			return FALSE;
+		}
+		$item = $this->_cache[$this->_class . '-' . $id];
+		foreach ($this->_fields as $field => $type) {
+			$this->$field = $item->$field;
+		}
+		$this->id = $item->id;
+		return TRUE;
 	}
 
 	/**
@@ -298,7 +330,7 @@ abstract class Model
 	 */
 	public function save()
 	{
-		if (empty($GLOBALS['config']['user_role']))
+		if (!$this->_edit)
 			return;
 
 		if (empty($this->_db))
@@ -322,6 +354,7 @@ abstract class Model
 		} else {
 			$this->id = $this->_db->insert($this->_table, $values);
 		}
+		$this->_cache[$this->_class . '-' . $this->id] = $this;
 		return TRUE;
 	}
 
@@ -331,7 +364,7 @@ abstract class Model
 	 * @param int $id
 	 * @return boolean Success
 	 */
-	public function load($id)
+	protected function load($id)
 	{
 		$id = intval($id);
 
@@ -360,7 +393,7 @@ abstract class Model
 	 */
 	public function delete($id = NULL)
 	{
-		if (empty($GLOBALS['config']['user_role']))
+		if (!$this->_edit)
 			return;
 
 		$id = !empty($id) ? $id : $this->id;
@@ -619,7 +652,7 @@ abstract class Model
 
 	public function editTag($class = '', $parentId = 0)
 	{
-		if (empty($GLOBALS['config']['user_role']))
+		if (!$this->_edit)
 			return '';
 
 		$thisClass = strtolower($this->_class);
@@ -667,6 +700,10 @@ abstract class Model
 		if (empty(self::$db))
 			self::connect();
 
+		if (self::$prefix === NULL) {
+			self::getPrefix();
+		}
+
 		$info = Load::getNames($type);
 		$table = self::$prefix . $info['file'];
 		$class = $info['class'];
@@ -688,7 +725,7 @@ abstract class Model
 		}
 		$res = self::$db->query('SELECT * FROM `' . $table . '` ' . $extra);
 		$result = array();
-		while ($row = $this->_db->getRow($res)) {
+		while ($row = self::$db->getRow($res)) {
 			$result[$row['id']] = new $class($row);
 		}
 		return $result;
@@ -740,12 +777,25 @@ abstract class Model
 	 * @param array|int $values
 	 * @return Model A class, derived from model, based on $class.
 	 */
-	public static function getModelForType($type, $values = NULL)
+	public static function make($type, $values = NULL, $force = FALSE)
 	{
 		$class = self::loadModel($type);
 
-		#Return the object.
-		return new $class($values);
+		if (!$force
+				&& !empty(self::$cache[$class])
+				&& !empty(self::$cache[$class][$class . '-' . $values])
+		) {
+			#Return the cached object.
+			return self::$cache[$class][$class . '-' . $values];
+		} else {
+			#Return a new object.
+			return new $class($values);
+		}
+	}
+
+	public static function getPrefix()
+	{
+		self::$prefix = !empty($GLOBALS['config']['table_prefix']) ? $GLOBALS['config']['table_prefix'] : '';
 	}
 
 }
