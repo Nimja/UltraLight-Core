@@ -10,8 +10,7 @@ Load::library('database');
  * $_table, defining the table name.
  */
 
-abstract class Model
-{
+abstract class Model {
 	#Every model shares the same connection. (unless overridden of course)
 
 	/**
@@ -464,7 +463,7 @@ abstract class Model
 		}
 		$row = $this->_db->run('SELECT * FROM `' . $this->_table . '` ' . $extra);
 
-		return!empty($row) ? new $this->_class($row) : FALSE;
+		return !empty($row) ? new $this->_class($row) : FALSE;
 	}
 
 	/**
@@ -553,7 +552,7 @@ abstract class Model
 			$this->getFormField($field, $type);
 		}
 		$form->field('submit', 'submit', NULL, array('value' => 'Save', 'class' => 'save'));
-		$form->field('button', 'cancel', NULL, array('value' => 'Cancel', 'class' => 'cancel'));
+		$form->field('submit', 'cancel', NULL, array('value' => 'Cancel', 'class' => 'cancel'));
 
 		#Execute extra details for a form.
 		$this->getFormExtra($form);
@@ -593,7 +592,7 @@ abstract class Model
 
 			#Bool
 			case 'ool':
-				$form->field('check', $field, ucfirst($field));
+				$form->field('check', $field, '&nbsp;', array('label' => ucfirst($field)));
 				break;
 			#Numeric, id or date types
 			case 'int':
@@ -779,6 +778,8 @@ abstract class Model
 	 */
 	public static function make($type, $values = NULL, $force = FALSE)
 	{
+		if (empty($type))
+			return NULL;
 		$class = self::loadModel($type);
 
 		if (!$force

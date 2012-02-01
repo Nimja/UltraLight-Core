@@ -306,6 +306,9 @@ class Form {
 		$value = $this->value($field, $extra);
 		$selected = (!empty($value) && $value != 'false') ? ' checked="checked" ' : '';
 		$result = '<input type="checkbox" name="' . $field . '" value="yes"' . $selected . '' . $this->extra($extra, $field) . '/>';
+		if (!empty($extra['label'])) {
+			$result .= '<span>' . $extra['label'] . '</span>';
+		}
 		return $result;
 	}
 

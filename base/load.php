@@ -18,10 +18,32 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 		'fatal' => '#f99',
 		'error' => '#fdd',
 		'neutral' => '#eee',
-		'good' => '#ddf',
+		'good' => '#def',
 		'success' => '#dfd',
 	);
 	$color = !empty($colors[$color]) ? $colors[$color] : $color;
+
+	$option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : FALSE;
+	$traces = debug_backtrace($option);
+	$locations = array();
+	foreach ($traces as $trace) {
+		$info = pathinfo($trace['file']);
+		$dir = $info['dirname'];
+		$core = strpos($dir, PATH_CORE);
+		$app = strpos($dir, PATH_APP);
+		if ($core !== FALSE) {
+			$dir = 'C ' . substr($dir, $core + strlen(PATH_CORE)) . '/';
+		} else if ($app !== FALSE) {
+			$dir = 'A ' . substr($dir, $core + strlen(PATH_APP)) . '/';
+		} else {
+			$dir = '';
+		}
+
+		$locations[] = $dir . $info['basename'] . ' - line: ' . $trace['line'];
+	}
+	$location = $locations[0];
+	$locations = implode("<br />", $locations);
+
 
 	#Make the content HTML compatible. 
 	$display = htmlentities(trim(print_r($var, TRUE)));
@@ -66,9 +88,22 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 	}
 
 	#Create result.
-	$result = '<div style="border-radius: 5px; border: 2px solid #999; background: '
-			. $color . '; margin: 5px; padding: 3px 5px; text-align: left; font-family: verdana; font-size: 14px; ">'
+
+	$cur = !empty($GLOBALS['curinfo']) ? $GLOBALS['curinfo'] : 0;
+	$cur++;
+	$GLOBALS['curinfo'] = $cur;
+
+	$result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
+			. $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
+			#Start the location block.
+			. '<div style="float: right; color: #999; width: 250px;">'
+			#Detailed trace
+			. '<div style="position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;" id="trace-' . $cur . '" onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'none\'">' . $locations . '</div>'
+			#Single line trace
+			. '<div onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'block\'">' . $location . '</div></div>'
+			#Title
 			. $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
+			#Actual content.
 			. $display . '</div></div>';
 
 	#Switch between returning or echoing. (echo is default);
@@ -169,8 +204,7 @@ function redirect($url = '', $code = 302)
 
 # Minimal class for loading libraries, templates, etc.
 
-class Load
-{
+class Load {
 
 	/**
 	 * List of included files
@@ -319,7 +353,7 @@ class Load
 	 */
 	public static function segment($int)
 	{
-		return!empty(self::$url[$int]) ? self::$url[$int] : FALSE;
+		return !empty(self::$url[$int]) ? self::$url[$int] : FALSE;
 	}
 
 	/**
@@ -384,6 +418,9 @@ class Load
 
 		$files = (!is_array($file)) ? explode(',', $file) : $file;
 		foreach ($files as $file) {
+			if (empty($file))
+				continue;
+
 			$info = self::getNames($file);
 			$file = $info['file'];
 			$class = $info['class'];
@@ -564,6 +601,29 @@ class Load
 		if (!file_exists($features))
 			return '';
 		return file_get_contents($features);
+	}
+
+	/**
+	 * Set a cookie with a string timestamp.
+	 * @param string $name
+	 * @param mixed $value
+	 * @param string $time Like +2 months
+	 */
+	public static function setCookie($name, $value, $time)
+	{
+		setcookie($name, $value, strtotime($time));
+	}
+
+	/**
+	 * Clear cookie.
+	 * @param string $name 
+	 */
+	public static function clearCookie($name)
+	{
+		if (!isset($_COOKIE[$name]))
+			return;
+		setcookie($name, '', time() - 3600, '/', '', 0);
+		unset($_COOKIE[$name]);
 	}
 
 }

@@ -101,8 +101,7 @@ class Common {
 
 	public static function getExtension($file)
 	{
-		$parts = pathinfo($file);
-		return $parts['extension'];
+		return pathinfo($file, PATHINFO_EXTENSION);
 	}
 
 	#Strip extension of file, can be any length
