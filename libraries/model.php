@@ -607,7 +607,7 @@ abstract class Model {
 					if ($fieldClass == 'parent')
 						$fieldClass = strtolower($this->_class);
 
-					$list = self::getModelForType($fieldClass);
+					$list = self::make($fieldClass);
 
 					$ref = $fieldClass . '-' . intval($this->$field);
 
