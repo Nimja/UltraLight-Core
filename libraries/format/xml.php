@@ -15,7 +15,7 @@
  * 
  * @package XML_Formatter
  */
-class XML_Formatter
+class Format_Xml
 {
 
 	/**

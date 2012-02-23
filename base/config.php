@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Enable DEBUG for error showing.
  */
@@ -34,6 +35,7 @@ $GLOBALS['config'] = array(
 # ----------- Main config ----------
 	#Automatically gotten. -> Needs to have trailing slash!
 	'base_url' => '',
+	'contact_email' => 'mail@server.ext',
 # ----------- Database config ----------
 	#Table prefix for model tables.
 	'table_prefix' => 'ul_',
