@@ -1,6 +1,12 @@
 <?php
 //Loading an image file.
 class Image {
+	const MODE_RATIO_CROPPING = 0;
+	const MODE_RATIO_FITTING = 1;
+	const MODE_FORCE_WIDTH = 2;
+	const MODE_FORCE_HEIGHT = 3;
+	const MODE_RATIO_FITTING_NO_BORDERS = 4;
+	
 
 	var $src = NULL;
 	var $img = NULL;
@@ -105,14 +111,14 @@ class Image {
 		$scaleY = $desired['h'] / $source['h'];
 		$scale = 1;
 		switch ($mode) {
-			case 3: //Force height
+			case self::MODE_FORCE_HEIGHT: //Force height
 				$scale = $scaleY;
 				break;
-			case 2: //Force width
+			case self::MODE_FORCE_WIDTH: //Force width
 				$scale = $scaleX;
 				break;
-			case 4: //Fit without additional borders.
-			case 1: //Fit
+			case self::MODE_RATIO_FITTING_NO_BORDERS: //Fit without additional borders.
+			case self::MODE_RATIO_FITTING: //Fit
 				$scale = ($scaleX < $scaleY) ? $scaleX : $scaleY;
 				break;
 			default: //Ratio cropping

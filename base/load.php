@@ -3,15 +3,53 @@
 # ---- Global Functions ----
 
 /**
+ * Return a nice array of lines for the backtrace, much simpler than the real backtrace.
+ * 
+ * The function doesn't return full paths on purpose, cleaning away pathnames to a nicer 
+ * 
+ * @return array 
+ */
+function debug_simple()
+{
+	$option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
+	$traces = debug_backtrace($option);
+	$lines = array();
+	foreach ($traces as $trace) {
+		$info = pathinfo($trace['file']);
+		$dir = $info['dirname'];
+		$core = strpos($dir, PATH_CORE);
+		$app = strpos($dir, PATH_APP);
+		
+		//Skip load.php from core with line_nr < 160 to avoid self-reference.
+		if ($core !== false && $info['basename'] == 'load.php' && $trace['line'] < 160) {
+			continue;
+		}
+		
+		//Add nice dir identifiers.
+		if ($core !== false) {
+			$dir = '[Core] ' . substr($dir, strlen(PATH_CORE)) . '/';
+		} else if ($app !== false) {
+			$dir = '[App] ' . substr($dir, strlen(PATH_APP)) . '/';
+		} else {
+			$dir = '';
+		}
+
+		$lines[] = $dir . $info['basename'] . ' - line: ' . $trace['line'];
+	}
+
+	return $lines;
+}
+
+/**
  * Show a variable in a neat HTML friendly way. - VERY handy. 
  * 
  * @param string $var The variable you want to show.
  * @param string $title The optional title for this variable.
  * @param string $color One of fatal, error, neutral, good or success. CSS colors are also accepted.
  * @param boolean $return Return the export as a string instead of echoing.
- * @return string Optional return value, if $return is TRUE.
+ * @return string Optional return value, if $return is true.
  */
-function show($var, $title = 'Export Variable', $color = 'neutral', $return = FALSE)
+function show($var, $title = 'Export Variable', $color = 'neutral', $return = false)
 {
 	#Choose a color.
 	$colors = array(
@@ -23,30 +61,13 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = FA
 	);
 	$color = !empty($colors[$color]) ? $colors[$color] : $color;
 
-	$option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : FALSE;
-	$traces = debug_backtrace($option);
-	$locations = array();
-	foreach ($traces as $trace) {
-		$info = pathinfo($trace['file']);
-		$dir = $info['dirname'];
-		$core = strpos($dir, PATH_CORE);
-		$app = strpos($dir, PATH_APP);
-		if ($core !== FALSE) {
-			$dir = 'C ' . substr($dir, $core + strlen(PATH_CORE)) . '/';
-		} else if ($app !== FALSE) {
-			$dir = 'A ' . substr($dir, $core + strlen(PATH_APP)) . '/';
-		} else {
-			$dir = '';
-		}
+	$locations = debug_simple();
 
-		$locations[] = $dir . $info['basename'] . ' - line: ' . $trace['line'];
-	}
 	$location = $locations[0];
 	$locations = implode("<br />", $locations);
 
-
 	#Make the content HTML compatible. 
-	$display = htmlentities(trim(print_r($var, TRUE)));
+	$display = htmlentities(trim(print_r($var, true)));
 	#Format content per line.
 	$lines = explode("\n", $display);
 	$display = '';
@@ -132,7 +153,7 @@ function show_exit($var, $title = '<b>Fatal error:</b>')
  * @param string $var The variable you want to show.
  * @param string $title The optional title for this variable.
  */
-function show_error($var, $title = '<b>Error:</b>', $return = FALSE)
+function show_error($var, $title = '<b>Error:</b>', $return = false)
 {
 	show($var, $title, 'error', $return);
 }
@@ -141,7 +162,7 @@ function show_error($var, $title = '<b>Error:</b>', $return = FALSE)
  * Replacement function for "empty", easier to type and returns true when var is "0" or 0
  * 
  * @param string $var The variable you want to show.
- * @return boolean TRUE when it is empty AND NOT numeric.
+ * @return boolean true when it is empty AND NOT numeric.
  */
 function blank($var)
 {
@@ -204,7 +225,8 @@ function redirect($url = '', $code = 302)
 
 # Minimal class for loading libraries, templates, etc.
 
-class Load {
+class Load
+{
 
 	/**
 	 * List of included files
@@ -247,9 +269,9 @@ class Load {
 	 */
 	public static function init()
 	{
-		self::$start = microtime(TRUE);
+		self::$start = microtime(true);
 		if (!empty(self::$included['page']))
-			show_exit(NULL, 'Load Init double called');
+			show_exit(null, 'Load Init double called');
 
 		#Set Base URL.
 		$config = &$GLOBALS['config'];
@@ -353,7 +375,7 @@ class Load {
 	 */
 	public static function segment($int)
 	{
-		return !empty(self::$url[$int]) ? self::$url[$int] : FALSE;
+		return!empty(self::$url[$int]) ? self::$url[$int] : false;
 	}
 
 	/**
@@ -386,10 +408,10 @@ class Load {
 	 * @param boolean $class_force Force loading of this class, skipping the classname check.
 	 * @return type 
 	 */
-	public static function library($file, $type = 'library', $class_force = FALSE)
+	public static function library($file, $type = 'library', $class_force = false)
 	{
 		$type = strtolower($type);
-		$path = NULL;
+		$path = null;
 		/**
 		 * Switch between different library paths.
 		 */
@@ -404,7 +426,7 @@ class Load {
 				if (!empty($GLOBALS['config']['paths'])) {
 					$paths = $GLOBALS['config']['paths'];
 					if (is_array($paths)) {
-						$path = !empty($paths[$type]) ? $paths[$type] : NULL;
+						$path = !empty($paths[$type]) ? $paths[$type] : null;
 					}
 				}
 		}
@@ -457,9 +479,9 @@ class Load {
 			if (DEBUG) {
 				show($file, ucfirst($type) . ' imported');
 			}
-			self::$included[$filesrc] = TRUE;
+			self::$included[$filesrc] = true;
 		}
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -496,9 +518,9 @@ class Load {
 	 * @param mixed $data File data or filename to output .
 	 * @param int $modified Unix timestamp of last modified date.
 	 * @param string $filename Filename for the output
-	 * @param boolean $isFile True if data is a filename. (if TRUE, it will output a file directly to the browser)
+	 * @param boolean $isFile True if data is a filename. (if true, it will output a file directly to the browser)
 	 */
-	public static function output($mime, $data, $modified = 0, $filename = NULL, $isFile = FALSE)
+	public static function output($mime, $data, $modified = 0, $filename = null, $isFile = false)
 	{
 		#Check we're the first data.
 		if (ob_get_contents() || headers_sent())
@@ -543,7 +565,7 @@ class Load {
 	public static function output_same($expires = '+30 days')
 	{
 		//Status Code:304 Not Modified
-		header('HTTP/1.1 304 Not Modified', NULL, 304);
+		header('HTTP/1.1 304 Not Modified', null, 304);
 
 		$expires = intval($expires);
 		header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
