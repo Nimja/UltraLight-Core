@@ -10,7 +10,8 @@ Load::library('database');
  * $_table, defining the table name.
  */
 
-abstract class Model {
+abstract class Model
+{
 	#Every model shares the same connection. (unless overridden of course)
 
 	/**
@@ -281,7 +282,7 @@ abstract class Model {
 
 		foreach ($this->_fields as $field => $type) {
 			if ($type == 'bool') {
-				$this->$field = !empty($values[$field]) ? 0 : 1;
+				$this->$field = !empty($values[$field]) ? 1 : 0;
 			} else {
 				$this->$field = !blank($values[$field]) ? $values[$field] : '';
 			}
@@ -463,7 +464,7 @@ abstract class Model {
 		}
 		$row = $this->_db->run('SELECT * FROM `' . $this->_table . '` ' . $extra);
 
-		return !empty($row) ? new $this->_class($row) : FALSE;
+		return!empty($row) ? new $this->_class($row) : FALSE;
 	}
 
 	/**
@@ -537,7 +538,7 @@ abstract class Model {
 		$form->orivalues = $this->values();
 
 		#Basic fields.
-		$form->field('hidden', 'class');
+		$form->field('hidden', 'class', NULL, array('value' => strtolower($this->_class)));
 
 		if (!empty($form->warning)) {
 			$form->add('<div class="warning">' . $form->warning . '</div>');
