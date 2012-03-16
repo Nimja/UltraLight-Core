@@ -170,6 +170,7 @@ class Image {
 		$this->fastimagecopyresampled($dst, $this->img, $dest['x'], $dest['y'], $source['x'], $source['y'], $dest['w'], $dest['h'], $source['w'], $source['h'], 2);
 
 		imagejpeg($dst, $fileTo, $quality);
+		chmod($fileTo, 0666);
 		imagedestroy($dst);
 	}
 
