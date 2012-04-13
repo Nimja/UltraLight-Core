@@ -695,40 +695,10 @@ abstract class Model
 	 * @param string $orderBy And order by.
 	 * @return array Field structure.
 	 */
-	public static function getModels($type, $where = '', $orderBy = NULL, $limit = NULL)
+	public static function getModels($type, $where = '', $orderBy = null, $limit = null)
 	{
-		if (empty(self::$db))
-			self::connect();
-
-		if (self::$prefix === NULL) {
-			self::getPrefix();
-		}
-
-		$info = Load::getNames($type);
-		$table = self::$prefix . $info['file'];
-		$class = $info['class'];
-		if (!class_exists($class)) {
-			self::loadModel($class);
-		}
-
-		$orderBy = !empty($orderBy) ? $orderBy : 'id ASC';
-
-		$extra = '';
-		if (!empty($where)) {
-			$extra .= ' WHERE ' . $where;
-		}
-		if (!empty($orderBy)) {
-			$extra .= ' ORDER BY ' . $orderBy;
-		}
-		if (!empty($limit)) {
-			$extra .= ' LIMIT ' . $limit;
-		}
-		$res = self::$db->query('SELECT * FROM `' . $table . '` ' . $extra);
-		$result = array();
-		while ($row = self::$db->getRow($res)) {
-			$result[$row['id']] = new $class($row);
-		}
-		return $result;
+		$model = self::make($type);
+		return !empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
 	}
 
 	/**
