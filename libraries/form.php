@@ -23,7 +23,7 @@ class Form
 	 * 
 	 * @var array 
 	 */
-	public $orivalues = NULL;
+	public $orivalues = null;
 
 	/**
 	 * Output string.
@@ -44,14 +44,14 @@ class Form
 	 * 
 	 * @var boolean 
 	 */
-	public $valid = FALSE;
+	public $valid = false;
 
 	/**
 	 * If we have an open fieldset
 	 * 
 	 * @var boolean 
 	 */
-	protected $openset = FALSE;
+	protected $openset = false;
 
 	function __construct()
 	{
@@ -95,7 +95,7 @@ class Form
 	 * @param string $value
 	 * 
 	 */
-	public function value($field, $extra = array(), $escape = TRUE)
+	public function value($field, $extra = array(), $escape = true)
 	{
 		#Make sure the value is here.
 		if (!isset($this->values[$field])) {
@@ -146,7 +146,7 @@ class Form
 	 * @param string $field
 	 * @return string Extra details for fields.
 	 */
-	public function extra($val, $field = NULL)
+	public function extra($val, $field = null)
 	{
 		$result = '';
 		if (!empty($field)) {
@@ -224,7 +224,7 @@ class Form
 	//Making an input field.
 	protected function field_text($field, $extra = array())
 	{
-		$value = $this->value($field, $extra, FALSE);
+		$value = $this->value($field, $extra, false);
 		return '<textarea name="' . $field . '"' . $this->extra($extra, $field) . '>' . $value . '</textarea>';
 	}
 
@@ -234,7 +234,7 @@ class Form
 	{
 		$options = '';
 		$result_add = '';
-		$cur = $this->value($field, $extra, FALSE);
+		$cur = $this->value($field, $extra, false);
 
 		#Generate the options.
 		$values = !empty($extra['values']) ? $extra['values'] : array();
@@ -262,7 +262,7 @@ class Form
 
 	protected function field_multiselect($field, $extra = array())
 	{
-		$cur = $this->value($field, $extra, FALSE);
+		$cur = $this->value($field, $extra, false);
 		if (!is_array($cur))
 			$cur = array($cur);
 
@@ -283,7 +283,7 @@ class Form
 	protected function field_radio($field, $extra = array())
 	{
 		$result = '';
-		$value = $this->value($field, $extra, FALSE);
+		$value = $this->value($field, $extra, false);
 		$values = !empty($extra['values']) ? $extra['values'] : array();
 
 		$extra = $this->extra($extra, $field);
@@ -295,7 +295,7 @@ class Form
 	}
 
 	//Making a select field (with array as input, re-selects right value)
-	protected function field_check($field, $extra = NULL)
+	protected function field_check($field, $extra = null)
 	{
 		$value = $this->value($field, $extra);
 		$selected = (!empty($value) && $value != 'false') ? ' checked="checked" ' : '';
@@ -308,13 +308,13 @@ class Form
 
 	#Envelop relevant fields in a fieldset is good practice.
 
-	public function fieldset($legend = NULL, $extra = array())
+	public function fieldset($legend = null, $extra = array())
 	{
 		$this->fieldset_close();
 		$this->add('<fieldset' . $this->extra($extra) . '>');
 		if (!empty($legend))
 			$this->add('<legend>' . $legend . '</legend>');
-		$this->openset = TRUE;
+		$this->openset = true;
 	}
 
 	#Close the currently open fieldset.
@@ -323,7 +323,7 @@ class Form
 	{
 		if ($this->openset)
 			$this->add('<div class="clear"></div></fieldset>');
-		$this->openset = FALSE;
+		$this->openset = false;
 	}
 
 	#Basic field selection.
@@ -365,7 +365,7 @@ class Form
 	 * @param array $extra
 	 * @param boolean $direct Add output, or return output.
 	 */
-	public function field($type, $field, $label = NULL, $extra = array(), $direct = FALSE)
+	public function field($type, $field, $label = null, $extra = array(), $direct = false)
 	{
 		$result = $this->field_make($type, $field, $extra);
 
@@ -379,7 +379,7 @@ class Form
 		//Output result or add it to the form.
 		if (!$direct) {
 			$this->add($result);
-			return TRUE;
+			return true;
 		} else {
 			return $result;
 		}
@@ -392,7 +392,7 @@ class Form
 	 * @param string $label
 	 * @param boolean $direct Add output, or return output.
 	 */
-	public function field_multi($fields, $label = NULL, $direct = FALSE)
+	public function field_multi($fields, $label = null, $direct = false)
 	{
 		$result = '';
 		$classes = array();
@@ -412,7 +412,7 @@ class Form
 		//Output result or add it to the form.
 		if (!$direct) {
 			$this->add($result);
-			return TRUE;
+			return true;
 		} else {
 			return $result;
 		}
@@ -437,7 +437,7 @@ class Form
 	 */
 	public function validate($validate, $countrycode = 'nl')
 	{
-		$result = FALSE;
+		$result = false;
 		#---validation
 		$this->warnings = array();
 
@@ -539,7 +539,7 @@ class Form
 	 */
 	protected function valid_email($email)
 	{
-		return (!preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix", $email)) ? FALSE : TRUE;
+		return (!preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix", $email)) ? false : true;
 	}
 
 }
