@@ -7,7 +7,8 @@
  * Almsot all configuration is done by arrays.
  */
 
-class Form {
+class Form
+{
 
 	/**
 	 * Normally the HTML request variables.
@@ -30,13 +31,6 @@ class Form {
 	 * @var string 
 	 */
 	public $output = '';
-
-	/**
-	 * plain to proper lookup.
-	 * 
-	 * @var string 
-	 */
-	public $warning = '';
 
 	/**
 	 * Array of warnings.
@@ -168,7 +162,7 @@ class Form {
 			} else {
 				#Parse over standard values.
 				$parts = array();
-				$fields = array('class', 'style', 'id', 'onchange', 'alt', 'title', 'for');
+				$fields = array('class', 'style', 'id', 'onchange', 'alt', 'title', 'for', 'ref');
 				foreach ($fields as $field) {
 					if (!empty($val[$field]))
 						$parts[] = $field . '="' . trim($val[$field]) . '"';
@@ -355,6 +349,10 @@ class Form {
 			default: $result = $this->field_input($type, $field, $extra);
 				break;
 		}
+		if (!empty($this->warnings[$field])) {
+			$result .= '<div class="warning" for="' . $field . '">' . $this->warnings[$field] . '</div>';
+		}
+
 		return $result;
 	}
 
@@ -441,7 +439,6 @@ class Form {
 	{
 		$result = FALSE;
 		#---validation
-		$this->warning = '';
 		$this->warnings = array();
 
 		if (!empty($validate)) {
@@ -521,11 +518,10 @@ class Form {
 					}
 				}
 				if (!empty($text)) {
-					$this->warnings[$field] = '<p><b>' . $label . '</b> ' . $text . '.</p>';
+					$this->warnings[$field] = $text;
 				}
 			}
-			$this->warning = !empty($this->warnings) ? implode('', $this->warnings) : '';
-			$result = empty($this->warning);
+			$result = empty($this->warnings);
 			#If ALL fields are wrong, don't provide warnings.
 			if ($checked == $total) {
 				#$this->warning = '';

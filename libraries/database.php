@@ -4,7 +4,8 @@
 #	Load::library('database');
 #Database class to connect properly.
 
-class Database {
+class Database
+{
 
 	/**
 	 * Last mysql query resource
@@ -655,13 +656,20 @@ class Database {
 	 * 
 	 * @return string The colum, as formatted by Type. 
 	 */
-	protected function makeColumn($type, $toString = TRUE)
+	protected function makeColumn($field, $toString = TRUE)
 	{
-		$parts = explode('|', $type);
-		$type = array_shift($parts);
-		$length = !empty($parts) ? intval(array_shift($parts)) : 0;
-		$default = !empty($parts) ? array_shift($parts) : '';
-		$null = FALSE;
+		if (is_array($field)) {
+			$type = isset($field['type']) ? $field['type'] : 'int';
+			$length = isset($field['length']) ? intval($field['length']) : 0;
+			$default = isset($field['default']) ? intval($field['default']) : 0;
+			$null = !empty($field['null']);
+		} else {
+			$parts = explode('|', $field);
+			$type = array_shift($parts);
+			$length = !empty($parts) ? intval(array_shift($parts)) : 0;
+			$default = !empty($parts) ? array_shift($parts) : '';
+			$null = FALSE;
+		}
 
 		#If length has not been defined.
 		if (substr($type, -3) == 'int') {
@@ -669,13 +677,13 @@ class Database {
 			if (empty($length)) {
 
 				switch ($type) {
-					case 'tinyint':$length = 4;
+					case 'tinyint': $length = 4;
 						break;
-					case 'smallint':$length = 6;
+					case 'smallint': $length = 6;
 						break;
-					case 'mediumint':$length = 9;
+					case 'mediumint': $length = 9;
 						break;
-					case 'bigint':$length = 20;
+					case 'bigint': $length = 20;
 						break;
 					default: $length = 11;
 						break;

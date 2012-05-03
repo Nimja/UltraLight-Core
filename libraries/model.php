@@ -26,7 +26,7 @@ abstract class Model
 	 * 
 	 * @var DataBase 
 	 */
-	private static $prefix = NULL;
+	private static $prefix = null;
 
 	/**
 	 * plain to proper lookup.
@@ -54,7 +54,7 @@ abstract class Model
 	 * 
 	 * @var DataBase 
 	 */
-	protected $_db = NULL;
+	protected $_db = null;
 
 	/**
 	 * Database fields
@@ -66,9 +66,20 @@ abstract class Model
 	/**
 	 * Fields to ignore when saving or making the form. They are usually saved in a different method (like sorting)
 	 * 
+	 * Filled automatically.
+	 * 
 	 * @var array 
 	 */
 	protected $_ignoreFields = array();
+
+	/**
+	 * Using the form validation function, if you need to.
+	 * 
+	 * Filled automatically.
+	 * 
+	 * @var array 
+	 */
+	protected $_validate = array();
 
 	/**
 	 * ID variable
@@ -82,28 +93,21 @@ abstract class Model
 	 * 
 	 * @var string 
 	 */
-	protected $_class = NULL;
+	protected $_class = null;
 
 	/**
 	 * Holder for the form object connected to this function.
 	 * 
 	 * @var Form 
 	 */
-	protected $_form = NULL;
-
-	/**
-	 * Using the form validation function, if you need to.
-	 * 
-	 * @var array 
-	 */
-	protected $_validate = array();
+	protected $_form = null;
 
 	/**
 	 * Internal memory caching for models.
 	 * 
 	 * @var array 
 	 */
-	protected $_cache = NULL;
+	protected $_cache = null;
 
 	/**
 	 * Static memory caching.
@@ -116,20 +120,37 @@ abstract class Model
 	 * 
 	 * @var boolean 
 	 */
-	protected $_edit = FALSE;
+	protected $_edit = false;
+
+	/**
+	 * Is true if a save succeeded succesfully.
+	 * 
+	 * @var type 
+	 */
+	protected $_saved = false;
 
 	/**
 	 * Basic constructor, with error messages.
 	 * 
 	 * @param array|int $values 
 	 */
-	function __construct($values = NULL)
+	function __construct($values = null)
 	{
+		$this->_class = get_class($this);
+
 		if (class_exists('Login')) {
 			$this->_edit = Login::$role > Login::ROLE_NEUTRAL;
 		}
 
-		$this->_class = get_class($this);
+		//Create the validation/ignore arrays for ease of use.
+		foreach ($this->_fields as $field => $settings) {
+			if (isset($settings['validate'])) {
+				$this->_validate[$field] = $settings['validate'];
+			}
+			if (!empty($settings['ignore'])) {
+				$this->_ignoreFields[$field] = true;
+			}
+		}
 
 		#Get cache, or make one for this class if it didn't exist.
 		if (!isset(self::$cache[$this->_class])) {
@@ -142,7 +163,7 @@ abstract class Model
 			show_exit('Cannot create model unless fields is defined.', $this->_class);
 
 		$info = Load::getNames($this->_class);
-		if (self::$prefix === NULL) {
+		if (self::$prefix === null) {
 			self::getPrefix();
 		}
 		$this->_table = self::$prefix . $info['file'];
@@ -157,7 +178,7 @@ abstract class Model
 
 	public function __toString()
 	{
-		return show($this, $this->_class, '#efe', TRUE);
+		return show($this, $this->_class, '#efe', true);
 	}
 
 	/**
@@ -174,16 +195,16 @@ abstract class Model
 	/**
 	 * Connect to the database for this model, only happens when actual connections are needed.
 	 * 
-	 * @return boolean TRUE for connection.
+	 * @return boolean true for connection.
 	 */
 	protected function connect()
 	{
 		if (!empty($this->_db))
-			return TRUE;
+			return true;
 
 		if (!empty(self::$db)) {
 			$this->_db = &self::$db;
-			return TRUE;
+			return true;
 		}
 
 		if (empty($this->_table))
@@ -203,7 +224,7 @@ abstract class Model
 	protected function check()
 	{
 		if (empty($this->_table))
-			return FALSE;
+			return false;
 
 		if (empty($this->_db))
 			$this->connect();
@@ -216,18 +237,18 @@ abstract class Model
 	 * 
 	 * @return type 
 	 */
-	public function install($force = FALSE)
+	public function install($force = false)
 	{
 		$fields = $this->_fields;
 
 		if (empty($fields))
-			return FALSE;
+			return false;
 
 		if (empty($this->_db))
 			$this->connect();
 
 		if (!$this->check() || $force) {
-			$installed = $this->_db->create_table($this->_table, $fields, TRUE);
+			$installed = $this->_db->create_table($this->_table, $fields, true);
 
 			#Install default values, if needs be.
 			$defaults = $this->getDefaults();
@@ -235,16 +256,16 @@ abstract class Model
 				$this->addMultiple($defaults);
 			}
 			if ($installed) {
-				return show($this->_class, 'Installed', 'success', TRUE);
+				return show($this->_class, 'Installed', 'success', true);
 			} else {
-				return show($this->_class, 'Not installed!', 'error', TRUE);
+				return show($this->_class, 'Not installed!', 'error', true);
 			}
 		} else {
 			$updated = $this->_db->update_table($this->_table, $fields);
 			if ($updated) {
-				return show($this->_class, 'Updated', 'good', TRUE);
+				return show($this->_class, 'Updated', 'good', true);
 			} else {
-				return show($this->_class, 'No changes.', 'neutral', TRUE);
+				return show($this->_class, 'No changes.', 'neutral', true);
 			}
 		}
 	}
@@ -258,7 +279,7 @@ abstract class Model
 	public function addMultiple($array)
 	{
 		if (!is_array($array))
-			return FALSE;
+			return false;
 
 		#Look over array and add them.
 		foreach ($array as $item) {
@@ -278,7 +299,7 @@ abstract class Model
 	public function fill($values)
 	{
 		if (empty($values) || !is_array($values))
-			return FALSE;
+			return false;
 
 		foreach ($this->_fields as $field => $type) {
 			if ($type == 'bool') {
@@ -297,14 +318,14 @@ abstract class Model
 	protected function fromCache($id)
 	{
 		if (empty($this->_cache[$this->_class . '-' . $id])) {
-			return FALSE;
+			return false;
 		}
 		$item = $this->_cache[$this->_class . '-' . $id];
 		foreach ($this->_fields as $field => $type) {
 			$this->$field = $item->$field;
 		}
 		$this->id = $item->id;
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -345,7 +366,7 @@ abstract class Model
 		if ($id > 0) {
 			#Remove these fields from the values to be saved.
 			if (!empty($this->_ignoreFields)) {
-				foreach ($this->_ignoreFields as $field) {
+				foreach ($this->_ignoreFields as $field => $true) {
 					unset($values[$field]);
 				}
 			}
@@ -355,7 +376,8 @@ abstract class Model
 			$this->id = $this->_db->insert($this->_table, $values);
 		}
 		$this->_cache[$this->_class . '-' . $this->id] = $this;
-		return TRUE;
+		$this->_saved = true;
+		return true;
 	}
 
 	/**
@@ -369,7 +391,7 @@ abstract class Model
 		$id = intval($id);
 
 		if (empty($id))
-			return FALSE;
+			return false;
 
 		if (empty($this->_db))
 			$this->connect();
@@ -378,12 +400,12 @@ abstract class Model
 
 		if (empty($values) || empty($values['id'])) {
 			#show_error($id, 'Failed to load ' . $this->_class);
-			return FALSE;
+			return false;
 		}
 
 		$this->fill($values);
 		$this->id = $values['id'];
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -391,7 +413,7 @@ abstract class Model
 	 * 
 	 * @param optional int $id
 	 */
-	public function delete($id = NULL)
+	public function delete($id = null)
 	{
 		if (!$this->_edit)
 			return;
@@ -415,7 +437,7 @@ abstract class Model
 	 * @param string $orderBy And order by.
 	 * @return array Field structure.
 	 */
-	public function getAll($where = '', $orderBy = NULL, $limit = NULL)
+	public function getAll($where = '', $orderBy = null, $limit = null)
 	{
 		if (empty($this->_db))
 			$this->connect();
@@ -448,7 +470,7 @@ abstract class Model
 	 * @param string $orderBy And order by.
 	 * @return Model Object of an extended class.
 	 */
-	public function getOne($where = '', $orderBy = NULL)
+	public function getOne($where = '', $orderBy = null)
 	{
 		if (empty($this->_db))
 			$this->connect();
@@ -464,7 +486,7 @@ abstract class Model
 		}
 		$row = $this->_db->run('SELECT * FROM `' . $this->_table . '` ' . $extra);
 
-		return!empty($row) ? new $this->_class($row) : FALSE;
+		return!empty($row) ? new $this->_class($row) : false;
 	}
 
 	/**
@@ -474,7 +496,7 @@ abstract class Model
 	 * @param string $orderBy And order by.
 	 * @return array Field structure.
 	 */
-	public function getSelectionList($where = '', $orderBy = NULL)
+	public function getSelectionList($where = '', $orderBy = null)
 	{
 		if (empty($this->_db))
 			$this->connect();
@@ -538,7 +560,10 @@ abstract class Model
 		$form->orivalues = $this->values();
 
 		#Basic fields.
-		$form->field('hidden', 'class', NULL, array('value' => strtolower($this->_class)));
+		$form->field('hidden', 'class', null, array(
+			'value' => strtolower($this->_class),
+			'ref' => $this->_saved ? 'saved' : '',
+		));
 
 		if (!empty($form->warning)) {
 			$form->add('<div class="warning">' . $form->warning . '</div>');
@@ -549,11 +574,11 @@ abstract class Model
 		$form->field('select', 'id', 'Current', array('values' => $list, 'class' => 'idSelect'));
 
 		$form->fieldset('Values', array('class' => 'values ' . strtolower($this->_class)));
-		foreach ($fields as $field => $type) {
-			$this->getFormField($field, $type);
+		foreach ($fields as $field => $setting) {
+			$this->getFormField($field, $setting);
 		}
-		$form->field('submit', 'submit', NULL, array('value' => 'Save', 'class' => 'save'));
-		$form->field('submit', 'cancel', NULL, array('value' => 'Cancel', 'class' => 'cancel'));
+		$form->field('submit', 'submit', null, array('value' => 'Save', 'class' => 'save'));
+		$form->field('submit', 'cancel', null, array('value' => 'Cancel', 'class' => 'cancel'));
 
 		#Execute extra details for a form.
 		$this->getFormExtra($form);
@@ -568,19 +593,18 @@ abstract class Model
 	 * 
 	 * @param Form $form
 	 * @param string $field
-	 * @param string $type
+	 * @param array $setting
 	 */
-	public function getFormField($field, $type)
+	public function getFormField($field, $setting)
 	{
 		#Ignore these fields for editing.
-		if (!empty($this->_ignoreFields) && in_array($field, $this->_ignoreFields))
+		if (!empty($this->_ignoreFields[$field]))
 			return;
-
 
 		$form = $this->_form;
 
 		# We only need the type, not anything else.
-		$type = array_shift(explode('|', $type));
+		$type = $setting['type'];
 		$lastChars = substr($field, -2);
 
 		$ttype = substr($type, -3);
@@ -639,7 +663,7 @@ abstract class Model
 	{
 		#No validation rules, always true.
 		if (empty($this->_validate))
-			return TRUE;
+			return true;
 
 		#Run the form validation.
 		if (empty($this->_form)) {
@@ -698,7 +722,7 @@ abstract class Model
 	public static function getModels($type, $where = '', $orderBy = null, $limit = null)
 	{
 		$model = self::make($type);
-		return !empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
+		return!empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
 	}
 
 	/**
@@ -747,10 +771,10 @@ abstract class Model
 	 * @param array|int $values
 	 * @return Model A class, derived from model, based on $class.
 	 */
-	public static function make($type, $values = NULL, $force = FALSE)
+	public static function make($type, $values = null, $force = false)
 	{
 		if (empty($type))
-			return NULL;
+			return null;
 		$class = self::loadModel($type);
 
 		if (!$force
