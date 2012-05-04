@@ -19,12 +19,12 @@ function debug_simple()
 		$dir = $info['dirname'];
 		$core = strpos($dir, PATH_CORE);
 		$app = strpos($dir, PATH_APP);
-		
+
 		//Skip load.php from core with line_nr < 160 to avoid self-reference.
 		if ($core !== false && $info['basename'] == 'load.php' && $trace['line'] < 160) {
 			continue;
 		}
-		
+
 		//Add nice dir identifiers.
 		if ($core !== false) {
 			$dir = '[Core] ' . substr($dir, strlen(PATH_CORE)) . '/';
@@ -574,14 +574,23 @@ class Load
 	}
 
 	/**
-	 * Remove unwatned characters from a filename, only allowing underscores, slashes and periods, next to letters. NO NUMBERS!
+	 * Remove unwanted characters from a filename, only allowing underscores, slashes and periods, next to letters.
+	 * 
 	 * @param string $string
 	 * @return string The cleaned filename. 
 	 */
-	public static function sanitizeFileName($string)
+	public static function sanitizeFileName($string, $toLower = true)
 	{
-		$string = preg_replace('/[^a-z0-9\_\/\.]/', '', strtolower(trim($string)));
+		$string = ($toLower) ? strtolower(trim($string)) : trim($string);
+		//Strip unwanted characters.
+		$string = preg_replace('/[^A-Za-z0-9\_\/\.]/', '', $string);
+
+		//Remove double slashes.
+		$string = preg_replace('/\/+/', '/', $string);
+
+		//Remove leading/trailing dots, slashes. So ../ is removed.
 		$string = trim($string, './');
+		//Return cleaned string.
 		return $string;
 	}
 

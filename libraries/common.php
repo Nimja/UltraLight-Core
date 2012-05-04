@@ -3,8 +3,8 @@
 #All libraries should be self-contained and independant, but they can use the defined paths.
 #Common are a bunch of helper functions that are semi-often used.
 
-class Common {
-
+class Common
+{
 	const PREG_EMAIL = "([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)";
 	const RECURSIVE = 1;
 	const EXCLUDE_DIRS = 2;
@@ -18,7 +18,7 @@ class Common {
 	 * @param string $filter Filter works like "in string"
 	 * @return array Result is a named array with filenames as keys and values or dir contents as value.
 	 */
-	public static function listFiles($path, $options = 0, $filter = NULL)
+	public static function listFiles($path, $options = 0, $include = null, $exclude = null)
 	{
 		$files = array();
 		$dirs = array();
@@ -26,6 +26,9 @@ class Common {
 		$recursive = ($options & self::RECURSIVE);
 		$exclude_files = ($options & self::EXCLUDE_FILES);
 		$exclude_dirs = ($options & self::EXCLUDE_DIRS);
+		
+		$inc_func = is_array($include) ? 'in_array' : 'strpos';
+		$exc_func = is_array($exclude) ? 'in_array' : 'strpos';
 
 		#If the path is an actual (existing) dir.
 		#Check if it is an actual folder.
@@ -42,7 +45,8 @@ class Common {
 				if ($entry !== '.'
 						&& $entry !== '..'
 						#Use the filter, if required. Filter works like 'in string'
-						&& (empty($filter) || strpos($entry, $filter) !== FALSE)
+						&& (empty($include) || $inc_func($entry, $include) !== false)
+						&& (empty($exclude) || $exc_func($entry, $exclude) === false)
 				) {
 					$curfile = $path . '/' . $entry;
 					$file = $entry;
@@ -73,9 +77,9 @@ class Common {
 
 	# Remove recursive dir + files
 
-	public static function rrmdir($dir, $self = TRUE)
+	public static function rrmdir($dir, $self = true)
 	{
-		$result = TRUE;
+		$result = true;
 		if (is_dir($dir)) {
 			$entries = scandir($dir);
 			foreach ($entries as $entry) {
@@ -146,7 +150,7 @@ class Common {
 
 
 		if (!is_string($text) && !is_numeric($text)) {
-			$text = print_r($text, TRUE);
+			$text = print_r($text, true);
 		}
 		$text = date('Y-m-d H:i:s') . "\t" . $text . "\n";
 		$log = str_replace('/', '-', $log);

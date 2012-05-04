@@ -301,8 +301,8 @@ abstract class Model
 		if (empty($values) || !is_array($values))
 			return false;
 
-		foreach ($this->_fields as $field => $type) {
-			if ($type == 'bool') {
+		foreach ($this->_fields as $field => $setting) {
+			if ($setting['type'] == 'bool') {
 				$this->$field = !empty($values[$field]) ? 1 : 0;
 			} else {
 				$this->$field = !blank($values[$field]) ? $values[$field] : '';
