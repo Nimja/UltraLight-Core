@@ -189,7 +189,7 @@ abstract class Model
 	{
 		Load::library('defaults');
 		$function = 'for' . $this->_class;
-		return Defaults::$function();
+		return method_exists('Defaults', $function) ? Defaults::$function() : array();
 	}
 
 	/**
