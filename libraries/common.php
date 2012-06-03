@@ -5,6 +5,7 @@
 
 class Common
 {
+
 	const PREG_EMAIL = "([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)";
 	const RECURSIVE = 1;
 	const EXCLUDE_DIRS = 2;
@@ -26,7 +27,7 @@ class Common
 		$recursive = ($options & self::RECURSIVE);
 		$exclude_files = ($options & self::EXCLUDE_FILES);
 		$exclude_dirs = ($options & self::EXCLUDE_DIRS);
-		
+
 		$inc_func = is_array($include) ? 'in_array' : 'strpos';
 		$exc_func = is_array($exclude) ? 'in_array' : 'strpos';
 
@@ -120,7 +121,40 @@ class Common
 		return substr($file, 0, -$len);
 	}
 
-	//Bytes to Human readable format.
+	/**
+	 * Show time in seconds in a human readable format (1h 2m 3s)
+	 * @param int $time 
+	 * @return string DAYS H:I:S
+	 */
+	public static function timeToHuman($time, $returnArray = false)
+	{
+		$parts = explode(':', gmdate('z:H:i:s', $time));
+		$result = array(
+			'd' => $parts[0],
+			'h' => $parts[1],
+			'm' => $parts[2],
+			's' => $parts[3],
+		);
+
+		if ($returnArray) {
+			return $result;
+		}
+		$hrt = array();
+		foreach ($result as $key => $value) {
+			$value = intval($value);
+			if (!empty($value)) {
+				$hrt[] = $value . $key;
+			}
+		}
+		return implode(' ', $hrt);
+	}
+
+	/**
+	 * Translate bytes to a human readable format.
+	 * 
+	 * @param type $size
+	 * @return type 
+	 */
 	public static function bytesToHuman($size)
 	{
 		$unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
@@ -136,8 +170,11 @@ class Common
 		return $result;
 	}
 
-	#Write log.
-
+	/**
+	 * Write log.
+	 * @param type $text
+	 * @param type $log 
+	 */
 	public static function log($text, $log = 'log')
 	{
 		#sanity checks
