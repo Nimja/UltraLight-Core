@@ -307,9 +307,9 @@ class Database
 	 */
 	function insert($table, $values)
 	{
-		$result = FALSE;
+		$result = false;
 		if (!empty($table) && !empty($values)) {
-			$sql = 'INSERT INTO ' . $this->escape($table, TRUE) . ' SET ' . $this->_arrayToSql($values);
+			$sql = 'INSERT INTO ' . $this->escape($table, true) . ' SET ' . $this->_arrayToSql($values);
 
 			$this->query($sql);
 			$result = mysql_insert_id($this->db);
@@ -560,7 +560,7 @@ class Database
 
 			$sql .= "\t" . $this->escape($field, TRUE) . ' ' . $column . ",\n";
 		}
-		$sql .= "\t" . 'PRIMARY KEY  (`id`)' . "\n" . ') ENGINE=MyISAM DEFAULT CHARSET=latin1;';
+		$sql .= "\t" . 'PRIMARY KEY  (`id`)' . "\n" . ') ENGINE=innodb DEFAULT CHARSET=latin1;';
 
 		$this->query($sql);
 		return TRUE;
@@ -592,8 +592,8 @@ class Database
 			$dbcolumns[$field] = $row;
 		}
 		#If the ID column does not exist, table was never properly created.
-		if (empty($dbcolumns['id']) || $dbcolumns['id']['Type'] != 'int(11)') {
-			show_exit('Database was not properly installed, force install will remove all contents...');
+		if (empty($dbcolumns['id']) || $dbcolumns['id']['Type'] != 'int(11) unsigned') {
+			show_exit($table, 'Database was not properly installed, force install will remove all contents...');
 		} else {
 			unset($dbcolumns['id']);
 		}
@@ -661,7 +661,7 @@ class Database
 		if (is_array($field)) {
 			$type = isset($field['type']) ? $field['type'] : 'int';
 			$length = isset($field['length']) ? intval($field['length']) : 0;
-			$default = isset($field['default']) ? intval($field['default']) : 0;
+			$default = isset($field['default']) ? intval($field['default']) : '';
 			$unsigned = !empty($field['unsigned']);
 			$null = !empty($field['null']);
 		} else {
@@ -693,7 +693,7 @@ class Database
 				}
 			}
 			if ($unsigned) {
-				$typeExtra = ' UNSIGNED';
+				$typeExtra = ' unsigned';
 			}
 		} else if (substr($type, -4) == 'text') {
 			$length = 0;

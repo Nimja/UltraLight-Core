@@ -351,9 +351,6 @@ abstract class Model
 	 */
 	public function save()
 	{
-		if (!$this->_edit)
-			return;
-
 		if (empty($this->_db))
 			$this->connect();
 
@@ -415,9 +412,6 @@ abstract class Model
 	 */
 	public function delete($id = null)
 	{
-		if (!$this->_edit)
-			return;
-
 		$id = !empty($id) ? $id : $this->id;
 		$id = intval($id);
 
