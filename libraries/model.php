@@ -361,15 +361,15 @@ abstract class Model
 		#DO we want to do a validation check?
 
 		$id = intval($this->id);
+		#Remove these fields from the values to be saved.
+		if (!empty($this->_ignoreFields)) {
+			foreach ($this->_ignoreFields as $field => $true) {
+				unset($values[$field]);
+			}
+		}
 
 		#Switch between update and insert automatically.
 		if ($id > 0) {
-			#Remove these fields from the values to be saved.
-			if (!empty($this->_ignoreFields)) {
-				foreach ($this->_ignoreFields as $field => $true) {
-					unset($values[$field]);
-				}
-			}
 			#Update the data in the database.
 			$this->_db->update($this->_table, $values, 'id=' . $id);
 		} else {
@@ -486,7 +486,7 @@ abstract class Model
 		}
 		$row = $this->_db->run('SELECT * FROM `' . $this->_table . '` ' . $extra);
 
-		return!empty($row) ? new $this->_class($row) : false;
+		return !empty($row) ? new $this->_class($row) : false;
 	}
 
 	/**
@@ -722,7 +722,7 @@ abstract class Model
 	public static function getModels($type, $where = '', $orderBy = null, $limit = null)
 	{
 		$model = self::make($type);
-		return!empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
+		return !empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
 	}
 
 	/**

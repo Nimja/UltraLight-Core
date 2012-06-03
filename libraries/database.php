@@ -511,7 +511,7 @@ class Database
 	public function table_exists($table)
 	{
 		$check = $this->run('SHOW TABLES LIKE ' . $this->escape($table));
-		return!empty($check);
+		return !empty($check);
 	}
 
 	/**
@@ -552,7 +552,7 @@ class Database
 		$this->query('DROP TABLE IF EXISTS ' . $table . ';');
 
 		#Basic create table functionality
-		$sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) NOT NULL auto_increment,' . "\n";
+		$sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) UNSIGNED NOT NULL auto_increment,' . "\n";
 
 		#Go over fields.
 		foreach ($fields as $field => $type) {
@@ -662,16 +662,19 @@ class Database
 			$type = isset($field['type']) ? $field['type'] : 'int';
 			$length = isset($field['length']) ? intval($field['length']) : 0;
 			$default = isset($field['default']) ? intval($field['default']) : 0;
+			$unsigned = !empty($field['unsigned']);
 			$null = !empty($field['null']);
 		} else {
 			$parts = explode('|', $field);
 			$type = array_shift($parts);
 			$length = !empty($parts) ? intval(array_shift($parts)) : 0;
 			$default = !empty($parts) ? array_shift($parts) : '';
-			$null = FALSE;
+			$unsigned = false;
+			$null = false;
 		}
 
 		#If length has not been defined.
+		$typeExtra = '';
 		if (substr($type, -3) == 'int') {
 			$default = intval($default);
 			if (empty($length)) {
@@ -688,6 +691,9 @@ class Database
 					default: $length = 11;
 						break;
 				}
+			}
+			if ($unsigned) {
+				$typeExtra = ' UNSIGNED';
 			}
 		} else if (substr($type, -4) == 'text') {
 			$length = 0;
@@ -710,7 +716,7 @@ class Database
 		$length = !empty($length) ? '(' . $length . ')' : '';
 
 		$column = array(
-			'type' => $type . $length,
+			'type' => $type . $length . $typeExtra,
 			'null' => ($null) ? 'NULL' : 'NOT NULL',
 			'default' => $default,
 			'extra' => $extra,
