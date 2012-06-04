@@ -711,12 +711,25 @@ abstract class Model
 	 * 
 	 * @param string $where Basic SQL where structure.
 	 * @param string $orderBy And order by.
-	 * @return array Field structure.
+	 * @return Model of type $type
 	 */
 	public static function getModels($type, $where = '', $orderBy = null, $limit = null)
 	{
 		$model = self::make($type);
 		return !empty($model) ? $model->getAll($where, $orderBy, $limit) : false;
+	}
+
+	/**
+	 * Get a single model based on a where.
+	 * 
+	 * @param string $where Basic SQL where structure.
+	 * @param string $orderBy And order by.
+	 * @return Model of type $type
+	 */
+	public static function getModel($type, $where = '', $orderBy = null, $limit = null)
+	{
+		$model = self::make($type);
+		return !empty($model) ? $model->getOne($where, $orderBy, $limit) : false;
 	}
 
 	/**
