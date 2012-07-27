@@ -653,7 +653,7 @@ class Load
 	{
 		if (!isset($_COOKIE[$name]))
 			return;
-		setcookie($name, '', time() - 3600, '/', '', 0);
+		setcookie($name, '', time() - 3600);
 		unset($_COOKIE[$name]);
 	}
 
