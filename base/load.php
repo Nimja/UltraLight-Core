@@ -642,20 +642,22 @@ class Load
      */
     public static function setCookie($name, $value, $time)
     {
-        setcookie($name, $value, strtotime($time));
+        setcookie($name, $value, strtotime($time), '/');
     }
 
     /**
      * Clear cookie.
      * @param string $name 
+     * @return boolean Clearing cookie success or not.
      */
     public static function clearCookie($name)
     {
-        if (!isset($_COOKIE[$name]))
-            return;
         //We set it to 2 days ago, because of time differences.
-        setcookie($name, '', time() - 60 * 60 * 24 * 2);
-        unset($_COOKIE[$name]);
+        $result = setcookie($name, '', strtotime('-2 days'), '/');
+        if (isset($_COOKIE[$name])) {
+            unset($_COOKIE[$name]);
+        }
+        return $result;
     }
 
 }
