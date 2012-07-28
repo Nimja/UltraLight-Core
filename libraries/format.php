@@ -94,7 +94,7 @@ class Format
 		if (!empty($result)) {
 			$result = preg_replace('/\*(.+)\*/U', '<b>$1</b>', $result);
 			$result = preg_replace('/\_(.+)\_/U', '<i>$1</i>', $result);
-			$result = preg_replace('/\-(.+)\-/U', '<s>$1</s>', $result);
+			$result = preg_replace('/\-\-(.+)\-\-/U', '<s>$1</s>', $result);
 
 			#Add links.
 			if ($makeLinks) {
