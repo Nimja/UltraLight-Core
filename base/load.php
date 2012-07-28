@@ -155,7 +155,7 @@ function show_exit($var, $title = '<b>Fatal error:</b>')
  */
 function show_error($var, $title = '<b>Error:</b>', $return = false)
 {
-    show($var, $title, 'error', $return);
+    return show($var, $title, 'error', $return);
 }
 
 /**
