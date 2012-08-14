@@ -42,7 +42,7 @@ class Database
      */
     private static $connections = array();
 
-    function __construct($database = NULL)
+    public function __construct($database = null)
     {
         if (empty($database))
             $database = 0;
@@ -58,8 +58,8 @@ class Database
 
         #Make sure these are defined.
         $config = &$GLOBALS['config'];
-        $default = !empty($config['database']) ? $config['database'] : NULL;
-        $databases = !empty($config['databases']) ? $config['databases'] : NULL;
+        $default = !empty($config['database']) ? $config['database'] : null;
+        $databases = !empty($config['databases']) ? $config['databases'] : null;
         if (empty($databases))
             show_exit('No databases configured!');
 
@@ -68,9 +68,9 @@ class Database
 
         #Check if the database exists
         if (
-            empty($database)
-            || empty($databases)
-            || empty($databases[$database])
+                empty($database)
+                || empty($databases)
+                || empty($databases[$database])
         ) {
             show_exit($database, 'Wrong database requested');
         }
@@ -79,10 +79,10 @@ class Database
         #Check if the database is (fairly) proper.
         $settings = $databases[$database];
         if (
-            empty($settings['server'])
-            || empty($settings['database'])
-            || empty($settings['username'])
-            || empty($settings['password'])
+                empty($settings['server'])
+                || empty($settings['database'])
+                || empty($settings['username'])
+                || empty($settings['password'])
         ) {
             show_exit($database, 'Database not configured properly');
         }
@@ -100,7 +100,7 @@ class Database
      * Disconnect the database connection (hardly used..)
      * 
      */
-    function disconnect()
+    public function disconnect()
     {
         mysql_close($this->db);
     }
@@ -111,10 +111,10 @@ class Database
      * @param string $sql The MySQL query.
      * @return resource The MySQL result resource.
      */
-    function query($sql)
+    public function query($sql)
     {
         $sql = trim($sql); //Be sure to remove white-spaces.
-        $this->numrows = NULL;
+        $this->numrows = null;
         if (DEBUG)
             show($sql, 'Query:');
 
@@ -131,7 +131,7 @@ class Database
      * @param resource $res A MySQL result resource.
      * @return int The number of results.
      */
-    function count($res = NULL)
+    public function count($res = null)
     {
         $type = '';
         if (empty($res) || $res == $this->last) {
@@ -157,7 +157,7 @@ class Database
      * @param resource $res A MySQL result resource.
      * @return array Associative Array for this result.
      */
-    function getRow($res = NULL)
+    public function getRow($res = null)
     {
         if (empty($res))
             $res = $this->last;
@@ -171,7 +171,7 @@ class Database
      * @param boolean $csv Export to CSV instead of HTML table.
      * @return int The number of results.
      */
-    function export($res = NULL, $csv = FALSE)
+    public function export($res = null, $csv = false)
     {
         if (empty($res))
             $res = $this->last;
@@ -190,7 +190,7 @@ class Database
                 $result .= ( $csv) ? implode(';', $keys) . $ln : '<tr><th>' . implode('</th><th>', $keys) . '</th></tr>' . $ln;
             }
             #Rows
-            while ($row !== FALSE) {
+            while ($row !== false) {
                 $result .= ( $csv) ? implode(';', $row) . $ln : '<tr><td>' . implode('</td><td>', $row) . '</td></tr>' . $ln;
                 $row = $this->getRow($res);
             }
@@ -206,7 +206,7 @@ class Database
      * @param string $field Only get results for this field.
      * @return array Associative Array for this result.
      */
-    function getResults($res = null, $field = NULL)
+    public function getResults($res = null, $field = null)
     {
         if (empty($res))
             $res = $this->last;
@@ -229,7 +229,7 @@ class Database
      * @param string $query The MySQL query to get this list.
      * @return array Associative Array for this result.
      */
-    function getList($id, $field, $query)
+    public function getList($id, $field, $query)
     {
         $res = $this->query($query);
         $result = array();
@@ -246,7 +246,7 @@ class Database
      * @param resource $res A MySQL result resource.
      * @return boolean Success
      */
-    function free($res = null)
+    public function free($res = null)
     {
         if (empty($res))
             $res = $this->last;
@@ -261,7 +261,7 @@ class Database
      * @param string $sql The MySQL query.
      * @return array|null Associative Array for this result.
      */
-    function run($sql)
+    public function fetchRow($sql)
     {
         $result = $this->query($sql);
 
@@ -276,6 +276,25 @@ class Database
         return $value;
     }
 
+    public function run($sql)
+    {
+        return $this->fetchRow($sql);
+    }
+
+    /**
+     * Fetch the first value of a query of the first row.
+     * 
+     * If none are found, null is returned.
+     * 
+     * @param string $sql
+     * @return type
+     */
+    public function fetchValue($sql)
+    {
+        $result = $this->fetchRow($sql);
+        return !empty($result) ? array_shift($result) : null;
+    }
+
     /**
      * Escape value neatly for database.
      * 
@@ -284,7 +303,7 @@ class Database
      * @param boolean $forceQuotes If we want to enforce quotes (for numeric values)
      * @return mixed A neatly escaped value (or array with values)
      */
-    function escape($value, $backticks = false, $forceQuotes = false)
+    public function escape($value, $backticks = false, $forceQuotes = false)
     {
         if (!is_array($value)) { //Any other value.			
             $quote = ($backticks) ? '`' : "'";
@@ -308,7 +327,7 @@ class Database
      * @param array $values
      * @return int The newly inserted ID.
      */
-    function insert($table, $values)
+    public function insert($table, $values)
     {
         $result = false;
         if (!empty($table) && !empty($values)) {
@@ -328,11 +347,11 @@ class Database
      * @param string $where
      * @return int $id with which we updated.
      */
-    function update($table, $values, $where = '')
+    public function update($table, $values, $where = '')
     {
-        $result = FALSE;
+        $result = false;
         if (!empty($table) && !empty($values)) {
-            $sql = 'UPDATE ' . $this->escape($table, TRUE) . ' SET ' . $this->_arrayToSql($values);
+            $sql = 'UPDATE ' . $this->escape($table, true) . ' SET ' . $this->_arrayToSql($values);
 
             if (!empty($where))
                 $sql .= ' WHERE ' . $where;
@@ -349,11 +368,11 @@ class Database
      * @param string $where
      * @return int Number of deleted rows.
      */
-    function delete($table, $where = '')
+    public function delete($table, $where = '')
     {
-        $result = FALSE;
+        $result = false;
         if (!empty($table)) {
-            $sql = 'DELETE FROM ' . $this->escape($table, TRUE) . '';
+            $sql = 'DELETE FROM ' . $this->escape($table, true) . '';
 
             if (!empty($where))
                 $sql .= ' WHERE ' . $where;
@@ -372,11 +391,11 @@ class Database
      * @param array $update Optional alternate values for update.
      * @return int $id with which we updated.
      */
-    function insertOrUpdate($table, $values, $update = array())
+    public function insertOrUpdate($table, $values, $update = array())
     {
-        $result = FALSE;
+        $result = false;
         if (!empty($table) && !empty($values)) {
-            $sql = 'INSERT INTO ' . $this->escape($table, TRUE) . ' SET ';
+            $sql = 'INSERT INTO ' . $this->escape($table, true) . ' SET ';
             #Escape the values.
             $values = $this->_arrayToSql($values);
 
@@ -402,10 +421,10 @@ class Database
      */
     public function updateSort($table, $ids, $sortField = 'sort', $idField = 'id', $startVal = 0)
     {
-        $sortField = $this->escape($sortField, TRUE);
-        $idField = $this->escape($idField, TRUE);
+        $sortField = $this->escape($sortField, true);
+        $idField = $this->escape($idField, true);
 
-        $sql = 'UPDATE ' . $this->escape($table, TRUE) . ' SET ' . $sortField . ' = CASE ' . $idField;
+        $sql = 'UPDATE ' . $this->escape($table, true) . ' SET ' . $sortField . ' = CASE ' . $idField;
 
         $cur = intval($startVal);
         $ids = $this->escape($ids);
@@ -432,7 +451,7 @@ class Database
 
         $parts = array();
         foreach ($values as $column => $value) {
-            $parts[] = $this->escape($column, TRUE) . '=' . $value . '';
+            $parts[] = $this->escape($column, true) . '=' . $value . '';
         }
         return implode(', ', $parts);
     }
@@ -455,7 +474,7 @@ class Database
                 $values = $value;
 
             $values = $this->escape($values);
-            $field = $this->escape($field, TRUE);
+            $field = $this->escape($field, true);
             $parts = array();
             foreach ($values as $value) {
                 $parts[] = $field . ' ' . $method . ' ' . $value;
@@ -477,7 +496,7 @@ class Database
         $fe = !empty($from);
         $te = !empty($to);
 
-        $field = $this->escape($field, TRUE);
+        $field = $this->escape($field, true);
         $from = $this->escape($from);
         $to = $this->escape($to);
 
@@ -525,7 +544,7 @@ class Database
      */
     public function show_columns($table)
     {
-        $res = $this->query('SHOW COLUMNS FROM ' . $this->escape($table, TRUE));
+        $res = $this->query('SHOW COLUMNS FROM ' . $this->escape($table, true));
         $result = array();
         while ($row = $this->getRow($res)) {
             $result[] = $row;
@@ -543,30 +562,30 @@ class Database
      * @param string $table
      * @param array $fields An array with type (int/bool/varchar, etc.) | length | default 
      */
-    public function create_table($table, $fields, $force = FALSE)
+    public function create_table($table, $fields, $force = false)
     {
 
         if (!$force && $this->table_exists($table))
-            return FALSE;
+            return false;
 
-        $table = $this->escape($table, TRUE);
+        $table = $this->escape($table, true);
 
         #Drop table of the same name, else we cannot create it.
         $this->query('DROP TABLE IF EXISTS ' . $table . ';');
 
         #Basic create table functionality
-        $sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) UNSIGNED NOT NULL auto_increment,' . "\n";
+        $sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) UNSIGNED NOT null auto_increment,' . "\n";
 
         #Go over fields.
         foreach ($fields as $field => $type) {
             $column = $this->makeColumn($type);
 
-            $sql .= "\t" . $this->escape($field, TRUE) . ' ' . $column . ",\n";
+            $sql .= "\t" . $this->escape($field, true) . ' ' . $column . ",\n";
         }
         $sql .= "\t" . 'PRIMARY KEY  (`id`)' . "\n" . ') ENGINE=innodb DEFAULT CHARSET=latin1;';
 
         $this->query($sql);
-        return TRUE;
+        return true;
     }
 
     /**
@@ -579,9 +598,9 @@ class Database
     public function update_table($table, $fields)
     {
         if (!$this->table_exists($table)) {
-            return $this->create_table($table, $fields, TRUE);
+            return $this->create_table($table, $fields, true);
         }
-        $table = $this->escape($table, TRUE);
+        $table = $this->escape($table, true);
 
 
         #Get the current situation.
@@ -591,7 +610,7 @@ class Database
             $field = $row['Field'];
             unset($row['Field']);
             unset($row['Key']);
-            $row['Null'] = ($row['Null'] == 'YES') ? 'NULL' : 'NOT NULL';
+            $row['Null'] = ($row['Null'] == 'YES') ? 'null' : 'NOT null';
             $dbcolumns[$field] = $row;
         }
         #If the ID column does not exist, table was never properly created.
@@ -606,7 +625,7 @@ class Database
         #Get the desired situation.
         $desired = array();
         foreach ($fields as $field => $type) {
-            $desired[$field] = $this->makeColumn($type, FALSE);
+            $desired[$field] = $this->makeColumn($type, false);
         }
 
         #DO the compare.
@@ -614,7 +633,7 @@ class Database
         $prevField = '`id`';
         #Add/modify columns by comparison.
         foreach ($desired as $field => $column) {
-            $efield = $this->escape($field, TRUE);
+            $efield = $this->escape($field, true);
             if (empty($dbcolumns[$field])) {
 
                 $changes[] = 'ADD ' . $efield . ' ' . $this->makeColumn($fields[$field]) . ' AFTER ' . $prevField;
@@ -632,13 +651,13 @@ class Database
         }
         #Drop columns that are superflous.
         foreach ($dbcolumns as $field => $column) {
-            $efield = $this->escape($field, TRUE);
+            $efield = $this->escape($field, true);
             $changes[] = 'DROP ' . $efield;
         }
 
         #No changes.
         if (empty($changes))
-            return FALSE;
+            return false;
 
         $sql = 'ALTER TABLE ' . $table . "\n";
         $sql .= implode(",\n", $changes);
@@ -646,7 +665,7 @@ class Database
         #Execute the alter table query.
         $this->query($sql);
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -659,7 +678,7 @@ class Database
      * 
      * @return string The colum, as formatted by Type. 
      */
-    protected function makeColumn($field, $toString = TRUE)
+    protected function makeColumn($field, $toString = true)
     {
         if (is_array($field)) {
             $type = isset($field['type']) ? $field['type'] : 'int';
@@ -700,7 +719,7 @@ class Database
             }
         } else if (substr($type, -4) == 'text') {
             $length = 0;
-            $null = TRUE;
+            $null = true;
             $default = '';
         } else if ($type == 'bool') {
             #Booleans are tinyints with length 1.
@@ -711,7 +730,7 @@ class Database
             #Timestamps are filled automatically
             $default = ' default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP';
         } else if ($type == 'varchar') {
-            $null = TRUE;
+            $null = true;
             #Default length for VarChar.
             if (empty($length))
                 $length = 127;
@@ -720,7 +739,7 @@ class Database
 
         $column = array(
             'type' => $type . $length . $typeExtra,
-            'null' => ($null) ? 'NULL' : 'NOT NULL',
+            'null' => ($null) ? 'null' : 'NOT null',
             'default' => $default,
             'extra' => $extra,
         );
@@ -757,7 +776,7 @@ class Database
         #Backup each table.
         $result = '';
         foreach ($tables as $table) {
-            $table = $this->escape($table, TRUE);
+            $table = $this->escape($table, true);
 
             #Add the 'drop if exists'
             $result.= 'DROP TABLE IF EXISTS ' . $table . ';';
