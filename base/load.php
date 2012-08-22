@@ -227,7 +227,11 @@ function redirect($url = '', $code = 302)
 
 class Load
 {
-
+    /**
+     * Part of the url that we use when using versioned JS/CSS
+     */
+    const URL_VERSION = 'version';
+    
     /**
      * List of included files
      * @var array
@@ -318,6 +322,12 @@ class Load
 
         if (DEBUG)
             show($request, 'Checking route');
+        
+        //Only 'automatic' url 
+        if ($request[0] == self::URL_VERSION) {
+            array_shift($request);
+            self::output_static($request);
+        }
 
         #Start lookup, this 
 
@@ -579,6 +589,42 @@ class Load
         header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
         header('Connection: close');
         exit;
+    }
+    
+    /**
+     * Output a static file, based on the rest of the request.
+     * 
+     * The idea for this is that you can add /version/(any number)/
+     * instead of /assets in front of CSS/JS files, and use a version number
+     * in your code.
+     * 
+     * @param type $request
+     * @return type
+     */
+    public static function output_static($request) {
+		if (is_numeric($request[0])) {
+			array_shift($request);
+		}
+		$url = implode('/', $request);
+
+		$original = PATH_ASSETS . $url;
+		if (!file_exists($original)) {
+			header('HTTP/1.0 404 Not Found', null, 404);
+			echo 'File not found!';
+			return;
+		}
+		
+		$extension = pathinfo($url, PATHINFO_EXTENSION);
+		
+		switch ($extension) {
+			case 'css': $mime = 'text/css'; break;
+			case 'js': $mime = 'text/javascript'; break;
+			default: $mime = 'text/plain';
+		}
+		
+        //Add minify/output_same here in the future.
+		self::output($mime, $original, filemtime($original), null, true);
+        
     }
 
     /**
