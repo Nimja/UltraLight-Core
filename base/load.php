@@ -103,7 +103,7 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = fa
         $line = strtr($line, array(
             '  ' => '&nbsp;&nbsp;',
             "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
-                ));
+            ));
 
         $display .= '<div style="' . $bg . ' margin: 0px; padding: 1px 5px;" >' . $line . '</div>';
     }
@@ -115,17 +115,17 @@ function show($var, $title = 'Export Variable', $color = 'neutral', $return = fa
     $GLOBALS['curinfo'] = $cur;
 
     $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
-            . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
-            #Start the location block.
-            . '<div style="float: right; color: #999; width: 250px;">'
-            #Detailed trace
-            . '<div style="position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;" id="trace-' . $cur . '" onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'none\'">' . $locations . '</div>'
-            #Single line trace
-            . '<div onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'block\'">' . $location . '</div></div>'
-            #Title
-            . $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
-            #Actual content.
-            . $display . '</div></div>';
+        . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
+        #Start the location block.
+        . '<div style="float: right; color: #999; width: 250px;">'
+        #Detailed trace
+        . '<div style="position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;" id="trace-' . $cur . '" onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'none\'">' . $locations . '</div>'
+        #Single line trace
+        . '<div onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'block\'">' . $location . '</div></div>'
+        #Title
+        . $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
+        #Actual content.
+        . $display . '</div></div>';
 
     #Switch between returning or echoing. (echo is default);
     if ($return) {
@@ -486,27 +486,35 @@ class Load
 
     /**
      * Load template file or reuse the one in memory.
+     * 
      * @param string $file
      * @return string content 
      */
     public static function view($file)
     {
-        $filesrc = PATH_VIEWS . self::sanitizeFileName($file) . '.html';
+        $filename = self::sanitizeFileName($file) . '.html';
+        $filesrc = PATH_VIEWS . $filename;
+
         $result = '';
 
         #Reuse the one in memory (if we have it)
-        if (!empty(self::$included[$filesrc]))
-            return self::$included[$filesrc];
+        $key = 'views/' . $filename;
+        if (!empty(self::$included[$key]))
+            return self::$included[$key];
 
-        if (!file_exists($filesrc))
-            show_exit($file, 'View not found');
+        if (!file_exists($filesrc)) {
+            $filesrc = PATH_CORE . 'views/' . $filename;
+            if (!file_exists($filesrc)) {
+                show_exit($file, 'View not found in ' . $filesrc);
+            }
+        }
 
         $result = file_get_contents($filesrc);
 
         if (empty($result))
             show_error($file, 'View file empty?');
 
-        self::$included[$filesrc] = $result;
+        self::$included[$key] = $result;
 
         return $result;
     }
