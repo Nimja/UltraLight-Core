@@ -18,14 +18,14 @@ abstract class Model
     /**
      * Static database object.
      * 
-     * @var DataBase 
+     * @var Library_DataBase 
      */
     private static $db;
 
     /**
      * Static database object.
      * 
-     * @var DataBase 
+     * @var Library_DataBase 
      */
     private static $prefix = null;
 
@@ -53,7 +53,7 @@ abstract class Model
     /**
      * Database object for this model.
      * 
-     * @var DataBase 
+     * @var Library_DataBase 
      */
     protected $_db = null;
 
@@ -200,7 +200,7 @@ abstract class Model
     /**
      * Get the database object, or connect if none exists.
      * 
-     * @return DataBase
+     * @return Library_DataBase
      */
     protected function getDb()
     {
