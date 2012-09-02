@@ -705,7 +705,6 @@ class Library_Database
         if (substr($type, -3) == 'int') {
             $default = intval($default);
             if (empty($length)) {
-
                 switch ($type) {
                     case 'tinyint': $length = 4;
                         break;
@@ -734,11 +733,12 @@ class Library_Database
         } else if ($type == 'timestamp') {
             #Timestamps are filled automatically
             $default = ' default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP';
-        } else if ($type == 'varchar') {
+        } else if ($type == 'varchar' || $type == 'char') {
             $null = true;
-            #Default length for VarChar.
-            if (empty($length))
+            #Default length for VarChar/Char.
+            if (empty($length)) {
                 $length = 127;
+            }
         }
         $length = !empty($length) ? '(' . $length . ')' : '';
 
