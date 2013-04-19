@@ -2,19 +2,19 @@
 
 /**
  * Basic String to HTML formatting class.
- * 
+ *
  */
 class Library_Format
 {
 
 	/**
 	 * This strips HTML and parses basic characters
-	 * 
+	 *
 	 * * - bullet list<br /># - numbered list<br />= - title<br />
 	 * ! - Forced line (to avoid bold as the first word)<br />
-	 * In-sentence options: *bold*, _italic_, -striked-<br />
+	 * In-sentence options: =bold=, _italic_, -striked-<br />
 	 * Links: "Text for the link"=>/stories/frozen-youth (url you desire, without spaces)
-	 * 
+	 *
 	 * @param string $str In the format described above.
 	 * @return string HTML in a nice format.
 	 */
@@ -28,6 +28,9 @@ class Library_Format
 
 		#Encode HTML entities, like <, &, >, etc.
 		$str = htmlentities($str);
+
+        // Remove multiple spaces.
+        $str = preg_replace('/ {2,}/', ' ', $str);
 
 		#Split into lines.
 		$lines = explode("\n", $str);
@@ -92,10 +95,12 @@ class Library_Format
 
 		#Do bold/italic
 		if (!empty($result)) {
-			$result = preg_replace('/\*(.+)\*/U', '<b>$1</b>', $result);
-			$result = preg_replace('/\_(.+)\_/U', '<i>$1</i>', $result);
-			$result = preg_replace('/\-\-(.+)\-\-/U', '<s>$1</s>', $result);
-
+            $translate = array(
+                '/\^(.+)\^/U' => '<b>$1</b>',
+                '/\_(.+)\_/U' => '<i>$1</i>',
+                '/\-\-(.+)\-\-/U' => '<s>$1</s>',
+            );
+			$result = preg_replace(array_keys($translate), $translate, $result);
 			#Add links.
 			if ($makeLinks) {
 				$result = preg_replace_callback('/&quot;(.+)&quot;=&gt;([^\s]+)/', 'Library_Format::makeLink', $result);
@@ -112,7 +117,7 @@ class Library_Format
 	 * Return a nicely formatted snippet of the string, using the parser after cutting off.
 	 * @param string $string
 	 * @param int $maxLength
-	 * @return string 
+	 * @return string
 	 */
 	public static function snippet($string, $maxLength)
 	{
@@ -124,7 +129,7 @@ class Library_Format
 		}
 		return self::parse($string, FALSE);
 	}
-	
+
 	/**
 	 * Make link.
 	 */

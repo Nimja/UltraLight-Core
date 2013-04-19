@@ -123,7 +123,7 @@ class Library_Common
 
     /**
      * Show time in seconds in a human readable format (1h 2m 3s)
-     * @param int $time 
+     * @param int $time
      * @return string DAYS H:I:S
      */
     public static function timeToHuman($time, $returnArray = false)
@@ -151,9 +151,9 @@ class Library_Common
 
     /**
      * Translate bytes to a human readable format.
-     * 
+     *
      * @param type $size
-     * @return type 
+     * @return type
      */
     public static function bytesToHuman($size)
     {
@@ -173,7 +173,7 @@ class Library_Common
     /**
      * Write log.
      * @param type $text
-     * @param type $log 
+     * @param type $log
      */
     public static function log($text, $log = 'log')
     {
@@ -197,22 +197,9 @@ class Library_Common
         chmod($logfile, 0666);
     }
 
-    #Easy get session var function.
-
-    public static function session($name, $default = '')
-    {
-        $result = !empty($_SESSION[$name]) ? $_SESSION[$name] : $default;
-        return $result;
-    }
-
-    public static function session_set($name, $value)
-    {
-        $_SESSION[$name] = $value;
-    }
-
     /**
      * Return sanitized request variables.
-     * 
+     *
      * @return array Post/Get values, POST has preference, but empty post vars can be overwritten.
      */
     public static function request()
@@ -220,41 +207,21 @@ class Library_Common
         $result = array();
 
         foreach ($_POST as $name => $value) {
-            $value = sanitize($value);
-
             #Add the value.
-            if (!blank($value))
-                $result[$name] = $value;
+            if (!blank($value)) {
+                $result[$name] = sanitize($value);
+            }
         }
         foreach ($_GET as $name => $value) {
             #Skip values we have.
             if (isset($result[$name]))
                 continue;
-
-            $value = sanitize($value);
-
             #Add the value.
-            if (!blank($value))
-                $result[$name] = $value;
+            if (!blank($value)) {
+                $result[$name] = sanitize($value);
+            }
         }
         return $result;
-    }
-
-    public static function value($name, $default = '')
-    {
-        return isset($_POST[$name]) ? self::value_post($name, $default) : self::value_get($name, $default);
-    }
-
-    public static function value_post($name, $default = '')
-    {
-        $result = !blank($_POST[$name]) ? $_POST[$name] : $default;
-        return sanitize($result);
-    }
-
-    public static function value_get($name, $default = '')
-    {
-        $result = !blank($_GET[$name]) ? $_GET[$name] : $default;
-        return sanitize($result);
     }
 
     #Return true if value is valid e-mail address.

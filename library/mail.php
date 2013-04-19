@@ -6,12 +6,12 @@ class Library_Mail
 
     /**
      * Easy way to send a mail with an array of options.
-     * 
+     *
      * @param array $options
      * <b>Required values</b><br />
      * * to - email address to send to<br />
      * * message - message to send.
-     * 
+     *
      * <b>Optional values</b><br />
      * * subject - Defaults to 'Automated message.'<br />
      * * from - Defaults to 'no-reply@host'<br />
@@ -31,8 +31,8 @@ class Library_Mail
         //Build "from"
         $from = !empty($options['from']) ? $options['from'] : null;
         if (empty($from)) {
-            $base_url = $GLOBALS['config']['base_url'];
-            $host = parse_url($base_url, PHP_URL_HOST);
+            $site_url = Config::system()->get('site', 'url');
+            $host = parse_url($site_url, PHP_URL_HOST);
             $from = 'no-reply@' . $host;
         }
 

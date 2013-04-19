@@ -5,65 +5,18 @@
  */
 class Show
 {
-
+    public static $curError = 0;
     /**
-     * Return a nice array of lines for the backtrace, much simpler than the real backtrace.
-     * 
-     * The function doesn't return full paths on purpose,
-     * cleaning away pathnames to a nicer visual representation
-     * and cleans away classes that are pointless to show (like this one)
-     * 
-     * @return array 
-     */
-    private static function getDebug()
-    {
-        $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
-        $traces = debug_backtrace($option);
-        $lines = array();
-        foreach ($traces as $trace) {
-            //Skip closure functions (they give us no info anyway.
-            if (!empty($trace['function']) && $trace['function'] == '{closure}') {
-                continue;
-            }
-            $info = pathinfo($trace['file']);
-            $dir = $info['dirname'];
-            $core = strpos($dir . '/', PATH_CORE);
-            $app = strpos($dir . '/', PATH_APP);
-
-            //Skip the auto-class loading and the show class itself.
-            if ($core !== false
-                    && (
-                    $info['basename'] == 'show.php'
-                    || ($info['basename'] == 'core.php' && $trace['line'] < 20)
-                    )) {
-                continue;
-            }
-
-            //Add nice dir identifiers.
-            if ($core !== false) {
-                $dir = '[Core] ' . substr($dir, strlen(PATH_CORE)) . '/';
-            } else if ($app !== false) {
-                $dir = '[App] ' . substr($dir, strlen(PATH_APP)) . '/';
-            } else {
-                $dir = '';
-            }
-
-            $lines[] = $dir . $info['basename'] . ' - line: ' . $trace['line'];
-        }
-
-        return $lines;
-    }
-
-    /**
-     * Show a variable in a neat HTML friendly way. - VERY handy. 
-     * 
+     * Show a variable in a neat HTML friendly way. - VERY handy.
+     *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      * @param string $color One of fatal, error, neutral, good or success. CSS colors are also accepted.
      * @param boolean $return Return the export as a string instead of echoing.
      * @return string Optional return value, if $return is true.
      */
-    public static function info($var, $title = 'Export Variable', $color = 'neutral', $return = false)
+    public static function info($var, $title = 'Export Variable',
+        $color = 'neutral', $return = false)
     {
         //Choose a color.
         $colors = array(
@@ -75,16 +28,114 @@ class Show
         );
         $color = !empty($colors[$color]) ? $colors[$color] : $color;
 
-        $locations = self::getDebug();
+        self::$curError++;
+        if ($var instanceof Exception) {
+            $title = 'Exception!';
+            $info = self::_showVariable($var->getMessage());
+            $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
+        } else {
+            $info = self::_showVariable($var);
+            $trace = self::_getTraceInfo(self::_getDebug());
+        }
 
+        //Create result.
+
+        $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
+            . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
+            //Trace block
+            .$trace
+            //Title
+            . $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
+            //Actual content.
+            . $info . '</div></div>';
+
+        //Switch between returning or echoing. (echo is default);
+        if ($return) {
+            return $result;
+        } else {
+            echo $result;
+        }
+    }
+
+    /**
+     * Return a nice array of lines for the backtrace, much simpler than the real backtrace.
+     *
+     * The function doesn't return full paths on purpose,
+     * cleaning away pathnames to a nicer visual representation
+     * and cleans away classes that are pointless to show (like this one)
+     *
+     * @return array
+     */
+    private static function _getDebug($traces = null)
+    {
+        $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
+        $traces = $traces ?: debug_backtrace($option);
+        $lines = array();
+        foreach ($traces as $trace) {
+            $function = getKey($trace, 'function');
+            $line = getKey($trace, 'line');
+            $file = getKey($trace, 'file');
+            //Skip closure functions (they give us no info anyway.
+            if ($function == '{closure}') {
+                continue;
+            }
+            $info = pathinfo($file);
+            $info_dirname = getKey($info, 'dirname');
+            $info_basename = getKey($info, 'basename');
+            $core = strpos($info_dirname . '/', PATH_CORE);
+            $app = strpos($info_dirname . '/', PATH_APP);
+            //Skip the auto-class loading and the show class itself.
+            if ($core !== false
+                && (
+                $info_basename == 'show.php'
+                || ($info_basename == 'core.php' && $line < 26)
+                )) {
+                continue;
+            }
+            //Add nice dir identifiers.
+            if ($core !== false) {
+                $dir = '[Core] ' . substr($info_dirname, strlen(PATH_CORE)) . '/';
+            } else if ($app !== false) {
+                $dir = '[App] ' . substr($info_dirname, strlen(PATH_APP)) . '/';
+            } else {
+                $dir = '';
+            }
+
+            $lines[] = $dir . $info['basename'] . ' - line: ' . $line;
+        }
+        return $lines;
+    }
+    /**
+     * Generate nifty trace HTML.
+     * @return type
+     */
+    private static function _getTraceInfo($locations)
+    {
+        $curError = self::$curError;
         $location = $locations[0];
         $locations = implode("<br />", $locations);
+        $style = 'position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;';
+        return "<div style=\"float: right; color: #999; width: 250px;\">
+                    <div style=\"$style\" id=\"trace-$curError\" onclick=\"document.getElementById('trace-$curError').style.display='none'\">$locations</div>
+                    <div onclick=\"document.getElementById('trace-$curError').style.display='block'\">$location</div>
+                </div>";
+    }
+    /**
+     * Print_R a variable nicely, excluding private/protected stuff.
+     *
+     * @param mixed $var
+     * @return string
+     */
+    private static function _showVariable($var) {
+        if (is_null($var)) {
+            $var = '[NULL]';
+        } else if (is_bool($var)) {
+            $var = $var ? '[TRUE]' : '[FALSE]';
+        }
 
-        //Make the content HTML compatible. 
-        $display = htmlentities(trim(print_r($var, true)));
-        //Format content per line.
-        $lines = explode("\n", $display);
-        $display = '';
+        //Make the content HTML compatible and split per lines.
+        $lines = explode("\n", htmlentities(trim(print_r($var, true))));
+        $display = array();
         $count = 0;
         $matches = array();
 
@@ -117,41 +168,16 @@ class Show
             $line = strtr($line, array(
                 '  ' => '&nbsp;&nbsp;',
                 "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
-                    ));
+                ));
 
-            $display .= '<div style="' . $bg . ' margin: 0px; padding: 1px 5px;" >' . $line . '</div>';
+            $display[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
         }
-
-        //Create result.
-
-        $cur = !empty($GLOBALS['curinfo']) ? $GLOBALS['curinfo'] : 0;
-        $cur++;
-        $GLOBALS['curinfo'] = $cur;
-
-        $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
-                . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
-                //Start the location block.
-                . '<div style="float: right; color: #999; width: 250px;">'
-                //Detailed trace
-                . '<div style="position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;" id="trace-' . $cur . '" onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'none\'">' . $locations . '</div>'
-                //Single line trace
-                . '<div onclick="document.getElementById(\'trace-' . $cur . '\').style.display=\'block\'">' . $location . '</div></div>'
-                //Title
-                . $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
-                //Actual content.
-                . $display . '</div></div>';
-
-        //Switch between returning or echoing. (echo is default);
-        if ($return) {
-            return $result;
-        } else {
-            echo $result;
-        }
+        return implode("\n", $display);
     }
 
     /**
      * Show a variable/error and stop PHP.
-     * 
+     *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */
@@ -163,7 +189,7 @@ class Show
 
     /**
      * Display a basic error.
-     * 
+     *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */

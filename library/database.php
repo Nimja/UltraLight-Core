@@ -1,107 +1,103 @@
 <?php
-
 /**
  * Nice MySQL database interface class.
  */
 class Library_Database
 {
-
     /**
      * Last mysql query resource
-     * 
+     *
      * @var resource
      */
-    public $last = '';
-
+    public $last;
     /**
      * Last mysql query
-     * 
+     *
      * @var string
      */
     public $lastQuery = '';
-
     /**
      * Last MySQL query.
-     * 
+     *
      * @var string
      */
     protected $type = array();
-
     /**
      * Database Resource
-     * 
+     *
      * @var resource
      */
     protected $db;
-
     /**
      * Array of connections
-     * 
+     *
      * @var array
      */
-    private static $connections = array();
+    private static $_connections = array();
+    /**
+     * Array of instances
+     *
+     * @var array
+     */
+    private static $_instances = array();
 
+    /**
+     * Get an instanced Database object.
+     * @param string $database
+     * @return /self
+     */
+    public static function getDatabase($database = null)
+    {
+        $database = $database ? : Config::system()->get('database', 'default');
+        if (empty(self::$_instances[$database])) {
+            self::$_instances[$database] = new self($database);
+        }
+        return self::$_instances[$database];
+    }
+
+    /**
+     * Connect to the mysql database and store the connection.
+     * @param string $database
+     * @return resource
+     */
+    private static function _connect($database)
+    {
+        if (empty(self::$_connections[$database])) {
+            $connections = Config::system()->get('database', 'connection');
+            if (empty($connections)) {
+                Show::fatal('No connections configured.');
+            }
+            if (empty($connections[$database])) {
+                Show::fatal("Connection for $database not configurd.");
+            }
+            $options = $connections[$database];
+            if (!is_array($options) || empty($options['server']) || empty($options['database']) || empty($options['username']) || empty($options['password'])
+            ) {
+                Show::fatal("Connection for $database not configurd correctly: expecnting server, database, username and password.");
+            }
+            #Connect to database.
+            $db = mysql_connect($options['server'], $options['username'], $options['password']) or Show::fatal($options,
+                    'Unable to connect to Database');
+            #Select database
+            mysql_select_db($options['database'], $db) or Show::fatal($options, 'Unable to Select Database');
+            self::$_connections[$database] = $db;
+        }
+        return self::$_connections[$database];
+    }
+
+    /**
+     * Make database object for (default) database.
+     * @param string|null $database
+     */
     public function __construct($database = null)
     {
-        if (empty($database)) {
-            $database = 0;
-        }
-        $connections = &self::$connections;
-        #Prevent multiple connections to the same database within the same request, just in case.
-        #this allows for multiple instances without multiple connections
-        if (!empty($connections[$database])) {
-            $this->db = & $connections[$database];
-            return;
-        }
-
-        $initial = $database;
-
-        #Make sure these are defined.
-        $config = &$GLOBALS['config'];
-        $default = !empty($config['database']) ? $config['database'] : null;
-        $databases = !empty($config['databases']) ? $config['databases'] : null;
-        if (empty($databases)) {
-            Show::fatal('No databases configured!');
-        }
-
-        if (empty($database)) {
-            $database = $default;
-        }
-
-        #Check if the database exists
-        if (
-                empty($database)
-                || empty($databases)
-                || empty($databases[$database])
-        ) {
-            Show::fatal($database, 'Wrong database requested');
-        }
-
-
-        #Check if the database is (fairly) proper.
-        $settings = $databases[$database];
-        if (
-                empty($settings['server'])
-                || empty($settings['database'])
-                || empty($settings['username'])
-                || empty($settings['password'])
-        ) {
-            Show::fatal($database, 'Database not configured properly');
-        }
-        #Connect to database.
-        $this->db = mysql_connect($settings['server'], $settings['username'], $settings['password']) or Show::fatal($settings['server'], 'Unable to connect to Database');
-        #Select database
-        mysql_select_db($settings['database'], $this->db) or Show::fatal($settings['database'], 'Unable to Select Database');
-
-        $connections[$database] = & $this->db;
-        if ($initial != $database) {
-            $connections[$initial] = & $this->db;
-        }
+        $database = $database ? : Config::system()->get('database', 'default');
+        $this->db = self::_connect($database);
     }
 
     /**
      * Disconnect the database connection (hardly used..)
-     * 
+     *
      */
     public function disconnect()
     {
@@ -110,7 +106,7 @@ class Library_Database
 
     /**
      * Run Query, returning the query resource.
-     * 
+     *
      * @param string $sql The MySQL query.
      * @return resource The MySQL result resource.
      */
@@ -131,7 +127,7 @@ class Library_Database
 
     /**
      * Return count of the affected rows (or of select)
-     * 
+     *
      * @param resource $res A MySQL result resource.
      * @return int The number of results.
      */
@@ -157,20 +153,21 @@ class Library_Database
 
     /**
      * Get the next row of this result.
-     * 
+     *
      * @param resource $res A MySQL result resource.
      * @return array Associative Array for this result.
      */
-    public function getRow($res = null)
+    public function fetchRow($res = null)
     {
-        if (empty($res))
+        if (empty($res)) {
             $res = $this->last;
+        }
         return mysql_fetch_assoc($res);
     }
 
     /**
      * Return count of the affected rows (or of select)
-     * 
+     *
      * @param resource $res A MySQL result resource.
      * @param boolean $csv Export to CSV instead of HTML table.
      * @return int The number of results.
@@ -187,7 +184,7 @@ class Library_Database
             $result = ($csv) ? '' : '<table>' . $ln;
 
             #Get first row.
-            $row = $this->getRow($res);
+            $row = $this->fetchRow($res);
             if ($row) {
                 $keys = array_keys($row);
                 #Header
@@ -196,7 +193,7 @@ class Library_Database
             #Rows
             while ($row !== false) {
                 $result .= ( $csv) ? implode(';', $row) . $ln : '<tr><td>' . implode('</td><td>', $row) . '</td></tr>' . $ln;
-                $row = $this->getRow($res);
+                $row = $this->fetchRow($res);
             }
             $result .= ( $csv) ? '' : '</table>' . $ln;
         }
@@ -205,29 +202,44 @@ class Library_Database
 
     /**
      * Get an array with all the results.
-     * 
+     *
      * @param resource $res A MySQL result resource.
-     * @param string $field Only get results for this field.
      * @return array Associative Array for this result.
      */
-    public function getResults($res = null, $field = null)
+    public function fetchRows($res = null)
     {
-        if (empty($res))
+        if (empty($res)) {
             $res = $this->last;
+        }
         $result = array();
-        $do = !empty($field);
-        while ($row = $this->getRow($res)) {
-            if ($do)
-                $result[$row[$field]] = $row[$field];
-            else
-                $result[] = $row;
+        while ($row = $this->fetchRow($res)) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
+    /**
+     * Get an array with all the results.
+     *
+     * @param string $field Only get results for this field.
+     * @param resource $res A MySQL result resource.
+     * @return array Associative Array for this result.
+     */
+    public function fetchValues($field, $res = null)
+    {
+        if (empty($res)) {
+            $res = $this->last;
+        }
+        $result = array();
+        while ($row = $this->fetchRow($res)) {
+            $result[$row[$field]] = $row[$field];
         }
         return $result;
     }
 
     /**
      * Get the results in list format, $id => $fieldValue
-     * 
+     *
      * @param string $id The ID field
      * @param string $field The Field used for display.
      * @param string $query The MySQL query to get this list.
@@ -237,7 +249,7 @@ class Library_Database
     {
         $res = $this->query($query);
         $result = array();
-        while ($row = $this->getRow($res)) {
+        while ($row = $this->fetchRow($res)) {
             $result[$row[$id]] = $row[$field];
         }
         $this->free($res);
@@ -246,7 +258,7 @@ class Library_Database
 
     /**
      * Free this resultset.
-     * 
+     *
      * @param resource $res A MySQL result resource.
      * @return boolean Success
      */
@@ -260,17 +272,30 @@ class Library_Database
     }
 
     /**
+     * Get an object from the database by Id.
+     * @param string $table
+     * @param mixed $id
+     * @param string $idField
+     */
+    public function getById($table, $id, $idField = 'id')
+    {
+        $table = $this->escape($table, true);
+        $idField = $this->escape($idField, true);
+        $id = $this->escape($id);
+        return $this->fetchFirstRow("SELECT * FROM $table WHERE $idField = $id;");
+    }
+
+    /**
      * Run a query and get the first result, if any. Good for checks or single objects.
-     * 
+     *
      * @param string $sql The MySQL query.
      * @return array|null Associative Array for this result.
      */
-    public function fetchRow($sql)
+    public function fetchFirstRow($sql = null)
     {
         $result = $this->query($sql);
-
         if ($this->count($result) > 0) {
-            $value = $this->getRow($result);
+            $value = $this->fetchRow($result);
         } else {
             $value = null;
         }
@@ -281,28 +306,23 @@ class Library_Database
         return $value;
     }
 
-    public function run($sql)
-    {
-        return $this->fetchRow($sql);
-    }
-
     /**
      * Fetch the first value of a query of the first row.
-     * 
+     *
      * If none are found, null is returned.
-     * 
+     *
      * @param string $sql
      * @return type
      */
-    public function fetchValue($sql)
+    public function fetchFirstValue($sql)
     {
-        $result = $this->fetchRow($sql);
+        $result = $this->fetchFirstRow($sql);
         return !empty($result) ? array_shift($result) : null;
     }
 
     /**
      * Escape value neatly for database.
-     * 
+     *
      * @param mixed $value
      * @param boolean $backticks If we want to escape DB/column names.
      * @param boolean $forceQuotes If we want to enforce quotes (for numeric values)
@@ -310,11 +330,17 @@ class Library_Database
      */
     public function escape($value, $backticks = false, $forceQuotes = false)
     {
-        if (!is_array($value)) { //Any other value.			
+
+        if (!is_array($value)) { //Any other value.
             $quote = ($backticks) ? '`' : "'";
-            $result = mysql_real_escape_string(trim($value), $this->db);
-            if (!is_numeric($result) || $forceQuotes) {
-                $result = $quote . $result . $quote;
+            if ($backticks && strpos($value, '.') !== false) {
+                $parts = explode('.', $value);
+                $result = implode('.', $this->escape($parts, true, $forceQuotes));
+            } else {
+                $result = mysql_real_escape_string(trim($value), $this->db);
+                if (!is_numeric($result) || $forceQuotes) {
+                    $result = $quote . $result . $quote;
+                }
             }
         } else { //If it's an array.
             $result = array();
@@ -327,7 +353,7 @@ class Library_Database
 
     /**
      * Insert into table with associative array
-     * 
+     *
      * @param string $table
      * @param array $values
      * @return int The newly inserted ID.
@@ -346,7 +372,7 @@ class Library_Database
 
     /**
      * Update a table with $values and $where
-     * 
+     *
      * @param string $table
      * @param array @values
      * @param string $where
@@ -368,7 +394,7 @@ class Library_Database
 
     /**
      * Delete from table, where...
-     * 
+     *
      * @param string $table
      * @param string $where
      * @return int Number of deleted rows.
@@ -390,7 +416,7 @@ class Library_Database
 
     /**
      * Insert or Update, based on key
-     * 
+     *
      * @param string $table
      * @param array $values
      * @param array $update Optional alternate values for update.
@@ -463,7 +489,7 @@ class Library_Database
 
     /**
      * Add more to the where clause.
-     * 
+     *
      * @param array $where
      * @param string $field
      * @param string|array $value
@@ -488,7 +514,6 @@ class Library_Database
             $where[] = (count($parts) == 1) ? $parts[0] : '(' . implode(' OR ', $parts) . ')';
         }
     }
-
     #Help with where clauses.
 
     function whereLike(&$where, $field, $value)
@@ -521,7 +546,7 @@ class Library_Database
 
     /**
      * how what we are connected to with the __toString
-     * 
+     *
      * @return string Information about this connection.
      */
     public function __toString()
@@ -531,19 +556,19 @@ class Library_Database
 
     /**
      * Check if a table exists.
-     * 
+     *
      * @param string $table
      * @return boolean table Exists or not.
      */
     public function table_exists($table)
     {
-        $check = $this->run('SHOW TABLES LIKE ' . $this->escape($table));
+        $check = $this->fetchFirstRow('SHOW TABLES LIKE ' . $this->escape($table));
         return !empty($check);
     }
 
     /**
      * Show columns for table.
-     * 
+     *
      * @param string $table
      * @return array With column info.
      */
@@ -551,7 +576,7 @@ class Library_Database
     {
         $res = $this->query('SHOW COLUMNS FROM ' . $this->escape($table, true));
         $result = array();
-        while ($row = $this->getRow($res)) {
+        while ($row = $this->fetchRow($res)) {
             $result[] = $row;
         }
         return $result;
@@ -559,29 +584,25 @@ class Library_Database
 
     /**
      * Check if a table exists.
-     * 
+     *
      * This is a very simple method for most table types.
-     * 
+     *
      * Standard 'id' autoincrement field always present as first field.
-     * 
+     *
      * @param string $table
-     * @param array $fields An array with type (int/bool/varchar, etc.) | length | default 
+     * @param array $fields An array with type (int/bool/varchar, etc.) | length | default
      */
-    public function create_table($table, $fields, $force = false)
+    public function tableCreate($table, $fields, $force = false)
     {
-
-        if (!$force && $this->table_exists($table))
+        if (!$force && $this->table_exists($table)) {
             return false;
-
+        }
         $table = $this->escape($table, true);
-
-        #Drop table of the same name, else we cannot create it.
+        //Drop table of the same name, else we cannot create it.
         $this->query('DROP TABLE IF EXISTS ' . $table . ';');
-
-        #Basic create table functionality
+        //Basic create table functionality
         $sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) UNSIGNED NOT null auto_increment,' . "\n";
-
-        #Go over fields.
+        //Go over fields.
         foreach ($fields as $field => $type) {
             $column = $this->makeColumn($type);
 
@@ -595,12 +616,12 @@ class Library_Database
 
     /**
      * Update (or install) the table.
-     * 
+     *
      * @param string $table
      * @param array $fields
-     * @return boolean Success 
+     * @return boolean Success
      */
-    public function update_table($table, $fields)
+    public function tableUpdate($table, $fields)
     {
         if (!$this->table_exists($table)) {
             return $this->create_table($table, $fields, true);
@@ -611,7 +632,7 @@ class Library_Database
         #Get the current situation.
         $res = $this->query('SHOW COLUMNS FROM ' . $table);
         $indb = array();
-        while ($row = $this->getRow($res)) {
+        while ($row = $this->fetchRow($res)) {
             $field = $row['Field'];
             unset($row['Field']);
             unset($row['Key']);
@@ -674,23 +695,24 @@ class Library_Database
     }
 
     /**
-     * 
+     *
      * @param string $type A string consisting of 1 to 3 parts, divided by |
-     * 
+     *
      * name (int, text, bool, varchar, etc.) <br />
      * length (0 = no length given) <br />
      * default value.
-     * 
-     * @return string The colum, as formatted by Type. 
+     *
+     * @return string The colum, as formatted by Type.
      */
     protected function makeColumn($field, $toString = true)
     {
         if (is_array($field)) {
-            $type = isset($field['type']) ? $field['type'] : 'int';
-            $length = isset($field['length']) ? intval($field['length']) : 0;
-            $default = isset($field['default']) ? intval($field['default']) : '';
+            $type = getKey($field, 'type', 'int');
+            $length = getKey($field, 'length', 0);
+            $default = getKey($field, 'default', '');
             $unsigned = !empty($field['unsigned']);
             $null = !empty($field['null']);
+            $extra = getKey($field, 'extra', '');
         } else {
             $parts = explode('|', $field);
             $type = array_shift($parts);
@@ -761,7 +783,7 @@ class Library_Database
 
     /**
      * Create backup SQL for tables.
-     * 
+     *
      * @param string $tables Which table(s) to backup.
      * @return string MySQL 'queries' with backup data.
      */
@@ -771,7 +793,7 @@ class Library_Database
         if ($tables == '*') {
             $tables = array();
             $res = $this->query('SHOW TABLES');
-            while ($row = $this->getRow($res)) {
+            while ($row = $this->fetchRow($res)) {
                 $tables[] = array_shift($row);
             }
         } else {
@@ -787,13 +809,13 @@ class Library_Database
             $result.= 'DROP TABLE IF EXISTS ' . $table . ';';
 
             #Add the table creation string (thank god MySQL has this)
-            $row = $this->run('SHOW CREATE TABLE ' . $table);
+            $row = $this->fetchFirstRow('SHOW CREATE TABLE ' . $table);
             array_shift($row);
             $result.= "\n\n" . array_shift($row) . ";\n\n";
 
             $res = $this->query('SELECT * FROM ' . $table);
 
-            #Every 
+            #Every
             $count = 0;
             if ($this->count($res) > 0) {
                 while ($row = mysql_fetch_assoc($res)) {
@@ -823,14 +845,14 @@ class Library_Database
 
     /**
      * Execute multiple queries, with comments, etc.
-     * 
-     * Max 1 query per line, but queries can span multiple lines. 
+     *
+     * Max 1 query per line, but queries can span multiple lines.
      * End queries with ;
-     * 
+     *
      * @param string $table
      * @return array With column info.
      */
-    function execute($sql)
+    public function execute($sql)
     {
         #Split SQL according to ;'s outside of strings.
         $lines = explode("\n", $sql);
@@ -849,4 +871,89 @@ class Library_Database
         }
     }
 
+    /**
+     * Common, easy way to get multiple rows from a single table.
+     * @param string $table
+     * @param string|array $search
+     */
+    public function searchTable($table, $search = null, $order = null, $limit = null)
+    {
+        $table = $this->escape($table, true);
+        $where = empty($search) ? '' : $this->searchToWhere($search);
+        $order = empty($order) ? 'ORDER BY id ASC' : "ORDER BY $order";
+        $limit = empty($limit) ? '' : "LIMIT $limit";
+        $this->query("SELECT * FROM $table $where $order $limit");
+        return $this;
+    }
+
+    /**
+     * Do a search that can be used through JS, using |: for LIKE and |= for =
+     * |= -> =<br />
+     * |: -> LIKE<br />
+     * |> -> > <br />
+     * |< -> < <br />
+     * |! -> <> <br />
+     *
+     * Combine searches with ;
+     *
+     * @param string $search
+     * @return string
+     */
+    public function searchToWhere($search)
+    {
+        $where = array();
+        $searches = is_array($search) ? $search : $this->parseSearch($search);
+        foreach ($searches as $field => $details) {
+            $value = getKey($details, 'value');
+            $operation = getKey($details, 'operation', '|=');
+            $condition = $this->escape($field, true);
+            if ($value == 'null') {
+                $condition .= ($operation != '|!') ? ' IS NULL' : ' IS NOT NULL';
+            } else {
+                $operand = '=';
+                switch ($operation) {
+                    case '|!': $operand = '!=';
+                        break;
+                    case '|<': $operand = '<';
+                        break;
+                    case '|>': $operand = '>';
+                        break;
+                    case '|:':
+                        $operand = 'LIKE';
+                        $value = "%$value%";
+                        break;
+                }
+                $condition .= " $operand {$this->escape($value)}";
+            }
+            $where[] = $condition;
+        }
+        return empty($where) ? '' : 'WHERE ' . implode(' AND ', $where);
+    }
+
+    /**
+     * Parse search string into nice array.
+     *
+     * @param type $search
+     * @return array
+     */
+    protected function parseSearch($search)
+    {
+        $result = array();
+        if (!empty($search)) {
+            $search = html_entity_decode($search);
+            $searches = explode(';', $search);
+            foreach ($searches as $search) {
+                $matches = null;
+                $found = preg_match('/(.+)(\|[\:\=\<\>\!])(.+)/', $search, $matches);
+                if (!$found || count($matches) != 4) {
+                    continue;
+                }
+                $result[trim($matches[1])] = array(
+                    'value' => trim($matches[3]),
+                    'operation' => $matches[2],
+                );
+            }
+        }
+        return $result;
+    }
 }
