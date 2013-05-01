@@ -30,11 +30,6 @@ class Model_User extends Model_Formed
         'role' => array(
             'type' => 'tinyint',
         ),
-        'cookie' => array(
-            'type' => 'varchar',
-            'length' => '64',
-            'ignore' => true,
-        ),
     );
     protected $roles = array(
         self::ROLE_NEUTRAL => 'Normal User',
@@ -55,39 +50,40 @@ class Model_User extends Model_Formed
         }
     }
 
+    /**
+     * Set the cookie for this user for remembering.
+     * @return \self
+     */
     public function setCookie()
     {
         $cookie = $this->makeCookie();
-        if (empty($cookie)) {
-            return false;
+        if (!empty($cookie)) {
+            Core::setCookie(self::COOKIE_NAME, $cookie, '+2 months');
         }
-        $this->cookie = $cookie;
-        $table = self::getSetting();
-        Library_Database::getDatabase()->update($table, array('cookie' => $cookie), 'id = ' . $this->id);
-        //Cookie is valid for 2 months.
-        Core::setCookie(self::COOKIE_NAME, $cookie, '+2 months');
+        return $this;
     }
 
     /**
-     * Make the cookie string.
+     * Make the cookie string (for remembering).
      * @return string
      */
     protected function makeCookie()
     {
-        if (empty($this->id)) {
-            return FALSE;
+        $result = '';
+        if (!empty($this->id)) {
+            $result = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
         }
-        return $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
+        return $result;
     }
 
     /**
      * Check the current cookie and return a user object if it's vaild.
-     * @return boolean|\self
+     * @return null|\self
      */
-    public function checkCookie()
+    public static function checkCookieForRemember()
     {
         $cookie = getKey($_COOKIE, self::COOKIE_NAME);
-        $result = false;
+        $result = null;
         if (!empty($cookie)) {
             $parts = explode('-', $cookie);
             if (count($parts) == 2) {
@@ -96,6 +92,7 @@ class Model_User extends Model_Formed
                 $result = ($cookie != $check->makeCookie()) ? null : $check;
             }
         }
+        return $result;
     }
 
     /**
@@ -107,7 +104,6 @@ class Model_User extends Model_Formed
      */
     public static function getUserIdForLogin($name, $pass)
     {
-        $class = get_called_class();
         $db = Library_Database::getDatabase();
         $name = $db->escape($name);
         $pass = $db->escape($pass);

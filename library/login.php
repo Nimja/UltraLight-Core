@@ -31,9 +31,8 @@ class Library_Login
      */
     public static function init()
     {
-        $id = !empty($_SESSION['user_id']) ? $_SESSION['user_id'] : false;
-        $ip = !empty($_SESSION['user_ip']) ? $_SESSION['user_ip'] : false;
-
+        $id = getKey($_SESSION, self::USER_ID);
+        $ip = getKey($_SESSION, self::USER_IP);
         if (!empty($ip) && $ip != REMOTE_IP) {
             self::logout();
             $id = 0;
@@ -44,16 +43,18 @@ class Library_Login
         $user = $class::load($id);
         /* @var $user User */
         if (empty($user)) {
-            $user = new $class();
-            $user = $user->checkCookie();
-        } else if (!empty($_SESSION['remember'])) {
-            $user->setCookie();
+            $check = $class::checkCookieForRemember();
+            if (!empty($check)) {
+                self::doLogin($check);
+            }
         }
         self::doLogin($user);
     }
 
     /**
      * Very simple logout function.
+     *
+     * This function clears cookie, unset the session data and more.
      */
     public static function logout()
     {
@@ -74,9 +75,9 @@ class Library_Login
             self::logout();
             return;
         }
-        $_SESSION['user_id'] = $user->id;
-        $_SESSION['user_ip'] = REMOTE_IP;
-        $_SESSION['remember'] = $remember;
+        $_SESSION[self::USER_ID] = $user->id;
+        $_SESSION[self::USER_IP] = REMOTE_IP;
+        $user->setCookie();
         self::$user = $user;
         self::$role = $user->role;
     }
@@ -90,7 +91,10 @@ class Library_Login
         $loggedin = !empty(self::$user);
         $result = '';
         if ($loggedin) {
-            $result = self::_getLoginView(self::$user, '<a class="button" href="' . self::ACTION_LOGOUT . '">logout</a>');
+            $result = self::_getLoginView(
+                self::$user,
+                sprintf('<a class="button" href="%s">logout</a>', self::ACTION_LOGOUT)
+                );
         } else {
             $form = new Library_Form();
             $form->begin('?', 'post', array('id' => 'login_form'));
@@ -99,13 +103,11 @@ class Library_Login
             $form->field('check', 'remember', '&nbsp;', array('label' => 'Remember me'));
             $form->field('submit', 'submit', null, array('value' => 'login'));
             $form->end();
-
             $user = $form->value('user', null, false);
             $pass = $form->value('pass', null, false);
             $remember = $form->value('remember', null, false);
-
             $warning = '';
-            if ($parse && $_SERVER['REQUEST_METHOD'] == 'POST') {
+            if ($parse && Core::isPost()) {
                 $id = self::validate($user, $pass);
                 if (empty($user) || empty($pass)) {
                     $warning = 'Fill in both fields.';

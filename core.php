@@ -546,5 +546,11 @@ class Core
         return $result;
     }
 
+    /**
+     * Return true if current request is a post request.
+     * @return boolean
+     */
+    public static function isPost() {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
+    }
 }
-
