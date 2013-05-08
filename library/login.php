@@ -10,6 +10,7 @@ class Library_Login
     const ACTION_LOGOUT = 'logout';
     const USER_ID = 'user_id';
     const USER_IP = 'user_ip';
+    const USER_REMEMBER = 'user_remember';
     /**
      *
      * @var Model_User
@@ -38,15 +39,11 @@ class Library_Login
             $id = 0;
             $ip = 0;
         }
-
         $class = self::$_userClass;
         $user = $class::load($id);
         /* @var $user User */
         if (empty($user)) {
-            $check = $class::checkCookieForRemember();
-            if (!empty($check)) {
-                self::doLogin($check);
-            }
+            $user = $class::checkCookieForRemember();
         }
         self::doLogin($user);
     }
@@ -77,7 +74,12 @@ class Library_Login
         }
         $_SESSION[self::USER_ID] = $user->id;
         $_SESSION[self::USER_IP] = REMOTE_IP;
-        $user->setCookie();
+        $doRemember = (getKey($_SESSION, self::USER_REMEMBER, false) || $remember);
+        if ($doRemember) {
+            $remember = $user->hasCookie();
+            $user->setCookie();
+        }
+        $_SESSION[self::USER_REMEMBER] = $remember;
         self::$user = $user;
         self::$role = $user->role;
     }

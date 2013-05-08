@@ -6,7 +6,7 @@
  */
 class Model_User extends Model_Formed
 {
-    const COOKIE_NAME = 'remember';
+    const COOKIE_NAME = 'login_remember';
     const ROLE_BLOCKED = 0;
     const ROLE_NEUTRAL = 0;
     const ROLE_EDITOR = 1;
@@ -36,6 +36,11 @@ class Model_User extends Model_Formed
         self::ROLE_EDITOR => 'Editor (can edit, but not delete)',
         self::ROLE_ADMIN => 'Admin (can edit everything)',
     );
+    /**
+     * Prevent hash getting generated multiple times.
+     * @var array
+     */
+    private static $_hashes = array();
 
     public function getFormField($field, $setting)
     {
@@ -64,6 +69,17 @@ class Model_User extends Model_Formed
     }
 
     /**
+     * Check if the current user has the remember cookie set.
+     * @return boolean
+     */
+    public function hasCookie()
+    {
+        $cookie = $this->makeCookie();
+        $current = getKey($_COOKIE, self::COOKIE_NAME);
+        return $current == $cookie;
+    }
+
+    /**
      * Make the cookie string (for remembering).
      * @return string
      */
@@ -71,7 +87,10 @@ class Model_User extends Model_Formed
     {
         $result = '';
         if (!empty($this->id)) {
-            $result = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
+            if (!isset(self::$_hashes[$this->id])) {
+                self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
+            }
+            $result = self::$_hashes[$this->id];
         }
         return $result;
     }
