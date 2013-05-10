@@ -12,6 +12,7 @@ class Library_View
     const PREG_VARIABLES = '/\+([a-zA-Z0-9\.\_\-\:]+)\+/';
     const VAR_PREFIX = '+';
     const VAR_SUFFIX = '+';
+    const TRANSFORM = ':';
     /**
      * The current instance.
      * @var Library_View
@@ -80,15 +81,15 @@ class Library_View
             $transform = false;
             $varname = $name;
             // First translate the name of the variable, if need be.
-            if (strpos($name, ':') !== false) {
-                list($varname, $transform) = explode(':', $name);
+            if (strpos($name, self::TRANSFORM) !== false) {
+                list($varname, $transform) = explode(self::TRANSFORM, $name);
             }
             $value = getKey($values, $varname, '');
-            if (Library_View::hasVars($value)) {
+            if (self::hasVars($value)) {
                 $value = $this->fillValues($value, $values);
             }
             if ($transform) {
-                $value = $this->_transform($transform, $value);
+                $value = $this->_transform($transform, $value, $name);
             }
             $translate[self::VAR_PREFIX . $name . self::VAR_SUFFIX] = $value;
         }
@@ -124,11 +125,11 @@ class Library_View
      * Transform a string using a common function.
      * @param string $function
      * @param string $string
+     * @param string $command The full command, allowing extra parameters after the second :.
      * @return string
      */
-    private function _transform($function, $string)
+    private function _transform($function, $string, $command)
     {
-        //Show::info($string, $function);
         switch ($function) {
             case 'ucfirst':
                 $result = ucfirst($string);
@@ -145,8 +146,8 @@ class Library_View
                 $result = trim($value);
                 break;
             default:
-                $class = 'Library_View_' . ucfirst($function);
-                $result = $class::parse($string);
+                $class = 'Library_Transform_' . ucfirst($function);
+                $result = $class::instance()->parse($command, $string);
                 break;
         }
         return $result;

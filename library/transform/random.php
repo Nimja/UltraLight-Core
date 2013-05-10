@@ -4,10 +4,10 @@
  *
  * @author Nimja
  */
-class Library_View_Random
+class Library_Transform_Random extends Library_Transform_Abstract
 {
 
-    public static function parse($string)
+    public function parse($command, $string)
     {
         $parts = explode('|', $string);
         $value = $parts[array_rand($parts)];

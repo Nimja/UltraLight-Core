@@ -4,10 +4,9 @@
  *
  * @author Nimja
  */
-class Library_View_Glitch
+class Library_Transform_Glitch extends Library_Transform_Abstract
 {
-
-    public static function parse($string)
+    public function parse($command, $string)
     {
         $letters = str_split($string);
         foreach ($letters as $key => $letter) {
