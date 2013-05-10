@@ -1,5 +1,13 @@
 <?php
 /**
+ * Enforce the random numbers to be random, using microtime.
+ *
+ * I've found this to be a problem on some servers who reused processes, meaning the standard PHP srand will
+ * repeat the same random structure within the same second, for the same user.
+ */
+srand(microtime(true) * 10000 + getmypid());
+
+/**
  * Where the major magic happens. This block ensures that classes are loaded on
  * demand, completely automatically.
  *
