@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Class to make text look glitched (randomly switches the character's case).
  *
  * @author Nimja
  */
-class Library_Transform_Glitch extends Library_Transform_Abstract
-{
-    public function parse($command, $string)
+class Library_Transform_Glitch extends Library_Transform_Abstract {
+
+    public function parse()
     {
-        $letters = str_split($string);
+        $letters = str_split($this->_value);
         foreach ($letters as $key => $letter) {
             if (rand(0, 16) < 16) {
                 continue;
@@ -17,4 +18,5 @@ class Library_Transform_Glitch extends Library_Transform_Abstract
         }
         return implode('', $letters);
     }
+
 }

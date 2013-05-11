@@ -1,18 +1,20 @@
 <?php
+
 /**
  * The basic view function, containing possibilities for filling variables into a another string.
  */
-class Library_View
-{
+class Library_View {
     /**
      * Variables like +varname:operator+.
      *
      * Valid characters are: letters, numbers, dot, dash, underscore and colon.
      */
+
     const PREG_VARIABLES = '/\+([a-zA-Z0-9\.\_\-\:]+)\+/';
     const VAR_PREFIX = '+';
     const VAR_SUFFIX = '+';
     const TRANSFORM = ':';
+
     /**
      * The current instance.
      * @var Library_View
@@ -78,18 +80,21 @@ class Library_View
     {
         $translate = array();
         foreach ($variables as $name) {
-            $transform = false;
-            $varname = $name;
             // First translate the name of the variable, if need be.
             if (strpos($name, self::TRANSFORM) !== false) {
-                list($varname, $transform) = explode(self::TRANSFORM, $name);
+                $commands = explode(self::TRANSFORM, $name);
+                $varname = array_shift($commands);
+                $transform = array_shift($commands);
+            } else {
+                $transform = false;
+                $varname = $name;
             }
             $value = getKey($values, $varname, '');
             if (self::hasVars($value)) {
                 $value = $this->fillValues($value, $values);
             }
             if ($transform) {
-                $value = $this->_transform($transform, $value, $name);
+                $value = $this->_transform($transform, $value, $commands);
             }
             $translate[self::VAR_PREFIX . $name . self::VAR_SUFFIX] = $value;
         }
@@ -125,10 +130,10 @@ class Library_View
      * Transform a string using a common function.
      * @param string $function
      * @param string $string
-     * @param string $command The full command, allowing extra parameters after the second :.
+     * @param array $commands The remainder of the commands.
      * @return string
      */
-    private function _transform($function, $string, $command)
+    private function _transform($function, $string, $commands)
     {
         switch ($function) {
             case 'ucfirst':
@@ -147,8 +152,14 @@ class Library_View
                 break;
             default:
                 $class = 'Library_Transform_' . ucfirst($function);
-                $result = $class::instance()->parse($command, $string);
+                $transformer = new $class($commands, $string);
+                $result = $transformer->parse();
+                $commands = $transformer->getCommands();
                 break;
+        }
+        if (!empty($commands)) {
+            $nextCommand = array_shift($commands);
+            $result = $this->_transform($nextCommand, $result, $commands);
         }
         return $result;
     }
@@ -162,4 +173,5 @@ class Library_View
     {
         return preg_match(self::PREG_VARIABLES, $string);
     }
+
 }

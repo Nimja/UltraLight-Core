@@ -1,43 +1,37 @@
 <?php
+
 /**
  * Abstract class for view transforms.
  *
  * @author Nimja
  */
-abstract class Library_Transform_Abstract
-{
-    /**
-     * Maintain a list of instances.
-     *
-     * @var array
-     */
-    private static $_instances = array();
+abstract class Library_Transform_Abstract {
 
     /**
-     * @return \Library_Transform_Abstract
+     * Array of
+     * @var type
      */
-    public static function instance()
+    protected $_commands;
+    protected $_value;
+
+    /**
+     * @param array $command
+     * @param string $value
+     */
+    public function __construct($commands, $value)
     {
-        $class = get_called_class();
-        if (!isset(self::$_instances[$class])) {
-            self::$_instances[$class] = new $class();
-        }
-        return self::$_instances[$class];
+        $this->_commands = $commands;
+        $this->_value = $value;
     }
 
     /**
      * Abstract function to parse the string for transformation.
      */
-    abstract public function parse($command, $string);
+    abstract public function parse();
 
-    /**
-     * Get the array of the remaining commands, the first two are always varname and transform.
-     * @param string $command
-     * @return array
-     */
-    protected function _getExtra($command)
+    public function getCommands()
     {
-        $parts = explode(Library_View::TRANSFORM, $command);
-        return array_splice($parts, 2);
+        return $this->_commands;
     }
+
 }
