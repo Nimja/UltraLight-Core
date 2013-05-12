@@ -29,9 +29,30 @@ abstract class Library_Transform_Abstract {
      */
     abstract public function parse();
 
+    /**
+     * Get the remaining commands.
+     * @return array
+     */
     public function getCommands()
     {
         return $this->_commands;
     }
 
+    /**
+     * Look at the next command, without removing it from the stack.
+     * @return mixed
+     */
+    protected function _peekCommand()
+    {
+        return reset($this->_commands);
+    }
+
+    /**
+     * Get the next command, removing it from the stack.
+     * @return mixed
+     */
+    protected function _getCommand()
+    {
+        return array_shift($this->_commands);
+    }
 }
