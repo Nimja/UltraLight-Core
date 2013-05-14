@@ -115,7 +115,7 @@ class Library_Database
         $sql = trim($sql); //Be sure to remove white-spaces.
         $this->numrows = null;
         if (DEBUG) {
-            Show::info($sql, 'Query:');
+            Show::debug($sql, 'Query:');
         }
 
         $this->lastQuery = $sql;
@@ -301,7 +301,7 @@ class Library_Database
         }
         $this->free();
         if (DEBUG) {
-            Show::info($value, 'Result:');
+            Show::debug($value, 'Result:');
         }
         return $value;
     }

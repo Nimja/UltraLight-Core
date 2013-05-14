@@ -24,6 +24,7 @@ spl_autoload_register(function ($class) {
         if (!class_exists($class, false)) {
             Show::fatal($filename, "File exists, but class $class not found.");
         }
+        Core::$classes[] = $class;
     });
 /**
  * Set error handler for when certain errors fall through.
@@ -155,6 +156,12 @@ class Core
     public static $start = 0;
 
     /**
+     * Loaded classes.
+     * @var type
+     */
+    public static $classes = array();
+
+    /**
      * The main initialization function, can only be called ONCE!
      */
     public static function start()
@@ -170,7 +177,7 @@ class Core
         self::_setRemoteIp();
         $request = self::_getRequest();
         if (DEBUG) {
-            Show::info($request, 'Checking route');
+            Show::debug($request, 'Checking route');
         }
         //Laod the default, static file or the relevant controller.
         if (empty($request)) {
@@ -182,13 +189,17 @@ class Core
             $load = self::_getController($request);
         }
         if (DEBUG) {
-            Show::info($load, 'Loading page');
+            Show::debug($load, 'Loading page');
         }
         self::_loadController($load);
         try {
             Page::load();
         } catch (Exception $e) {
             Show::fatal($e);
+        }
+        if (DEBUG) {
+            Show::debug(self::$classes, 'Loaded classes');
+            Show::debug(round(microtime(true) - self::$start, 4), 'Execution time');
         }
     }
 
@@ -286,7 +297,7 @@ class Core
                 #All we don't find, we put into the rest.
                 array_unshift($rest, array_pop($request));
                 if (DEBUG) {
-                    Show::info($cur, 'Not found');
+                    Show::debug($cur, 'Not found');
                 }
             }
         }
@@ -355,7 +366,7 @@ class Core
             }
             $result = file_get_contents($fileSrc);
             if (DEBUG) {
-                Show::info($fileName, 'Loading view');
+                Show::debug($fileName, 'Loading view');
             }
             self::$_included[$fileName] = $result;
         }

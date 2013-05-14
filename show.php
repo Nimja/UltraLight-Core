@@ -25,6 +25,7 @@ class Show
             'neutral' => '#eee',
             'good' => '#def',
             'success' => '#dfd',
+            'debug' => '#ff9',
         );
         $color = !empty($colors[$color]) ? $colors[$color] : $color;
 
@@ -37,19 +38,17 @@ class Show
             $info = self::_showVariable($var);
             $trace = self::_getTraceInfo(self::_getDebug());
         }
-
-        //Create result.
-
+        // Create result.
         $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
-            //Trace block
+            // Trace block
             .$trace
-            //Title
-            . $title . '<div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
-            //Actual content.
+            // Title
+            . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
+            // Actual content.
             . $info . '</div></div>';
 
-        //Switch between returning or echoing. (echo is default);
+        // Switch between returning or echoing. (echo is default);
         if ($return) {
             return $result;
         } else {
@@ -181,7 +180,7 @@ class Show
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */
-    public static function fatal($var, $title = '<b>Fatal error:</b>')
+    public static function fatal($var, $title = 'Fatal error')
     {
         self::info($var, $title, 'fatal');
         exit;
@@ -193,9 +192,19 @@ class Show
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */
-    public static function error($var, $title = '<b>Error:</b>', $return = false)
+    public static function error($var, $title = 'Error', $return = false)
     {
         return self::info($var, $title, 'error', $return);
     }
 
+    /**
+     * Display a basic error.
+     *
+     * @param string $var The variable you want to show.
+     * @param string $title The optional title for this variable.
+     */
+    public static function debug($var, $title = 'Debug', $return = false)
+    {
+        return self::info($var, $title, 'debug', $return);
+    }
 }
