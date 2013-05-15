@@ -111,6 +111,10 @@ class Config
      */
     public static function loadSystemDefines() {
         $values = self::system()->section('system');
+        if (isset($values['debug'])) {
+            Core::$debug = ($values['debug']);
+            unset($values['debug']);
+        }
         foreach ($values as $key => $value) {
             $key = strtoupper($key);
             if (!defined($key)) {

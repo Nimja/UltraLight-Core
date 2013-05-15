@@ -162,6 +162,12 @@ class Core
     public static $classes = array();
 
     /**
+     * If we show the debug messages.
+     * @var type
+     */
+    public static $debug = false;
+
+    /**
      * The main initialization function, can only be called ONCE!
      */
     public static function start()
@@ -176,9 +182,7 @@ class Core
         self::_setSiteUrl();
         self::_setRemoteIp();
         $request = self::_getRequest();
-        if (DEBUG) {
-            Show::debug($request, 'Checking route');
-        }
+        self::debug($request, 'Checking route');
         //Laod the default, static file or the relevant controller.
         if (empty($request)) {
             $load = 'index';
@@ -188,19 +192,15 @@ class Core
         } else {
             $load = self::_getController($request);
         }
-        if (DEBUG) {
-            Show::debug($load, 'Loading page');
-        }
+        self::debug($load, 'Loading page');
         self::_loadController($load);
         try {
             Page::load();
         } catch (Exception $e) {
             Show::fatal($e);
         }
-        if (DEBUG) {
-            Show::debug(self::$classes, 'Loaded classes');
-            Show::debug(round(microtime(true) - self::$start, 4), 'Execution time');
-        }
+        self::debug(self::$classes, 'Loaded classes');
+        self::debug(round(microtime(true) - self::$start, 4), 'Execution time');
     }
 
     /**
@@ -296,9 +296,7 @@ class Core
             if (empty($load)) {
                 #All we don't find, we put into the rest.
                 array_unshift($rest, array_pop($request));
-                if (DEBUG) {
-                    Show::debug($cur, 'Not found');
-                }
+                self::debug($cur, 'Not found');
             }
         }
         //Put the remainder of the url in here.
@@ -307,6 +305,19 @@ class Core
             $load = !empty($routes['*']) ? $routes['*'] : '404';
         }
         return $load;
+    }
+
+    /**
+     * For noting debug messages, they are not shown (and Show is not loaded) if disabled.
+     *
+     * @param mixed $message
+     * @param string $title
+     */
+    public static function debug($message, $title = 'Debug')
+    {
+        if (self::$debug) {
+            Show::debug($message, $title);
+        }
     }
 
     /**
@@ -365,9 +376,7 @@ class Core
                 Show::fatal($fileName, 'View not found for ' . $file);
             }
             $result = file_get_contents($fileSrc);
-            if (DEBUG) {
-                Show::debug($fileName, 'Loading view');
-            }
+            self::debug($fileName, 'Loading view');
             self::$_included[$fileName] = $result;
         }
 

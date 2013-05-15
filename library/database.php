@@ -114,10 +114,7 @@ class Library_Database
     {
         $sql = trim($sql); //Be sure to remove white-spaces.
         $this->numrows = null;
-        if (DEBUG) {
-            Show::debug($sql, 'Query:');
-        }
-
+        Core::debug($sql, 'Attempting query');
         $this->lastQuery = $sql;
         $this->last = mysql_query($sql, $this->db) or Show::error(mysql_error($this->db), '<b>Query failed: </b>' . $sql);
 
@@ -300,9 +297,7 @@ class Library_Database
             $value = null;
         }
         $this->free();
-        if (DEBUG) {
-            Show::debug($value, 'Result:');
-        }
+        Core::debug($value, 'Result:');
         return $value;
     }
 
@@ -598,8 +593,11 @@ class Library_Database
             return false;
         }
         $table = $this->escape($table, true);
-        //Drop table of the same name, else we cannot create it.
-        $this->query('DROP TABLE IF EXISTS ' . $table . ';');
+        if (Core::$debug) {
+            Core::debug($table, 'Drop table if not exists');
+        } else {
+            $this->query('DROP TABLE IF EXISTS ' . $table . ';');
+        }
         //Basic create table functionality
         $sql = 'CREATE TABLE ' . $table . ' (' . "\n\t" . '`id` int(11) UNSIGNED NOT null auto_increment,' . "\n";
         //Go over fields.
@@ -609,8 +607,11 @@ class Library_Database
             $sql .= "\t" . $this->escape($field, true) . ' ' . $column . ",\n";
         }
         $sql .= "\t" . 'PRIMARY KEY  (`id`)' . "\n" . ') ENGINE=innodb DEFAULT CHARSET=latin1;';
-
-        $this->query($sql);
+        if (Core::$debug) {
+            Core::debug($sql, 'Creating table');
+        } else {
+            $this->query($sql);
+        }
         return true;
     }
 
@@ -627,11 +628,8 @@ class Library_Database
             return $this->create_table($table, $fields, true);
         }
         $table = $this->escape($table, true);
-
-
-        #Get the current situation.
+        // Get the current situation.
         $res = $this->query('SHOW COLUMNS FROM ' . $table);
-        $indb = array();
         while ($row = $this->fetchRow($res)) {
             $field = $row['Field'];
             unset($row['Field']);
@@ -639,29 +637,25 @@ class Library_Database
             $row['Null'] = ($row['Null'] == 'YES') ? 'null' : 'NOT null';
             $dbcolumns[$field] = $row;
         }
-        #If the ID column does not exist, table was never properly created.
+        // If the ID column does not exist, table was never properly created.
         if (empty($dbcolumns['id']) || $dbcolumns['id']['Type'] != 'int(11) unsigned') {
             Show::fatal($table, 'Database was not properly installed, force install will remove all contents...');
         } else {
             unset($dbcolumns['id']);
         }
-
         $this->free($res);
-
-        #Get the desired situation.
+        // Get the desired situation.
         $desired = array();
         foreach ($fields as $field => $type) {
             $desired[$field] = $this->makeColumn($type, false);
         }
-
-        #DO the compare.
+        // Do the compare.
         $changes = array();
         $prevField = '`id`';
-        #Add/modify columns by comparison.
+        // Add/modify columns by comparison.
         foreach ($desired as $field => $column) {
             $efield = $this->escape($field, true);
             if (empty($dbcolumns[$field])) {
-
                 $changes[] = 'ADD ' . $efield . ' ' . $this->makeColumn($fields[$field]) . ' AFTER ' . $prevField;
             } else {
                 $dbcur = $dbcolumns[$field];
@@ -675,34 +669,34 @@ class Library_Database
             unset($dbcolumns[$field]);
             $prevField = $efield;
         }
-        #Drop columns that are superflous.
+        // Drop columns that are superflous.
         foreach ($dbcolumns as $field => $column) {
-            $efield = $this->escape($field, true);
-            $changes[] = 'DROP ' . $efield;
+            $changes[] = 'DROP ' . $this->escape($field, true);
         }
-
-        #No changes.
-        if (empty($changes))
-            return false;
-
-        $sql = 'ALTER TABLE ' . $table . "\n";
-        $sql .= implode(",\n", $changes);
-
-        #Execute the alter table query.
-        $this->query($sql);
-
-        return true;
+        // No changes.
+        $result = !empty($changes);
+        if ($result) {
+            if (Core::$debug) {
+                Core::debug($changes, "Changing table: $table");
+            } else {
+                $sql = "ALTER TABLE $table \n" . implode(",\n", $changes);
+                $this->query($sql);
+            }
+        }
+        return $result;
     }
 
     /**
+     * Make column info for data.
      *
-     * @param string $type A string consisting of 1 to 3 parts, divided by |
+     * @param string|array $field A string consisting of 1 to 3 parts, divided by |
      *
      * name (int, text, bool, varchar, etc.) <br />
      * length (0 = no length given) <br />
      * default value.
+     * @param $toString To return a string or array with info.
      *
-     * @return string The colum, as formatted by Type.
+     * @return string|array The colum, as formatted by Type.
      */
     protected function makeColumn($field, $toString = true)
     {
@@ -763,7 +757,6 @@ class Library_Database
             }
         }
         $length = !empty($length) ? '(' . $length . ')' : '';
-
         $column = array(
             'type' => $type . $length . $typeExtra,
             'null' => ($null) ? 'null' : 'NOT null',
