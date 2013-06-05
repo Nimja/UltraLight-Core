@@ -9,25 +9,25 @@ class Library_Crypt
 
     /**
      * String of characters.
-     * @var type 
+     * @var type
      */
     private static $chars = "0Za9Yb8Xc7WdV6eUfT5gShR4iQj3PkO2lNm1MnLoKpJqIrHsGtFuEvDwCxByAz";
 
     /**
      * Encoding lookup arrayl.
-     * @var array 
+     * @var array
      */
     private static $encode_chars = NULL;
 
     /**
      * Decoding lookup array.
-     * @var array 
+     * @var array
      */
     private static $decode_chars = NULL;
 
     /**
      * Highest number we can encode in x digits.
-     * 
+     *
      * @var array
      */
     private static $limit = NULL;
@@ -51,8 +51,8 @@ class Library_Crypt
 
     /**
      * Encode array of numbers into a string, for a filename.
-     * @param array $numbers 
-     * @param array 
+     * @param array $numbers
+     * @param array
      * @return string
      */
     public static function encode($numbers)
@@ -101,7 +101,7 @@ class Library_Crypt
 
     /**
      *
-     * @param type $string 
+     * @param type $string
      */
     public static function decode($string)
     {

@@ -56,44 +56,6 @@ abstract class Controller_Abstract
     abstract protected function _run();
 
     /**
-     * Retrieve POST/GET value, with sanitation.
-     * @param string $name
-     * @param mixed $default
-     * @param booelan|array $keepTags
-     * @return mixed
-     */
-    public function _value($name, $default = '', $keepTags = true)
-    {
-        return isset($_POST[$name]) ?
-            $this->_valuePost($name, $default, $keepTags) :
-            $this->_valueGet($name, $default, $keepTags);
-    }
-
-    /**
-     * Retrieve POST value, with sanitation.
-     * @param string $name
-     * @param mixed $default
-     * @param booelan|array $keepTags
-     * @return mixed
-     */
-    public function _valuePost($name, $default = '', $keepTags = true)
-    {
-        return sanitize(getKey($_POST, $name, $default), $keepTags);
-    }
-
-    /**
-     * Retrieve GET value, with sanitation.
-     * @param string $name
-     * @param mixed $default
-     * @param booelan|array $keepTags
-     * @return mixed
-     */
-    public function _valueGet($name, $default = '', $keepTags = true)
-    {
-        return sanitize(getKey($_GET, $name, $default), $keepTags);
-    }
-
-    /**
      * Get the current view instance.
      */
     protected function _view()

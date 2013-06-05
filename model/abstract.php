@@ -7,12 +7,14 @@
  */
 abstract class Model_Abstract
 {
+    const ID = 'id';
     const CLASS_PREFIX = 'Model_';
     const SETTING_FIELDS = 'fields';
     const SETTING_TABLE = 'table';
     const SETTING_TYPE = 'type';
     const SETTING_VALIDATE = 'validate';
     const SETTING_IGNORE = 'ignore';
+    const SETTING_SERIALIZE = 'serialize';
     /**
      * Settings for each class.
      * @var type
@@ -29,7 +31,7 @@ abstract class Model_Abstract
      *
      * @var string
      */
-    protected static $_listField = 'id';
+    protected static $_listField = self::ID;
     /**
      * Database fields
      *
@@ -42,6 +44,7 @@ abstract class Model_Abstract
      * @var array
      */
     protected static $cache = array();
+
     /**
      * The current class.
      *
@@ -97,14 +100,16 @@ abstract class Model_Abstract
         $class = $this->_class;
         foreach ($class::$_fields as $field => $setting) {
             $value = getKey($values, $field, '');
-            if ($setting['type'] == 'bool') {
+            if ($setting[self::SETTING_TYPE] == 'bool') {
                 $this->$field = $value ? 1 : 0;
+            } else if (!empty($setting[self::SETTING_SERIALIZE])) {
+                $this->$field = !is_string($value) ? unserialize($value) : $value;
             } else {
                 $this->$field = $value;
             }
         }
-        if (!empty($values['id'])) {
-            $this->id = intval($values['id']);
+        if (!empty($values[self::ID])) {
+            $this->id = intval($values[self::ID]);
             self::_saveCache($class, $this);
         }
     }
@@ -125,7 +130,7 @@ abstract class Model_Abstract
             }
         }
 
-        $result['id'] = $this->id;
+        $result[self::ID] = $this->id;
         return $result;
     }
 
@@ -140,11 +145,17 @@ abstract class Model_Abstract
         //Do we want to do a validation check?
         $id = intval($this->id);
         $ignoreFields = $this->_getSetting(self::SETTING_IGNORE);
+        $serializeFields = $this->_getSetting(self::SETTING_SERIALIZE);
         $table = $this->_getSetting();
         //Remove these fields from the values to be saved.
         if (!empty($ignoreFields)) {
             foreach (array_keys($ignoreFields) as $field) {
                 unset($values[$field]);
+            }
+        }
+        if (!empty($serializeFields)) {
+            foreach (array_keys($serializeFields) as $field) {
+                $values[$field] = serialize($values[$field]);
             }
         }
         //Switch between update and insert automatically.
@@ -321,16 +332,21 @@ abstract class Model_Abstract
             //Create the validation/ignore arrays for ease of use.
             $validate = array();
             $ignore = array();
+            $serialize = array();
             foreach ($class::$_fields as $field => $settings) {
-                if (isset($settings['validate'])) {
+                if (isset($settings[self::SETTING_VALIDATE])) {
                     $validate[$field] = $settings['validate'];
                 }
-                if (!empty($settings['ignore'])) {
+                if (!empty($settings[self::SETTING_IGNORE])) {
                     $ignore[$field] = true;
+                }
+                if (!empty($settings[self::SETTING_SERIALIZE])) {
+                    $serialize[$field] = true;
                 }
             }
             $result[self::SETTING_VALIDATE] = $validate;
             $result[self::SETTING_IGNORE] = $ignore;
+            $result[self::SETTING_SERIALIZE] = $serialize;
             self::$_classSettings[$class] = $result;
         }
         return self::$_classSettings[$class];

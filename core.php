@@ -61,6 +61,9 @@ function blank($var)
  */
 function getKey(&$array, $key, $default = false)
 {
+    if (!is_array($array)) {
+        Show::fatal($array, 'Not an array!');
+    }
     return isset($array[$key]) && !blank($array[$key]) ? $array[$key] : $default;
 }
 
@@ -73,6 +76,9 @@ function getKey(&$array, $key, $default = false)
  */
 function getAttr($obj, $attr, $default = false)
 {
+    if (!is_object($obj)) {
+        Show::fatal($obj, 'Not an object!');
+    }
     return isset($obj->$attr) && !blank($obj->$attr) ? $obj->$attr : $default;
 }
 
@@ -90,8 +96,10 @@ function sanitize($value, $keepTags = true)
     } if (is_numeric($value)) {
         $result = $value;
     } else if (is_array($value)) {
-        array_walk($value, 'sanitize');
-        $result = $value;
+        $result = array();
+        foreach ($value as $key => $val) {
+            $result[sanitize($key)] = sanitize($val);
+        }
     } else {
         $stripHtml = is_array($keepTags) || empty($keepTags);
         //Remove magic quotes.
@@ -542,43 +550,5 @@ class Core
         header($codes[$code]);
         header('Location: ' . $url);
         exit;
-    }
-
-    /**
-     * Set a cookie with a string timestamp.
-     * @param string $name
-     * @param mixed $value
-     * @param string $time Like +2 months
-     */
-    public static function setCookie($name, $value, $time = '+2 months', $raw = false)
-    {
-        if ($raw) {
-            setrawcookie($name, $value, strtotime($time), '/');
-        } else {
-            setcookie($name, $value, strtotime($time), '/');
-        }
-    }
-
-    /**
-     * Clear cookie.
-     * @param string $name
-     * @return boolean Clearing cookie success or not.
-     */
-    public static function clearCookie($name)
-    {
-        //We set it to 2 days ago, because of time differences.
-        $result = setcookie($name, '', strtotime('-2 days'), '/');
-        if (isset($_COOKIE[$name])) {
-            unset($_COOKIE[$name]);
-        }
-        return $result;
-    }
-
-    /**
-     * Return true if current request is a post request.
-     * @return boolean
-     */
-    public static function isPost() {
-        return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 }

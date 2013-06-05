@@ -16,48 +16,34 @@ class Library_Common
      * @param string $path
      * @param int $options Options can be: self::RECURSIVE, self::EXCLUDE_DIRS, self::EXCLUDE_FILES
      * Combine options self::RECURSIVE | self::EXCLUDE_FILES (retrieves recursive directory tree)
-     * @param string $filter Filter works like "in string"
+     * @param $include Supply a string for "in string" or an array for specific names.
+     * @param $exclude Same as include, but for excluding.
      * @return array Result is a named array with filenames as keys and values or dir contents as value.
      */
     public static function listFiles($path, $options = 0, $include = null, $exclude = null)
     {
         $files = array();
         $dirs = array();
-
         $recursive = ($options & self::RECURSIVE);
         $exclude_files = ($options & self::EXCLUDE_FILES);
         $exclude_dirs = ($options & self::EXCLUDE_DIRS);
-
         $inc_func = is_array($include) ? 'in_array' : 'strpos';
         $exc_func = is_array($exclude) ? 'in_array' : 'strpos';
-
-        #If the path is an actual (existing) dir.
-        #Check if it is an actual folder.
         if (is_dir($path)) {
-            #Cut off trailing slash, when ever it has been provided.
-            if (substr($path, -1) == '/')
+            if (substr($path, -1) == '/') {
                 $path = substr($path, 0, -1);
-
-            #Gets the contents as an alphabetically sorted string.
+            }
             $objects = scandir($path);
-
-            #While there are files to read.
             foreach ($objects as $entry) {
                 if ($entry !== '.'
                         && $entry !== '..'
-                        #Use the filter, if required. Filter works like 'in string'
                         && (empty($include) || $inc_func($entry, $include) !== false)
                         && (empty($exclude) || $exc_func($entry, $exclude) === false)
                 ) {
                     $curfile = $path . '/' . $entry;
                     $file = $entry;
-
-                    #Is this a dir?
                     if (is_dir($curfile)) {
-                        #Switch between recursive or an empty array (so we can recognize dirs)
-                        $dirs[$entry] = (!$recursive) ? array() : self::listFiles($curfile, $recursive, $filter);
-
-                        #list all files (including dirs)
+                        $dirs[$entry] = (!$recursive) ? array() : self::listFiles($curfile, $options, $include, $exclude);
                     } else {
                         $files[$entry] = $file;
                     }
