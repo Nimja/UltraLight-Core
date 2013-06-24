@@ -1,7 +1,8 @@
 <?php
 
 /**
- * The script class.
+ * Wrapper for $_SESSION with a nice interface.
+ * Also allows more transparently for multiple "sessions" next to each other without interfering.
  */
 class Library_Session {
 
@@ -13,7 +14,7 @@ class Library_Session {
      * The key for the session.
      * @var type
      */
-    private $_key = 'session';
+    private $_key;
 
     /**
      * The array in memory.
@@ -45,13 +46,14 @@ class Library_Session {
      * @param string $name
      * @param mixed $value
      */
-    public function set($name, $value)
+    public function set($name, $value = null)
     {
         if ($value == self::DELETE || blank($value)) {
             unset($this->_variables[$name]);
         } else {
             $this->_variables[$name] = $value;
         }
+        $this->_flush();
     }
 
     /**
@@ -94,6 +96,7 @@ class Library_Session {
                 unset($this->_variables[$key]);
             }
         }
+        $this->_flush();
     }
 
     /**
@@ -109,6 +112,7 @@ class Library_Session {
             }
             unset($this->_variables[$key]);
         }
+        $this->_flush();
         return $this;
     }
 
@@ -124,7 +128,7 @@ class Library_Session {
     /**
      * Flush it to the session.
      */
-    public function flush()
+    private function _flush()
     {
         $_SESSION[$this->_key] = $this->_variables;
     }
