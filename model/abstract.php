@@ -103,7 +103,7 @@ abstract class Model_Abstract
             if ($setting[self::SETTING_TYPE] == 'bool') {
                 $this->$field = $value ? 1 : 0;
             } else if (!empty($setting[self::SETTING_SERIALIZE])) {
-                $this->$field = !is_string($value) ? unserialize($value) : $value;
+                $this->$field = is_string($value) ? unserialize($value) : $value;
             } else {
                 $this->$field = $value;
             }
@@ -389,9 +389,10 @@ abstract class Model_Abstract
     /**
      * Find a single objectby search.
      * @param string $search Like id|=4
+     * @param string $order
      * @return /self
      */
-    public static function findOne($search, $order)
+    public static function findOne($search, $order = null)
     {
         $result = null;
         $class = get_called_class();
