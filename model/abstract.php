@@ -155,6 +155,9 @@ abstract class Model_Abstract
         }
         if (!empty($serializeFields)) {
             foreach (array_keys($serializeFields) as $field) {
+                if (!isset($values[$field])) {
+                    continue;
+                }
                 $values[$field] = serialize($values[$field]);
             }
         }

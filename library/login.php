@@ -57,7 +57,7 @@ class Library_Login
     {
         $class = self::$_userClass;
         unset($_SESSION[self::USER_ID], $_SESSION[self::USER_IP]);
-        Core::clearCookie($class::COOKIE_NAME);
+        Request::clearCookie($class::COOKIE_NAME);
         self::$user = null;
         self::$role = 0;
     }
@@ -109,7 +109,7 @@ class Library_Login
             $pass = $form->value('pass', null, false);
             $remember = $form->value('remember', null, false);
             $warning = '';
-            if ($parse && Core::isPost()) {
+            if ($parse && Request::isPost()) {
                 $id = self::validate($user, $pass);
                 if (empty($user) || empty($pass)) {
                     $warning = 'Fill in both fields.';

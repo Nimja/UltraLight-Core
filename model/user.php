@@ -63,7 +63,7 @@ class Model_User extends Model_Formed
     {
         $cookie = $this->makeCookie();
         if (!empty($cookie)) {
-            Core::setCookie(self::COOKIE_NAME, $cookie, '+2 months');
+            Request::setCookie(self::COOKIE_NAME, $cookie, '+2 months');
         }
         return $this;
     }

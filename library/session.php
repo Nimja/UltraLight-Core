@@ -47,11 +47,21 @@ class Library_Session {
      */
     public function set($name, $value)
     {
-        if ($value == self::DELETE) {
+        if ($value == self::DELETE || blank($value)) {
             unset($this->_variables[$name]);
         } else {
             $this->_variables[$name] = $value;
         }
+    }
+
+    /**
+     * Check if the session has a variable.
+     * @param string $name
+     * @return boolean
+     */
+    public function has($name)
+    {
+        return isset($this->_variables[$name]);
     }
 
     /**
@@ -84,6 +94,22 @@ class Library_Session {
                 unset($this->_variables[$key]);
             }
         }
+    }
+
+    /**
+     * Remove specific vars from the memory by regex.
+     * @param string $regex
+     * @return /self
+     */
+    public function remove($regex)
+    {
+        foreach (array_keys($this->_variables) as $key) {
+            if (!preg_match($regex, $key)) {
+                continue;
+            }
+            unset($this->_variables[$key]);
+        }
+        return $this;
     }
 
     /**
