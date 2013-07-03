@@ -138,6 +138,9 @@ class Config
 
     /**
      * Simple parser for INI files with a very clean approach.
+     *
+     * This parser supports multiple inheritance from other sections.
+     *
      * @param string $filename
      * @param int $depth How deep you want the recursive parsing to be.
      * @return array
@@ -156,14 +159,18 @@ class Config
             }
             unset($ini[$section]);
             $expand = explode(':', $section);
-            if (count($expand) == 2) {
-                $section = trim($expand[0]);
-                $source = trim($expand[1]);
-                if (!isset($result[$source])) {
-                    throw new Exception("Unable to expand $section from $source");
+            $section = trim(array_shift($expand));
+            $max = count($expand);
+            if ($max > 0) {
+                $curSection = self::_processSection($values, $depth);
+                for ($i = 0; $i < $max; $i++) {
+                    $curName = trim($expand[$i]);
+                    if (!isset($result[$curName])) {
+                        throw new Exception("Unable to expand $section from $curName");
+                    }
+                    $curSection = self::_mergeRecursive($result[$curName], $curSection);
                 }
-                $sectionResult = self::_processSection($values, $depth);
-                $result[$section] = self::_mergeRecursive($result[$source], $sectionResult);
+                $result[$section] = $curSection;
             } else {
                 $result[$section] = self::_processSection($values, $depth);
             }
@@ -231,8 +238,12 @@ class Config
 
     /**
      * Recursively merge arrays, as the PHP function does not overwrite values.
-     * @param type $left
-     * @param type $right
+     *
+     * The right (second) value overrides the left (first) value.
+     *
+     * @param mixed $left
+     * @param mixed $right
+     * @return mixed
      */
     private static function _mergeRecursive($left, $right)
     {
@@ -240,7 +251,9 @@ class Config
         if (is_array($left) && is_array($right)) {
             // loop through each right array's entry and merge it into $a
             foreach ($right as $key => $value) {
-                if (isset($left[$key])) {
+                if (is_int($key)) {
+                    $left[] = $value;
+                } else if (isset($left[$key])) {
                     $left[$key] = self::_mergeRecursive($left[$key], $value);
                 } else {
                     $left[$key] = $value;
@@ -250,7 +263,6 @@ class Config
             // one of values is not an array
             $left = $right;
         }
-
         return $left;
     }
 }

@@ -371,10 +371,13 @@ abstract class Model_Abstract
     /**
      * Load an object, with ID. This will return a cached object if present.
      * @param int $id
-     * @return /self
+     * @return /self|null
      */
     public static function load($id)
     {
+        if (empty($id)) {
+            return null;
+        }
         $class = get_called_class();
         $result = self::_loadCache($class, $id);
         if (!$result) {

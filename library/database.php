@@ -28,6 +28,17 @@ class Library_Database
      * @var resource
      */
     protected $db;
+
+    /**
+     *
+     */
+    private $_operations = array(
+        's' => 'SELECT',
+        'i' => 'INSERT',
+        'd' => 'DELETE',
+        'u' => 'UPDATE',
+        'c' => 'CREATE',
+    );
     /**
      * Array of connections
      *
@@ -114,11 +125,11 @@ class Library_Database
     {
         $sql = trim($sql); //Be sure to remove white-spaces.
         $this->numrows = null;
-        Core::debug($sql, 'Attempting query');
+        $operation = strtolower(substr($sql, 0, 1));
+        Core::debug($sql, 'Attempting: ' . $this->_operations[$operation]);
         $this->lastQuery = $sql;
         $this->last = mysql_query($sql, $this->db) or Show::error(mysql_error($this->db), '<b>Query failed: </b>' . $sql);
-
-        $this->type[$this->last] = strtolower(substr($sql, 0, 1)); //Check the first letter.
+        $this->type[$this->last] = $operation;
         return $this->last;
     }
 
@@ -318,6 +329,8 @@ class Library_Database
     /**
      * Escape value neatly for database.
      *
+     * Empty strings will be translated to "NULL".
+     *
      * @param mixed $value
      * @param boolean $backticks If we want to escape DB/column names.
      * @param boolean $forceQuotes If we want to enforce quotes (for numeric values)
@@ -331,6 +344,8 @@ class Library_Database
             if ($backticks && strpos($value, '.') !== false) {
                 $parts = explode('.', $value);
                 $result = implode('.', $this->escape($parts, true, $forceQuotes));
+            } else if (blank($value)) {
+                $result = 'NULL';
             } else {
                 $result = mysql_real_escape_string(trim($value), $this->db);
                 if (!is_numeric($result) || $forceQuotes) {
@@ -370,7 +385,7 @@ class Library_Database
      *
      * @param string $table
      * @param array @values
-     * @param string $where
+     * @param string|array $where
      * @return int $id with which we updated.
      */
     public function update($table, $values, $where = '')
@@ -378,9 +393,9 @@ class Library_Database
         $result = false;
         if (!empty($table) && !empty($values)) {
             $sql = 'UPDATE ' . $this->escape($table, true) . ' SET ' . $this->_arrayToSql($values);
-
-            if (!empty($where))
-                $sql .= ' WHERE ' . $where;
+            if (!empty($where)) {
+                $sql .= ' WHERE ' . $this->_toWhere($where);
+            }
             $this->query($sql);
             $result = mysql_insert_id($this->db);
         }
@@ -391,7 +406,7 @@ class Library_Database
      * Delete from table, where...
      *
      * @param string $table
-     * @param string $where
+     * @param string|array $where
      * @return int Number of deleted rows.
      */
     public function delete($table, $where = '')
@@ -399,11 +414,10 @@ class Library_Database
         $result = false;
         if (!empty($table)) {
             $sql = 'DELETE FROM ' . $this->escape($table, true) . '';
-
-            if (!empty($where))
-                $sql .= ' WHERE ' . $where;
+            if (!empty($where)) {
+                $sql .= ' WHERE ' . $this->_toWhere($where);
+            }
             $res = $this->query($sql);
-
             $result = $this->count();
         }
         return $result;
@@ -946,6 +960,25 @@ class Library_Database
                     'operation' => $matches[2],
                 );
             }
+        }
+        return $result;
+    }
+    /**
+     * Parse a where to a string, allowing for array input (id => 1)
+     *
+     * @param string|array $where
+     * @return string
+     */
+    protected function _toWhere($where) {
+        $result = null;
+        if (is_array($where)) {
+            $resultArray = array();
+            foreach ($where as $key => $value) {
+                $resultArray[] = $this->escape($key, true). ' = '.$this->escape($value);
+            }
+            $result = implode(' AND ', $resultArray);
+        } else {
+            $result = $where;
         }
         return $result;
     }
