@@ -166,11 +166,10 @@ class Library_Common
         #sanity checks
         $logfile = PATH_LOGS . $log . '.txt';
         if (file_exists($logfile) && !is_writable($logfile)) {
-            Show::fatal($log, 'Log is write protected');
+            throw new Exception("Log $log is write protected");
         } else if (!file_exists && !is_writable(PATH_LOGS)) {
-            Show::fatal(PATH_LOGS, 'Log path is not writable and log does not exist');
+            throw new Exception("Log path is not writable and log does not exist: " . PATH_LOGS);
         }
-
 
         if (!is_string($text) && !is_numeric($text)) {
             $text = print_r($text, true);

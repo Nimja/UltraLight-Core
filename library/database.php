@@ -76,21 +76,29 @@ class Library_Database
         if (empty(self::$_connections[$database])) {
             $connections = Config::system()->get('database', 'connection');
             if (empty($connections)) {
-                Show::fatal('No connections configured.');
+                throw new Exception('No connections configured.');
             }
             if (empty($connections[$database])) {
-                Show::fatal("Connection for $database not configurd.");
+                throw new Exception("Connection for $database not configurd.");
             }
             $options = $connections[$database];
-            if (!is_array($options) || empty($options['server']) || empty($options['database']) || empty($options['username']) || empty($options['password'])
+            if (!is_array($options)
+                || empty($options['server'])
+                || empty($options['database'])
+                || empty($options['username'])
+                || empty($options['password'])
             ) {
-                Show::fatal("Connection for $database not configurd correctly: expecnting server, database, username and password.");
+                throw new Exception("Connection for $database not configurd correctly.");
             }
-            #Connect to database.
-            $db = mysql_connect($options['server'], $options['username'], $options['password']) or Show::fatal($options,
-                    'Unable to connect to Database');
-            #Select database
-            mysql_select_db($options['database'], $db) or Show::fatal($options, 'Unable to Select Database');
+            $db = mysql_connect(
+                $options['server'],
+                $options['username'],
+                $options['password']
+            ) or Show::fatal($options, 'Unable to connect to Database');
+            mysql_select_db(
+                $options['database'],
+                $db
+            ) or Show::fatal($options, 'Unable to Select Database');
             self::$_connections[$database] = $db;
         }
         return self::$_connections[$database];
@@ -756,16 +764,15 @@ class Library_Database
             $null = true;
             $default = '';
         } else if ($type == 'bool') {
-            #Booleans are tinyints with length 1.
             $length = 1;
             $type = 'tinyint';
             $default = intval($default);
+        } else if ($type == 'date') {
+            $length = null;
         } else if ($type == 'timestamp') {
-            #Timestamps are filled automatically
             $default = ' default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP';
         } else if ($type == 'varchar' || $type == 'char') {
             $null = true;
-            #Default length for VarChar/Char.
             if (empty($length)) {
                 $length = 127;
             }

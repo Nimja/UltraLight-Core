@@ -4,13 +4,13 @@
  *
  * @author Nimja
  */
-class Model_User extends Model_Formed
+class Model_User extends Model_Sessioned
 {
     const COOKIE_NAME = 'login_remember';
     const ROLE_BLOCKED = 0;
-    const ROLE_NEUTRAL = 0;
-    const ROLE_EDITOR = 1;
-    const ROLE_ADMIN = 2;
+    const ROLE_NEUTRAL = 1;
+    const ROLE_EDITOR = 50;
+    const ROLE_ADMIN = 100;
     protected static $_listField = 'username';
     protected static $_fields = array(
         'username' => array(
@@ -42,19 +42,6 @@ class Model_User extends Model_Formed
      */
     private static $_hashes = array();
 
-    public function getFormField($field, $setting)
-    {
-        $form = $this->_form;
-        if ($field == 'role') {
-            if (Library_Login::$role == self::ROLE_ADMIN)
-                $form->field('select', $field, 'Role', array('values' => $this->roles));
-        } else if ($field == 'password') {
-            $form->field('password', $field, 'Password', array('value' => ''));
-        } else {
-            parent::getFormField($field, $setting);
-        }
-    }
-
     /**
      * Set the cookie for this user for remembering.
      * @return \self
@@ -85,14 +72,18 @@ class Model_User extends Model_Formed
      */
     protected function makeCookie()
     {
-        $result = '';
-        if (!empty($this->id)) {
-            if (!isset(self::$_hashes[$this->id])) {
-                self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
-            }
-            $result = self::$_hashes[$this->id];
+        return empty($this->id) ? '' : $this->_getCookieHash();
+    }
+    /**
+     * Get a generated hash based on ID, IP and hashed username.
+     * @return type
+     */
+    private function _getCookieHash()
+    {
+        if (!isset(self::$_hashes[$this->id])) {
+            self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
         }
-        return $result;
+        return self::$_hashes[$this->id];
     }
 
     /**
@@ -129,18 +120,9 @@ class Model_User extends Model_Formed
         $table = self::getSetting();
         return $db->fetchFirstValue("SELECT id FROM $table WHERE username=$name AND password=$pass");
     }
-
-    /**
-     * Return username.
-     * @return type
-     */
-    public function __toString()
+    public function saveSession()
     {
-        $result = '';
-        if (!empty($this->username)) {
-            $this->_edit = Library_Login::$role > self::ROLE_EDITOR || Library_Login::$user->id == $this->id;
-            $result = $this->editTag() . $this->username;
-        }
-        return $result;
+        $this->ip = REMOTE_IP;
+        parent::saveSession();
     }
 }

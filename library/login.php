@@ -32,18 +32,10 @@ class Library_Login
      */
     public static function init()
     {
-        $id = getKey($_SESSION, self::USER_ID);
-        $ip = getKey($_SESSION, self::USER_IP);
-        if (!empty($ip) && $ip != REMOTE_IP) {
-            self::logout();
-            $id = 0;
-            $ip = 0;
-        }
         $class = self::$_userClass;
-        $user = $class::load($id);
-        /* @var $user User */
-        if (empty($user)) {
-            $user = $class::checkCookieForRemember();
+        $user = $class::loadSession();
+        if (!empty($user) && !empty($user->ip) && $user->ip != REMOTE_IP) {
+            $user = null;
         }
         self::doLogin($user);
     }
@@ -56,7 +48,7 @@ class Library_Login
     public static function logout()
     {
         $class = self::$_userClass;
-        unset($_SESSION[self::USER_ID], $_SESSION[self::USER_IP]);
+        $class::clearSession();
         Request::clearCookie($class::COOKIE_NAME);
         self::$user = null;
         self::$role = 0;
@@ -72,14 +64,13 @@ class Library_Login
             self::logout();
             return;
         }
-        $_SESSION[self::USER_ID] = $user->id;
-        $_SESSION[self::USER_IP] = REMOTE_IP;
-        $doRemember = (getKey($_SESSION, self::USER_REMEMBER, false) || $remember);
+        $doRemember = $user->remember || $remember;
         if ($doRemember) {
             $remember = $user->hasCookie();
             $user->setCookie();
         }
-        $_SESSION[self::USER_REMEMBER] = $remember;
+        $user->remember = $remember;
+        $user->saveSession();
         self::$user = $user;
         self::$role = $user->role;
     }

@@ -43,7 +43,7 @@ abstract class Controller_Abstract
         try {
             $result = $this->_run();
         } catch (Exception $e) {
-            $result = Show::error($error, "Exception!", true);
+            $result = Show::error($e, "Exception!", true);
         }
         return $result;
     }

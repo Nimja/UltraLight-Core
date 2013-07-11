@@ -62,7 +62,7 @@ function blank($var)
 function getKey(&$array, $key, $default = false)
 {
     if (!is_array($array)) {
-        Show::fatal($array, 'Not an array!');
+        throw new Exception("Not an array.");
     }
     return isset($array[$key]) && !blank($array[$key]) ? $array[$key] : $default;
 }
@@ -77,7 +77,7 @@ function getKey(&$array, $key, $default = false)
 function getAttr($obj, $attr, $default = false)
 {
     if (!is_object($obj)) {
-        Show::fatal($obj, 'Not an object!');
+        throw new Exception("Not an object.");
     }
     return isset($obj->$attr) && !blank($obj->$attr) ? $obj->$attr : $default;
 }
@@ -181,7 +181,7 @@ class Core
     public static function start()
     {
         if (!empty(self::$_included['page'])) {
-            Show::fatal('Core::start() called twice!');
+            throw new Exception("Core::start() called manually!");
         }
         self::$start = microtime(true);
         Config::loadSystemDefines();
@@ -201,11 +201,10 @@ class Core
             $load = self::_getController($request);
         }
         self::debug($load, 'Loading page');
-        self::_loadController($load);
         try {
-            Page::load();
+            self::_loadController($load);
         } catch (Exception $e) {
-            Show::fatal($e);
+            Show::error($e);
         }
         self::debug(self::$classes, 'Loaded classes');
         self::debug(round(microtime(true) - self::$start, 4), 'Execution time');
@@ -288,7 +287,7 @@ class Core
         $routes = Config::system()->section('routes');
         $load = '';
         if (empty($routes)) {
-            Show::fatal('You must define routes.');
+            throw new Exception("Routes must be defined.");
         }
         $rest = array();
         // Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
@@ -346,12 +345,12 @@ class Core
     {
         $fileName = 'controller/' . self::sanitizeFileName($file) . '.php';
         if (!empty(self::$page)) {
-            Show::fatal($file, 'Controller already loaded!');
+            throw new Exception('Controller already loaded!');
         }
         $fileSrc = stream_resolve_include_path($fileName);
 
         if (!file_exists($fileSrc)) {
-            Show::fatal($fileName, 'Controller not found');
+            throw new Exception("Controller not found: $fileName");
         }
         require_once($fileSrc);
         self::$page = $file;
@@ -360,8 +359,12 @@ class Core
         }
         #Check if the pagefile has the proper definition.
         if (!class_exists('Page')) {
-            Show::fatal($file, 'Controller class not defined properly (missing class "Page")');
+            throw new Exception("Controller missing class Page: $file");
         }
+        if (!is_subclass_of('Page', 'Controller_Abstract')) {
+            throw new Exception("Controller not extended from abstract: $file");
+        }
+        return Page::load();
     }
 
     /**
@@ -381,7 +384,7 @@ class Core
 
             $fileSrc = stream_resolve_include_path($fileName);
             if ($fileSrc === false) {
-                Show::fatal($fileName, 'View not found for ' . $file);
+                throw new Exception("View not found for $file");
             }
             $result = file_get_contents($fileSrc);
             self::debug($fileName, 'Loading view');
@@ -389,7 +392,7 @@ class Core
         }
 
         if (empty($result)) {
-            Show::fatal($file, 'View file empty?');
+            throw new Exception("View empty for $file");
         }
 
         return $result;
@@ -404,38 +407,29 @@ class Core
      * @param string $filename Filename for the output
      * @param boolean $isFile True if data is a filename. (if true, it will output a file directly to the browser)
      */
-    public static function output($mime, $data, $modified = 0, $filename = null,
-        $isFile = false)
+    public static function output($mime, $data, $modified = 0, $filename = null, $isFile = false)
     {
-        #Check we're the first data.
         if (ob_get_contents() || headers_sent()) {
-            Show::fatal(ob_get_contents(), 'Headers already sent');
+            throw new Exception("Headers already sent.");
         }
-
-        #Check the file exists, if needed.
         if ($isFile && !file_exists($data)) {
-            Show::fatal('Cannot send file');
+            throw new Exception("File does not exist: $data");
         }
-
         $length = $isFile ? filesize($data) : strlen($data);
-        $expires = 60 * 60 * 24 * 14; //Give it 2 weeks.
-
+        // Two weeks expiration.
+        $expires = 60 * 60 * 24 * 14;
         header('Content-type: ' . $mime);
         header('Content-Length: ' . $length);
         header('Content-Transfer-Encoding: binary');
         header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
-
         if (!empty($filename)) {
             header('Content-Disposition: attachment; filename="' . trim($filename) . '"');
         }
-
         if (!empty($modified)) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified) . ' GMT');
         }
-
         header('Connection: close');
         header('Vary: Accept');
-
         if ($isFile) {
             readfile($data);
         } else {
@@ -450,10 +444,7 @@ class Core
      */
     public static function output_same($expires = '+30 days')
     {
-        //Status Code:304 Not Modified
         header('HTTP/1.1 304 Not Modified', null, 304);
-
-        $expires = intval($expires);
         header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
         header('Connection: close');
         exit;
@@ -479,7 +470,7 @@ class Core
         $original = PATH_ASSETS . $url;
         if (!file_exists($original)) {
             header('HTTP/1.0 404 Not Found', null, 404);
-            Show::fatal($request, 'Unable to find matching file.');
+            throw new Exception("Unable to find file: $request");
         }
 
         $extension = pathinfo($url, PATHINFO_EXTENSION);

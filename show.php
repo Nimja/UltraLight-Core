@@ -1,11 +1,12 @@
 <?php
-
 /**
  * Nice global class to show error/info messages in nice HTML.
  */
 class Show
 {
+    CONST STR_PAD = '  ';
     public static $curError = 0;
+
     /**
      * Show a variable in a neat HTML friendly way. - VERY handy.
      *
@@ -15,8 +16,7 @@ class Show
      * @param boolean $return Return the export as a string instead of echoing.
      * @return string Optional return value, if $return is true.
      */
-    public static function info($var, $title = 'Export Variable',
-        $color = 'neutral', $return = false)
+    public static function info($var, $title = 'Export Variable', $color = 'neutral', $return = false)
     {
         //Choose a color.
         $colors = array(
@@ -30,19 +30,17 @@ class Show
         $color = !empty($colors[$color]) ? $colors[$color] : $color;
 
         self::$curError++;
+        $info = self::_showVariable($var);
         if ($var instanceof Exception) {
-            $title = 'Exception!';
-            $info = self::_showVariable($var->getMessage());
             $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
         } else {
-            $info = self::_showVariable($var);
             $trace = self::_getTraceInfo(self::_getDebug());
         }
         // Create result.
         $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
             // Trace block
-            .$trace
+            . $trace
             // Title
             . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
             // Actual content.
@@ -68,7 +66,7 @@ class Show
     private static function _getDebug($traces = null)
     {
         $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
-        $traces = $traces ?: debug_backtrace($option);
+        $traces = $traces ? : debug_backtrace($option);
         $lines = array();
         foreach ($traces as $trace) {
             $function = getKey($trace, 'function');
@@ -85,10 +83,8 @@ class Show
             $app = strpos($info_dirname . '/', PATH_APP);
             //Skip the auto-class loading and the show class itself.
             if ($core !== false
-                && (
-                $info_basename == 'show.php'
-                || ($info_basename == 'core.php' && $line < 26)
-                )) {
+                && ($info_basename == 'show.php' || ($info_basename == 'core.php' && $line < 26))
+            ) {
                 continue;
             }
             //Add nice dir identifiers.
@@ -104,6 +100,7 @@ class Show
         }
         return $lines;
     }
+
     /**
      * Generate nifty trace HTML.
      * @return type
@@ -119,59 +116,81 @@ class Show
                     <div onclick=\"document.getElementById('trace-$curError').style.display='block'\">$location</div>
                 </div>";
     }
+
     /**
-     * Print_R a variable nicely, excluding private/protected stuff.
+     * Show a variable in a nice strict format.
      *
      * @param mixed $var
      * @return string
      */
-    private static function _showVariable($var) {
-        if (is_null($var)) {
-            $var = '[NULL]';
-        } else if (is_bool($var)) {
-            $var = $var ? '[TRUE]' : '[FALSE]';
+    private static function _showVariable($var)
+    {
+        $lines = self::_varToString($var);
+        $result = array();
+        foreach ($lines as $index => $line) {
+            $line = htmlentities($line);
+            $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
+            $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
         }
+        $resultString = implode("\n", $result);
+        return strtr(
+            $resultString,
+            array(
+            PATH_CORE => '[Core] ',
+            PATH_APP => '[App] ',
+            '  ' => '&nbsp;&nbsp;',
+            "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
+            )
+        );
+    }
 
-        //Make the content HTML compatible and split per lines.
-        $lines = explode("\n", htmlentities(trim(print_r($var, true))));
-        $display = array();
-        $count = 0;
-        $matches = array();
+    /**
+     * Parse a variable of different types into "lines" arrays.
+     * @param mixed $variable
+     * @return array
+     */
+    private static function _varToString($variable, $depth = 0)
+    {
 
-        $hide = 0;
-        foreach ($lines as $line) {
-            $line = rtrim($line);
-
-            //If we are in a hidden block, check for a [ on the current line.
-            if ($hide > 0) {
-                if (substr($line, $hide, 1) == '[') {
-                    $hide = 0;
-                } else {
-                    continue;
+        $result = array();
+        $pad = str_repeat(self::STR_PAD, $depth);
+        $padp = str_repeat(self::STR_PAD, $depth + 1);
+        if (is_null($variable)) {
+            $result[] = "{$pad}NULL";
+        } else if (is_bool($variable)) {
+            $result[] = $variable ? "{$pad}TRUE" : "{$pad}FALSE";
+        } else if (is_string($variable)) {
+            $result[] = $pad . '"' . str_replace("\n", '<br />', $variable) . '"';
+        } else if ($variable instanceof Exception) {
+            $result[] = self::_getVarHeader($variable, $pad);
+            $result[] = "{$padp}[file] => {$variable->getFile()}";
+            $result[] = "{$padp}[line] => {$variable->getLine()}";
+            $result[] = "{$padp}[message] => {$variable->getMessage()}";
+            $result[] = "{$pad}}";
+        } else if (is_array($variable) || is_object($variable)) {
+            $result[] = self::_getVarHeader($variable, $pad);
+            $padp = str_repeat(self::STR_PAD, $depth + 1);
+            foreach ($variable as $key => $value) {
+                $values = self::_varToString($value, $depth + 2);
+                $first = trim(array_shift($values));
+                $result[] = "{$padp}[{$key}] => $first";
+                if (count($values) > 0) {
+                    $result = array_merge($result, $values);
                 }
             }
-
-            //If the current 'block' matches :protected or :private in the first [] thing.
-            if (preg_match("/^(\s+)\[[^\]]*\:(protected|private)\]/", $line, $matches)) {
-                $spaces = $matches[1];
-                $hide = strlen($spaces);
-                continue;
-            }
-
-            $bg = ($count % 2) ? 'background: #f0f2f4;' : '';
-            $count++;
-
-            if (empty($line))
-                $line = '&nbsp;';
-
-            $line = strtr($line, array(
-                '  ' => '&nbsp;&nbsp;',
-                "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
-                ));
-
-            $display[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
+            $result[] = is_array($variable) ? "{$pad}]" :"{$pad}}";
         }
-        return implode("\n", $display);
+        return $result;
+    }
+
+    /**
+     * Get nice var header for object/arrays.
+     * @param object|array $variable
+     * @param string $pad
+     * @return string
+     */
+    private static function _getVarHeader($variable, $pad) {
+        return is_array($variable) ? "{$pad}array [" : $pad . get_class($variable) . ' {';
     }
 
     /**
