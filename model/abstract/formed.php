@@ -6,7 +6,7 @@
  * $_fields array, which defines the table and the used fields.
  * $_table, defining the table name.
  */
-abstract class Model_Formed extends Model_Abstract
+abstract class Model_Abstract_Formed extends Model_Abstract
 {
     /**
      * Holder for the form object connected to this function.

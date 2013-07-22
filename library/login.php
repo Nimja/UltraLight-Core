@@ -23,7 +23,7 @@ class Library_Login
     public static $role = 0;
     /**
      * Class for the user object.
-     * @var type
+     * @var string
      */
     protected static $_userClass = 'Model_User';
 

@@ -8,10 +8,14 @@
 abstract class Library_Transform_Abstract {
 
     /**
-     * Array of
-     * @var type
+     * Array of remaining commands.
+     * @var array
      */
     protected $_commands;
+    /**
+     * The value in question.
+     * @var string
+     */
     protected $_value;
 
     /**

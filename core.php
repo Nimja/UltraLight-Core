@@ -165,13 +165,13 @@ class Core
 
     /**
      * Loaded classes.
-     * @var type
+     * @var array
      */
     public static $classes = array();
 
     /**
-     * If we show the debug messages.
-     * @var type
+     * Enable debugging on the fly.
+     * @var boolean
      */
     public static $debug = false;
 

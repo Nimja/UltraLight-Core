@@ -17,7 +17,7 @@ abstract class Model_Abstract
     const SETTING_SERIALIZE = 'serialize';
     /**
      * Settings for each class.
-     * @var type
+     * @var array
      */
     private static $_classSettings = array();
     /**
@@ -66,7 +66,7 @@ abstract class Model_Abstract
     /**
      * Is true if a save succeeded succesfully.
      *
-     * @var type
+     * @var boolean
      */
     protected $_saved = false;
 

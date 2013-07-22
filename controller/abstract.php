@@ -13,12 +13,12 @@ abstract class Controller_Abstract
     private $_view;
     /**
      *
-     * @var type
+     * @var int
      */
     protected $_requiredRole = 0;
     /**
      *
-     * @var type
+     * @var string
      */
     protected $_loginRedirect = 'admin/login';
 

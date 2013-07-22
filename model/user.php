@@ -4,7 +4,7 @@
  *
  * @author Nimja
  */
-class Model_User extends Model_Sessioned
+class Model_User extends Model_Abstract_Sessioned
 {
     const COOKIE_NAME = 'login_remember';
     const ROLE_BLOCKED = 0;

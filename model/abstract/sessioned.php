@@ -4,7 +4,7 @@
  *
  * @author Nimja
  */
-abstract class Model_Sessioned extends Model_Abstract
+abstract class Model_Abstract_Sessioned extends Model_Abstract
 {
 
     /**

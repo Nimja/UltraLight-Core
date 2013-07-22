@@ -12,7 +12,7 @@ class Library_Session {
     const DELETE = 'DELETE';
     /**
      * The key for the session.
-     * @var type
+     * @var string
      */
     private $_key;
 

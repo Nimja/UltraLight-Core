@@ -2,14 +2,14 @@
 
 /**
  * Encode/Decode an array of numbers into a simple string that fits as a filename.
- * 
+ *
  */
 class Library_Crypt
 {
 
     /**
      * String of characters.
-     * @var type
+     * @var string
      */
     private static $chars = "0Za9Yb8Xc7WdV6eUfT5gShR4iQj3PkO2lNm1MnLoKpJqIrHsGtFuEvDwCxByAz";
 

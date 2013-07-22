@@ -55,7 +55,7 @@ class Library_Database
     /**
      * Get an instanced Database object.
      * @param string $database
-     * @return /self
+     * @return Library_Database
      */
     public static function getDatabase($database = null)
     {
