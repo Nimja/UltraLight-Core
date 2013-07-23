@@ -759,6 +759,9 @@ class Library_Database
             if ($unsigned) {
                 $typeExtra = ' unsigned';
             }
+            if ($null && empty($default)) {
+                $default = null;
+            }
         } else if (substr($type, -4) == 'text') {
             $length = 0;
             $null = true;
