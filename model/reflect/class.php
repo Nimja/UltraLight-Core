@@ -23,6 +23,11 @@ class Model_Reflect_Class
      */
     private $_classNameShort;
     /**
+     * The database connection for this class.
+     * @var Library_Database
+     */
+    public $db;
+    /**
      * The table name.
      * @var string
      */
@@ -64,6 +69,7 @@ class Model_Reflect_Class
         }
         $this->_className = $class;
         $short = substr($class, $length);
+        $this->db = Library_Database::getDatabase();
         $this->table = $this->_getTableName($short);
         $this->type = strtolower($short);
         $this->_class = new ReflectionClass($class);

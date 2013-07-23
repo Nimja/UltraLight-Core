@@ -7,30 +7,40 @@
 class Model_User extends Model_Abstract_Sessioned
 {
     const COOKIE_NAME = 'login_remember';
+    /**
+     * Username.
+     * @listfield
+     * @db-type varchar
+     * @db-length 64
+     * @validate alpha|3
+     * @var string
+     */
+    public $username;
+    /**
+     * Password.
+     * @db-type varchar
+     * @db-length 64
+     * @validate empty|6
+     * @var string
+     */
+    public $password;
+    /**
+     * Email.
+     * @db-type varchar
+     * @db-length 127
+     * @var string
+     */
+    public $email;
+    /**
+     * Role.
+     * @db-type tinyint
+     * @var int
+     */
+    public $role;
     const ROLE_BLOCKED = 0;
     const ROLE_NEUTRAL = 1;
     const ROLE_EDITOR = 50;
     const ROLE_ADMIN = 100;
-    protected static $_listField = 'username';
-    protected static $_fields = array(
-        'username' => array(
-            'type' => 'varchar',
-            'length' => '64',
-            'validate' => 'alpha|3',
-        ),
-        'password' => array(
-            'type' => 'varchar',
-            'length' => '64',
-            'validate' => 'empty|6',
-        ),
-        'email' => array(
-            'type' => 'varchar',
-            'length' => '127',
-        ),
-        'role' => array(
-            'type' => 'tinyint',
-        ),
-    );
     protected $roles = array(
         self::ROLE_NEUTRAL => 'Normal User',
         self::ROLE_EDITOR => 'Editor (can edit, but not delete)',
@@ -114,10 +124,11 @@ class Model_User extends Model_Abstract_Sessioned
      */
     public static function getUserIdForLogin($name, $pass)
     {
-        $db = Library_Database::getDatabase();
+        $re = self::re();
+        $db = $re->db;
         $name = $db->escape($name);
         $pass = $db->escape($pass);
-        $table = self::getSetting();
+        $table = $re->table;
         return $db->fetchFirstValue("SELECT id FROM $table WHERE username=$name AND password=$pass");
     }
     public function saveSession()

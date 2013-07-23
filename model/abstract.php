@@ -1,25 +1,17 @@
 <?php
 /* - This is a simple class-holder for a model, using a DB connection.
  * Containing many useful functions for insert, delete, etc.
- * This is one of the few libraries using another library as a dependancy.
- * Things needing defining:
- * $_fields array, which defines the table and the used fields.
+ * To understand the DB model; it uses reflection through Model_Reflect_Class.
  */
 abstract class Model_Abstract
 {
     const ID = 'id';
-    const CLASS_PREFIX = 'Model_';
-    const SETTING_FIELDS = 'fields';
-    const SETTING_TABLE = 'table';
-    const SETTING_TYPE = 'type';
-    const SETTING_VALIDATE = 'validate';
-    const SETTING_IGNORE = 'ignore';
-    const SETTING_SERIALIZE = 'serialize';
+    const TYPE_SERIALIZE = 'serialize';
     /**
-     * Settings for each class.
+     * Reflection for each class, used for fields and columns.
      * @var array
      */
-    private static $_classSettings = array();
+    private static $_reflections = array();
     /**
      * Cache per execution cycle, to prevent double queries.
      *
@@ -27,24 +19,11 @@ abstract class Model_Abstract
      */
     private static $_cache = array();
     /**
-     * Field used for ordering and listing.
-     *
-     * @var string
-     */
-    protected static $_listField = self::ID;
-    /**
-     * Database fields
-     *
-     * @var array
-     */
-    protected static $_fields = array();
-    /**
      * Static memory caching.
      *
      * @var array
      */
     protected static $cache = array();
-
     /**
      * The current class.
      *
@@ -98,11 +77,11 @@ abstract class Model_Abstract
             return false;
         }
         $class = $this->_class;
-        foreach ($class::$_fields as $field => $setting) {
+        foreach ($this->_re()->fields as $field => $type) {
             $value = getKey($values, $field, '');
-            if ($setting[self::SETTING_TYPE] == 'bool') {
+            if ($type == 'bool') {
                 $this->$field = $value ? 1 : 0;
-            } else if (!empty($setting[self::SETTING_SERIALIZE])) {
+            } else if ($type == self::TYPE_SERIALIZE) {
                 $this->$field = is_string($value) ? unserialize($value) : $value;
             } else {
                 $this->$field = $value;
@@ -123,7 +102,7 @@ abstract class Model_Abstract
     {
         $result = array();
         $class = $this->_class;
-        foreach ($class::$_fields as $field => $type) {
+        foreach ($this->_re()->fields as $field => $type) {
             $value = getAttr($this, $field);
             if (!blank($value)) {
                 $result[$field] = $this->$field;
@@ -140,27 +119,17 @@ abstract class Model_Abstract
      */
     public function save()
     {
-        $db = Library_Database::getDatabase();
+        $re = $this->_re();
+        $db = $re->db;
         $values = $this->getValues();
         //Do we want to do a validation check?
         $id = intval($this->id);
-        $ignoreFields = $this->_getSetting(self::SETTING_IGNORE);
-        $serializeFields = $this->_getSetting(self::SETTING_SERIALIZE);
-        $table = $this->_getSetting();
-        //Remove these fields from the values to be saved.
-        if (!empty($ignoreFields)) {
-            foreach (array_keys($ignoreFields) as $field) {
-                unset($values[$field]);
-            }
-        }
-        if (!empty($serializeFields)) {
-            foreach (array_keys($serializeFields) as $field) {
-                if (!isset($values[$field])) {
-                    continue;
-                }
+        foreach ($re->fields as $field => $type) {
+            if ($type == self::TYPE_SERIALIZE) {
                 $values[$field] = serialize($values[$field]);
             }
         }
+        $table = $re->table;
         //Switch between update and insert automatically.
         if ($id > 0) {
             $db->update($table, $values, 'id=' . $id);
@@ -178,8 +147,9 @@ abstract class Model_Abstract
      */
     public function delete()
     {
-        $table = $this->_getSetting();
-        Library_Database::getDatabase()->delete($table, $this->id);
+        $re = $this->_re();
+        $table = $re->table;
+        $re->db->delete($table, $this->id);
         self::_clearCache($this->_class, $this);
         $this->id = 0;
     }
@@ -191,13 +161,13 @@ abstract class Model_Abstract
      */
     public function install($force = false)
     {
-        $class = $this->_class;
-        $fields = $class::$_fields;
+        $re = $this->_re();
+        $fields = $re->columns;
         if (empty($fields)) {
             return false;
         }
-        $table = $this->_getSetting();
-        $db = Library_Database::getDatabase();
+        $table = $re->table;
+        $db = $re->db;
         if (!$this->check() || $force) {
             $installed = $db->tableCreate($table, $fields, true);
             #Install default values, if needs be.
@@ -257,22 +227,17 @@ abstract class Model_Abstract
      */
     protected function check()
     {
-        $table = $this->_getSetting();
-        if (empty($table))
-            return false;
-
-        $db = Library_Database::getDatabase();
-        return $db->table_exists($table);
+        $re = $this->_re();
+        return $re->db->table_exists($re->table);
     }
 
     /**
-     * Get the setting, from the class. Easier wrapper function.
-     * @param string $name
-     * @return mixed
+     * Get the reflect values.
+     * @return Model_Reflect_Class
      */
-    protected function _getSetting($name = self::SETTING_TABLE)
+    protected function _re()
     {
-        return self::getSetting($name, $this->_class);
+        return self::re($this->_class);
     }
 
     /**
@@ -312,60 +277,17 @@ abstract class Model_Abstract
      */
 
     /**
-     * Get setting for this class.
-     *
-     * This is only done once per class, per execution cycle.
-     *
+     * Get the reflection for this class, like fields, db, columns, etc.
      * @param string $class
-     * @param array $fields
-     * @return array
+     * @return Model_Reflect_Class
      */
-    private static function _getSettings($class)
+    public static function re($class = null)
     {
-        if (empty(self::$_classSettings[$class])) {
-            $fields = $class::$_fields;
-            if (empty($fields) || !is_array($fields)) {
-                Show::fatal('Cannot create model unless fields is defined.', $this->_class);
-            }
-            $result = array();
-            //Set the table/name for this setting.
-            $result[self::SETTING_TYPE] = str_replace(self::CLASS_PREFIX, '', strtolower($class));
-            $prefix = Config::system()->get('database', 'table_prefix', '');
-            $result[self::SETTING_TABLE] = str_replace(self::CLASS_PREFIX, $prefix, $class);
-            //Create the validation/ignore arrays for ease of use.
-            $validate = array();
-            $ignore = array();
-            $serialize = array();
-            foreach ($class::$_fields as $field => $settings) {
-                if (isset($settings[self::SETTING_VALIDATE])) {
-                    $validate[$field] = $settings['validate'];
-                }
-                if (!empty($settings[self::SETTING_IGNORE])) {
-                    $ignore[$field] = true;
-                }
-                if (!empty($settings[self::SETTING_SERIALIZE])) {
-                    $serialize[$field] = true;
-                }
-            }
-            $result[self::SETTING_VALIDATE] = $validate;
-            $result[self::SETTING_IGNORE] = $ignore;
-            $result[self::SETTING_SERIALIZE] = $serialize;
-            self::$_classSettings[$class] = $result;
+        $class = $class ? : get_called_class();
+        if (empty(self::$_reflections[$class])) {
+            self::$_reflections[$class] = new Model_Reflect_Class($class);
         }
-        return self::$_classSettings[$class];
-    }
-
-    /**
-     * Get specific setting.
-     * @param type $class
-     * @param type $setting
-     * @return type
-     */
-    public static function getSetting($setting = self::SETTING_TABLE, $class = null)
-    {
-        $class = $class ?: get_called_class();
-        $settings = self::_getSettings($class);
-        return getKey($settings, $setting);
+        return self::$_reflections[$class];
     }
 
     /**
@@ -381,9 +303,8 @@ abstract class Model_Abstract
         $class = get_called_class();
         $result = self::_loadCache($class, $id);
         if (!$result) {
-            $table = self::getSetting(self::SETTING_TABLE, $class);
-            $db = Library_Database::getDatabase();
-            $values = $db->getById($table, $id);
+            $re = self::re($class);
+            $values = $re->db->getById($re->table, $id);
             if (!empty($values)) {
                 $result = new $class($values);
                 self::_saveCache($class, $result);
@@ -402,13 +323,9 @@ abstract class Model_Abstract
     {
         $result = null;
         $class = get_called_class();
-        $table = self::getSetting(self::SETTING_TABLE, $class);
-        $db = Library_Database::getDatabase();
-        $order = $order ?: "{$class::$_listField} ASC";
-        $values = $db->searchTable($table, $search, $order, 1)->fetchRow();
-        if (!empty($values)) {
-            $result = new $class($values);
-            self::_saveCache($class, $result);
+        $rows = $class::find($search, $order, 1);
+        if (!empty($rows)) {
+            $result = array_shift($rows);
         }
         return $result;
     }
@@ -425,26 +342,17 @@ abstract class Model_Abstract
     public static function find($search = null, $order = null, $limit = null)
     {
         $class = get_called_class();
-        $table = self::getSetting(self::SETTING_TABLE, $class);
-        $db = Library_Database::getDatabase();
-        $order = $order ?: "{$class::$_listField} ASC";
-        $res = $db->searchTable($table, $search, $order, $limit)->last;
+        $re = self::re($class);
+        $listField = $re->listField;
+        $order = $order ? : "{$listField} ASC";
+        $res = $re->db->searchTable($re->table, $search, $order, $limit)->last;
         $result = array();
         while ($row = $db->fetchRow($res)) {
             $model = new $class($row);
             $result[$model->id] = $model;
+            self::_saveCache($class, $model);
         }
         return $result;
-    }
-
-    /**
-     * Get the fields for this class.
-     * @return type
-     */
-    protected static function fields()
-    {
-        $class = get_called_class();
-        return $class::$_fields;
     }
 
     /**

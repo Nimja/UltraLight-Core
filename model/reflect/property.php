@@ -1,6 +1,6 @@
 <?php
 /**
- * Description of type
+ * Property reflection for models.
  *
  * @author Nimja
  */
@@ -20,20 +20,13 @@ class Model_Reflect_Property
     private $_doc;
 
     /**
-     * Name of the current property.
-     * @var type
-     */
-    private $_name;
-
-    /**
-     *
+     * Basic constructor.
      * @param ReflectionProperty $property
      */
     public function __construct($property)
     {
         $this->_property = $property;
         $this->_doc = $this->_parsedDocComment();
-        $this->_name = $this->getName();
     }
 
     /**
@@ -55,7 +48,6 @@ class Model_Reflect_Property
             }
         }
     }
-
 
     /**
      * Get the name of the current property.
@@ -87,19 +79,22 @@ class Model_Reflect_Property
         }
         return $result;
     }
+
     /**
      * Is this property a DB field.
      * @return boolean
      */
     private function _isColumn()
     {
-        return isset($this->_doc[self::PROPERTY_DB.'type']);
+        return isset($this->_doc[self::PROPERTY_DB . 'type']);
     }
+
     /**
      * Get the column information.
      * @return array
      */
-    private function _getDbFields() {
+    private function _getDbFields()
+    {
 
         $result = array();
         foreach ($this->_doc as $key => $value) {
@@ -110,6 +105,7 @@ class Model_Reflect_Property
         }
         return $result;
     }
+
     /**
      * Get field type (boolean, int, etc.) as a string.
      * @return string
@@ -117,8 +113,8 @@ class Model_Reflect_Property
     private function _getFieldType()
     {
         $result = getKey($this->_doc, 'db-type', 'int');
-        if (isset($this->_doc[Model_Abstract::SETTING_SERIALIZE])) {
-            $result = Model_Abstract::SETTING_SERIALIZE;
+        if (isset($this->_doc[Model_Abstract::TYPE_SERIALIZE])) {
+            $result = Model_Abstract::TYPE_SERIALIZE;
         }
         return $result;
     }

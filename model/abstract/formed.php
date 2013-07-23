@@ -1,10 +1,6 @@
 <?php
-/* - This is a simple class-holder for a model, using a DB connection.
- * Containing many useful functions for insert, delete, etc.
- * This is one of the few libraries using another library as a dependancy.
- * Things needing defining:
- * $_fields array, which defines the table and the used fields.
- * $_table, defining the table name.
+/**
+ * A model with some automatic 'forms' based on the types.
  */
 abstract class Model_Abstract_Formed extends Model_Abstract
 {
@@ -25,7 +21,11 @@ abstract class Model_Abstract_Formed extends Model_Abstract
     public function getSelectionList($where = '', $orderBy = null)
     {
         $class = $this->_class;
-        $orderBy = !empty($orderBy) ? $orderBy : $class::$_listField . ' ASC';
+        $re = $this->_re();
+        $db = $re->db;
+        $table = $db->escape($re->table);
+        $listField = $re->listField;
+        $orderBy = !empty($orderBy) ? $orderBy : "$listField ASC";
         $extra = '';
         if (!empty($where)) {
             $extra .= ' WHERE ' . $where;
@@ -33,9 +33,7 @@ abstract class Model_Abstract_Formed extends Model_Abstract
         if (!empty($orderBy)) {
             $extra .= ' ORDER BY ' . $orderBy;
         }
-        $db = Library_Database::getDatabase();
-        $table = $db->escape($this->setting());
-        return $db->getList('id', $class::$_listField, "SELECT * FROM  $table $extra");
+        return $db->getList('id', $listField, "SELECT * FROM  $table $extra");
     }
 
     /**
@@ -53,7 +51,7 @@ abstract class Model_Abstract_Formed extends Model_Abstract
         }
         #Begin the form.
         $class = $this->_class;
-        $fields = $class::$_fields;
+        $fields = $this->_re()->fields;
         $type = $this->setting(self::SETTING_TYPE);
 
         $form = $this->_form;
