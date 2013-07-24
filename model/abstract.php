@@ -124,9 +124,9 @@ abstract class Model_Abstract
         $values = $this->getValues();
         //Do we want to do a validation check?
         $id = intval($this->id);
-        foreach ($re->fields as $field => $type) {
-            if ($type == self::TYPE_SERIALIZE) {
-                $values[$field] = serialize($values[$field]);
+        foreach ($values as $field => $value) {
+            if ($re->fields[$field] == self::TYPE_SERIALIZE) {
+                $values[$field] = serialize($value);
             }
         }
         $table = $re->table;
