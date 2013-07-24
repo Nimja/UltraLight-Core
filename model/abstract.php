@@ -343,9 +343,10 @@ abstract class Model_Abstract
     {
         $class = get_called_class();
         $re = self::re($class);
+        $db = $re->db;
         $listField = $re->listField;
         $order = $order ? : "{$listField} ASC";
-        $res = $re->db->searchTable($re->table, $search, $order, $limit)->last;
+        $res = $db->searchTable($re->table, $search, $order, $limit)->last;
         $result = array();
         while ($row = $db->fetchRow($res)) {
             $model = new $class($row);
