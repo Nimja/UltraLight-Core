@@ -47,6 +47,11 @@ class Model_User extends Model_Abstract_Sessioned
         self::ROLE_ADMIN => 'Admin (can edit everything)',
     );
     /**
+     * The flag if we need to set a cookie.
+     * @var boolean
+     */
+    public $remember = false;
+    /**
      * Prevent hash getting generated multiple times.
      * @var array
      */
@@ -84,6 +89,7 @@ class Model_User extends Model_Abstract_Sessioned
     {
         return empty($this->id) ? '' : $this->_getCookieHash();
     }
+
     /**
      * Get a generated hash based on ID, IP and hashed username.
      * @return type
@@ -97,12 +103,21 @@ class Model_User extends Model_Abstract_Sessioned
     }
 
     /**
+     * Save the current session.
+     */
+    public function saveSession()
+    {
+        $this->ip = REMOTE_IP;
+        parent::saveSession();
+    }
+
+    /**
      * Check the current cookie and return a user object if it's vaild.
      * @return null|\self
      */
-    public static function checkCookieForRemember()
+    public static function loadFromCookie()
     {
-        $cookie = getKey($_COOKIE, self::COOKIE_NAME);
+        $cookie = Request::getCookie(self::COOKIE_NAME);
         $result = null;
         if (!empty($cookie)) {
             $parts = explode('-', $cookie);
@@ -131,9 +146,29 @@ class Model_User extends Model_Abstract_Sessioned
         $table = $re->table;
         return $db->fetchFirstValue("SELECT id FROM $table WHERE username=$name AND password=$pass");
     }
-    public function saveSession()
+
+    /**
+     * Simple login function.
+     * @return Model_User
+     */
+    public static function login()
     {
-        $this->ip = REMOTE_IP;
-        parent::saveSession();
+        $result = self::loadSession();
+        if (empty($result)) {
+            $result = self::loadFromCookie();
+        }
+        if (!empty($result) && !empty($result->ip) && $result->ip != REMOTE_IP) {
+            $result = null;
+        }
+        return $result;
+    }
+
+    /**
+     * Clear the current session and remove the cookie.
+     */
+    public static function logout()
+    {
+        Request::clearCookie(self::COOKIE_NAME);
+        self::clearSession();
     }
 }

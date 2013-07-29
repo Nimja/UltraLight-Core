@@ -33,10 +33,7 @@ class Library_Login
     public static function init()
     {
         $class = self::$_userClass;
-        $user = $class::loadSession();
-        if (!empty($user) && !empty($user->ip) && $user->ip != REMOTE_IP) {
-            $user = null;
-        }
+        $user = $class::login();
         self::doLogin($user);
     }
 
@@ -48,8 +45,7 @@ class Library_Login
     public static function logout()
     {
         $class = self::$_userClass;
-        $class::clearSession();
-        Request::clearCookie($class::COOKIE_NAME);
+        $class::logout();
         self::$user = null;
         self::$role = 0;
     }
