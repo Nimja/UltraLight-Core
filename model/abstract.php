@@ -6,6 +6,7 @@
 abstract class Model_Abstract
 {
     const ID = 'id';
+    const TYPE_BOOL = 'bool';
     const TYPE_SERIALIZE = 'serialize';
     /**
      * Reflection for each class, used for fields and columns.
@@ -79,8 +80,8 @@ abstract class Model_Abstract
         $class = $this->_class;
         foreach ($this->_re()->fields as $field => $type) {
             $value = getKey($values, $field, '');
-            if ($type == 'bool') {
-                $this->$field = $value ? 1 : 0;
+            if ($type == self::TYPE_BOOL) {
+                $this->$field = $value ? true : false;
             } else if ($type == self::TYPE_SERIALIZE) {
                 $this->$field = is_string($value) ? unserialize($value) : $value;
             } else {
@@ -127,6 +128,8 @@ abstract class Model_Abstract
         foreach ($re->fields as $field => $type) {
             if (!isset($values[$field])) {
                 continue;
+            } else if ($type == self::TYPE_BOOL) {
+                $values[$field] = $values[$field] ? true : false;
             } else if ($type == self::TYPE_SERIALIZE) {
                 $values[$field] = serialize($values[$field]);
             }
