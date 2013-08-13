@@ -51,6 +51,13 @@ abstract class Model_Abstract
     protected $_saved = false;
 
     /**
+     * Maintain relationships.
+     *
+     * @var array
+     */
+    protected $_related = array();
+
+    /**
      * Basic constructor, with error messages.
      *
      * @param array $values
@@ -266,6 +273,27 @@ abstract class Model_Abstract
             $result = $validator->warnings;
         }
         return $result;
+    }
+    /**
+     * Get a related object.
+     * @param string $type
+     * @return Model_Abstract
+     */
+    protected function _getRelated($type)
+    {
+        $typeId = $type . 'Id';
+        $class = 'Model_' . ucfirst($type);
+        if (empty($this->$typeId)) {
+            throw new Exception("$typeId empty or not present.");
+        }
+        if (empty($this->_related[$type])) {
+            $entity = $class::load($this->$typeId);
+            if (empty($entity)) {
+                throw new Exception("No $class with id $typeId.");
+            }
+            $this->_related[$type] = $entity;
+        }
+        return $this->_related[$type];
     }
 
     /**
