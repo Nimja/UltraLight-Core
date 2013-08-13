@@ -159,6 +159,8 @@ class Show
             $result[] = "{$pad}NULL";
         } else if (is_bool($variable)) {
             $result[] = $variable ? "{$pad}TRUE" : "{$pad}FALSE";
+        } else if (is_int($variable) || is_float($padp)) {
+            $result[] = $pad . $variable;
         } else if (is_string($variable)) {
             $result[] = $pad . '"' . str_replace("\n", '<br />', $variable) . '"';
         } else if ($variable instanceof Exception) {
