@@ -4,6 +4,8 @@
  */
 class Library_Database
 {
+    const SEARCH_VALUE = 'value';
+    const SEARCH_OPERATION = 'operation';
     /**
      * Last mysql query resource
      *
@@ -919,10 +921,13 @@ class Library_Database
     public function searchToWhere($search)
     {
         $where = array();
-        $searches = is_array($search) ? $search : $this->parseSearch($search);
+        $searches = is_array($search) ? $search : $this->_parseSearch($search);
         foreach ($searches as $field => $details) {
-            $value = getKey($details, 'value');
-            $operation = getKey($details, 'operation', '|=');
+            if (!is_array($details)) {
+                $details = array('value' => $details);
+            }
+            $value = getKey($details, self::SEARCH_VALUE);
+            $operation = getKey($details, self::SEARCH_OPERATION, '|=');
             $condition = $this->escape($field, true);
             if ($value == 'null') {
                 $condition .= ($operation != '|!') ? ' IS NULL' : ' IS NOT NULL';
@@ -953,7 +958,7 @@ class Library_Database
      * @param type $search
      * @return array
      */
-    protected function parseSearch($search)
+    protected function _parseSearch($search)
     {
         $result = array();
         if (!empty($search)) {
@@ -966,8 +971,8 @@ class Library_Database
                     continue;
                 }
                 $result[trim($matches[1])] = array(
-                    'value' => trim($matches[3]),
-                    'operation' => $matches[2],
+                    self::SEARCH_VALUE => trim($matches[3]),
+                    self::SEARCH_OPERATION => $matches[2],
                 );
             }
         }
