@@ -159,8 +159,15 @@ class Show
             $result[] = "{$pad}NULL";
         } else if (is_bool($variable)) {
             $result[] = $variable ? "{$pad}TRUE" : "{$pad}FALSE";
-        } else if (is_int($variable) || is_float($padp)) {
+        } else if (is_float($padp)) {
             $result[] = $pad . $variable;
+        } else if (is_int($variable)) {
+            $var = $pad . $variable;
+            //Assume date when handling big integers (> 1985).
+            if ($variable > 500000000) {
+                $var .= date(' (Y-m-d H:i:s)');
+            }
+            $result[] = $var;
         } else if (is_string($variable)) {
             $result[] = $pad . '"' . str_replace("\n", '<br />', $variable) . '"';
         } else if ($variable instanceof Exception) {
