@@ -6,6 +6,7 @@
  */
 class Model_Reflect_Class
 {
+    const DOCCOMMENT_REGEX = '/@([a-zA-Z-]+)(.*)/';
     const CLASS_PREFIX = 'Model_';
     /**
      * The current class.
@@ -17,11 +18,6 @@ class Model_Reflect_Class
      * @var string
      */
     private $_className;
-    /**
-     * Short name without the model prefix.
-     * @var string
-     */
-    private $_classNameShort;
     /**
      * The database connection for this class.
      * @var Library_Database
@@ -100,5 +96,27 @@ class Model_Reflect_Class
     {
         $prefix = Config::system()->get('database', 'table_prefix', '');
         return $prefix . $shortName;
+    }
+
+    /**
+     * Parse the doc comment into a nice array.
+     * @param string $docComment
+     * @return array
+     */
+    public static function parseDocComment($docComment)
+    {
+        $result = array();
+        if (!empty($docComment)) {
+            $matches = null;
+            if (preg_match_all(self::DOCCOMMENT_REGEX, $docComment, $matches)) {
+                $fields = $matches[1];
+                $values = $matches[2];
+                foreach ($fields as $key => $value) {
+                    $var = trim(getKey($values, $key, ''));
+                    $result[$value] = $var == '' ? true : $var;
+                }
+            }
+        }
+        return $result;
     }
 }

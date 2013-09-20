@@ -6,8 +6,7 @@
  */
 class Model_Reflect_Property
 {
-    CONST PROPERTY_REGEX = '/@([a-zA-Z-]+)(.*)/';
-    CONST PROPERTY_DB = 'db-';
+    const PROPERTY_DB = 'db-';
     /**
      * The current property.
      * @var ReflectionProperty
@@ -26,7 +25,7 @@ class Model_Reflect_Property
     public function __construct($property)
     {
         $this->_property = $property;
-        $this->_doc = $this->_parsedDocComment();
+        $this->_doc = Model_Reflect_Class::parseDocComment($property->getDocComment());
     }
 
     /**
@@ -56,28 +55,6 @@ class Model_Reflect_Property
     public function getName()
     {
         return $this->_property->getName();
-    }
-
-    /**
-     * Parse the doc comments into an array with a simple regex.
-     * @return array
-     */
-    private function _parsedDocComment()
-    {
-        $result = array();
-        $docBlock = $this->_property->getDocComment();
-        if (!empty($docBlock)) {
-            $matches = null;
-            if (preg_match_all(self::PROPERTY_REGEX, $docBlock, $matches)) {
-                $fields = $matches[1];
-                $values = $matches[2];
-                foreach ($fields as $key => $value) {
-                    $var = trim(getKey($values, $key, ''));
-                    $result[$value] = $var == '' ? true : $var;
-                }
-            }
-        }
-        return $result;
     }
 
     /**
