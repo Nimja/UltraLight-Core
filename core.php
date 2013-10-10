@@ -207,7 +207,7 @@ class Core
             Show::error($e);
         }
         self::debug(self::$classes, 'Loaded classes');
-        self::debug(round(microtime(true) - self::$start, 4), 'Execution time');
+        self::debug(round(microtime(true) - self::$start, 4), 'Execution time in seconds');
     }
 
     /**

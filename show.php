@@ -159,7 +159,7 @@ class Show
             $result[] = "{$pad}NULL";
         } else if (is_bool($variable)) {
             $result[] = $variable ? "{$pad}TRUE" : "{$pad}FALSE";
-        } else if (is_float($padp)) {
+        } else if (is_float($variable)) {
             $result[] = $pad . $variable;
         } else if (is_int($variable)) {
             $var = $pad . $variable;
