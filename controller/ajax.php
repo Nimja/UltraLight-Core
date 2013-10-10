@@ -6,7 +6,6 @@ abstract class Controller_Ajax extends Controller_Abstract
 {
     protected function _executeRun()
     {
-        $error = null;
         $result = array('time' => time());
         try {
             $result['content'] = $this->_run();
