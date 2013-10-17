@@ -273,6 +273,7 @@ class Core
         }
         //Store it away for other uses.
         self::$url = $request;
+        Config::system()->set('site', 'pageurl', $request);
         //Array of url parts
         return !empty($request) ? explode('/', $request) : array();
     }
