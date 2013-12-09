@@ -1,45 +1,10 @@
 <?php
 /**
- * Enforce the random numbers to be random, using microtime.
- *
- * I've found this to be a problem on some servers who reused processes, meaning the standard PHP srand will
- * repeat the same random structure within the same second, for the same user.
+ * Make sure PATH_VENDOR is always defined, it is an optional path.
  */
-srand(microtime(true) * 10000 + getmypid());
-
-/**
- * Where the major magic happens. This block ensures that classes are loaded on
- * demand, completely automatically.
- *
- * By putting PATH_APP first, it will check there before the core.
- */
-set_include_path(get_include_path() . PATH_SEPARATOR . PATH_APP . PATH_SEPARATOR . PATH_CORE);
-spl_autoload_register(function ($class) {
-        $filename = str_replace('_', '/', strtolower(trim($class, './ '))) . '.php';
-        $file = stream_resolve_include_path($filename);
-        if ($file == false) {
-            Show::fatal($class, 'Attempted include of a class that does not exist.');
-        }
-        require_once $file;
-        if (!class_exists($class, false)) {
-            Show::fatal($filename, "File exists, but class $class not found.");
-        }
-        Core::$classes[] = $class;
-    });
-/**
- * Set error handler for when certain errors fall through.
- */
-set_error_handler(function ($errNo, $errStr, $errFile, $errLine) {
-        Show::error("[$errLine] $errFile", $errStr);
-    }, E_ALL);
-
-/**
- * Start session and get config.
- */
-session_start();
-Config::system(PATH_CORE . 'config.ini');
-date_default_timezone_set(Config::system()->get('php', 'timezone', 'Europe/Paris'));
-mb_internal_encoding('UTF-8');
+if (!defined('PATH_VENDOR')) {
+    define('PATH_VENDOR', PATH_CORE . 'vendor/');
+}
 
 /**
  * Replacement function for "empty", easier to type and returns true when var is "0" or 0
@@ -81,94 +46,64 @@ function getAttr($obj, $attr, $default = false)
     }
     return isset($obj->$attr) && !blank($obj->$attr) ? $obj->$attr : $default;
 }
-
 /**
- * Sanitation function to run on POST/GET variables.
+ * The core class for UltraLight.
  *
- * @param mixed $value The value you wish to sanitize.
- * @param booelan|array $keepTags
- * @return string Sanitized string.
+ * This prepares the autoloading, controller and a few safeties.
  */
-function sanitize($value, $keepTags = true)
-{
-    if (blank($value)) {
-        $result = null;
-    } if (is_numeric($value)) {
-        $result = $value;
-    } else if (is_array($value)) {
-        $result = array();
-        foreach ($value as $key => $val) {
-            $result[sanitize($key)] = sanitize($val);
-        }
-    } else {
-        $stripHtml = is_array($keepTags) || empty($keepTags);
-        //Remove magic quotes.
-        $string = (ini_get('magic_quotes_gpc')) ? stripslashes($value) : $value;
-        //fix euro symbol.
-        $string = str_replace(chr(226) . chr(130) . chr(172), '&euro;', trim($string));
-        $string = utf8_decode($string);
-        $string = html_entity_decode($string, ENT_COMPAT, 'ISO-8859-15');
-        if ($stripHtml) {
-            $allowedTags = is_array($keepTags) ? $keepTags : null;
-            $string = strip_tags($string, $allowedTags);
-        }
-        $result = htmlentities($string, ENT_COMPAT, 'ISO-8859-15');
-    }
-    return $result;
-}
-
-# Minimal class for loading libraries, templates, etc.
-
 class Core
 {
     /**
+     * The used PHP extension, must be idential accross project.
+     */
+    const PHP_EXT = '.php';
+    /**
+     * Namespace for the core library, only exception are the base classes (Config, Core, Request, Sanitize & Show).
+     */
+    const NAMESPACE_CORE = '\Core';
+    /**
+     * Namespace for the app.
+     */
+    const NAMESPACE_APP = '\App';
+    /**
      * Part of the url that we use when using versioned JS/CSS
      */
-
     const URL_VERSION = 'version';
-
     /**
      * List of included files
-     * @var array
+     * @var string
      */
-    private static $_included = array();
-
+    private static $_included;
     /**
      * Actual request url.
      * @var string
      */
     public static $url = '';
-
     /**
      * Remainder of the url after routing. (url - route)
      * @var string
      */
     public static $rest = '';
-
     /**
      * Current controller we're loading.
      * @var string
      */
     public static $page = '';
-
     /**
      * THe route we used for this controller (url - rest);
      * @var string
      */
     public static $route = '';
-
     /**
      * Storing execution time.
      * @var int
      */
     public static $start = 0;
-
     /**
      * Loaded classes.
      * @var array
      */
     public static $classes = array();
-
     /**
      * Enable debugging on the fly.
      * @var boolean
@@ -180,55 +115,131 @@ class Core
      */
     public static function start()
     {
-        if (!empty(self::$_included['page'])) {
+        self::$start = microtime(true);
+        if (!empty(self::$_included)) {
             throw new Exception("Core::start() called manually!");
         }
-        self::$start = microtime(true);
-        Config::loadSystemDefines();
-        Config::loadPHPSettings();
-
-        self::_setSiteUrl();
-        self::_setRemoteIp();
-        $request = self::_getRequest();
-        self::debug($request, 'Checking route');
-        //Laod the default, static file or the relevant controller.
-        if (empty($request)) {
-            $load = 'index';
-        } else if ($request[0] == self::URL_VERSION) {
-            array_shift($request);
-            self::outputStatic($request);
-        } else {
-            $load = self::_getController($request);
-        }
-        self::debug($load, 'Loading page');
+        $core = new self();
         try {
-            self::_loadController($load);
+            header('X-Powered-By: UltraLight');
+            header('Server: UltraLight');
+            $page = $core->_startSession()
+                ->_setSiteUrl()
+                ->_setRemoteIp()
+                ->_loadPage();
+            $page->display();
         } catch (Exception $e) {
             Show::error($e);
         }
         self::debug(self::$classes, 'Loaded classes');
-        self::debug(round(microtime(true) - self::$start, 4), 'Execution time in seconds');
+        self::debug('Done.');
+    }
+
+    /**
+     * Private constructor, to set up basic environment.
+     */
+    private function __construct()
+    {
+        spl_autoload_register('Core::loadClass');
+        set_error_handler('Show::handleError', E_ALL);
+        Config::system(PATH_CORE . 'config.ini');
+        $appConfig = PATH_BASE . 'config.ini';
+        if (file_exists($appConfig)) {
+            Config::system($appConfig);
+        }
+    }
+
+    /**
+     * Set up the session.
+     * @return \Core
+     */
+    private function _startSession()
+    {
+        session_start();
+        date_default_timezone_set(Config::system()->get('php', 'timezone', 'Europe/Paris'));
+        mb_internal_encoding(Config::system()->get('php', 'encoding', 'UTF8'));
+        /**
+         * Enforce the random numbers to be random, using microtime.
+         */
+        srand(microtime(true) * 10000 + getmypid());
+        return $this;
+    }
+
+    /**
+     * Load the file for this class.
+     * @param string $class
+     * @param boolean $returnSuccess Normally the class throws fatals, with this enabled you can scan for classes.
+     * @return boolean if $returnSuccess is set to true, this will return the success.
+     */
+    public static function loadClass($class, $returnSuccess = false)
+    {
+        $parts = explode('\\', strtolower(trim($class, './\\ ')));
+        $first = array_shift($parts);
+        $nameSpace = '\\' . ucfirst($first);
+        $error = null;
+        //No namespace, only allowed for core base classes.
+        if (empty($parts) && file_exists(PATH_CORE . $first . self::PHP_EXT)) {
+            $fileName = PATH_CORE . $first;
+        } else if ($nameSpace == self::NAMESPACE_CORE) {
+            $fileName = PATH_CORE . 'core/' . implode('/', $parts);
+        } else if ($nameSpace == self::NAMESPACE_APP) {
+            $fileName = PATH_APP . implode('/', $parts);
+        } else {
+            $fileName = PATH_VENDOR . str_replace('\\', '/', trim($class, './\\ '));
+        }
+        $fileName .= self::PHP_EXT;
+        if (!$error && !file_exists($fileName)) {
+            $error = "Unable to load file: $fileName";
+        }
+        if (!$error) {
+            require $fileName;
+            self::$classes[$class] = array('file' => $fileName, 'time' => self::time());
+        }
+        if ($error && !$returnSuccess) {
+            \Show::fatal($class, $error);
+        }
+        return !$error;
+    }
+
+    /**
+     *
+     */
+    private function _loadPage()
+    {
+        $parts = $this->_getParsedUri();
+        self::debug($parts, 'Parts, checking route.');
+        $result = null;
+        if (!empty($parts) && $parts[0] == self::URL_VERSION) {
+            array_shift($parts);
+            $this->_outputStatic($parts);
+        } else {
+            $controller = empty($parts) ? 'index' : $this->_getController($parts);
+            self::debug($controller, 'Controller, loading page');
+            $result = self::_loadController($controller);
+        }
+        return $result;
     }
 
     /**
      * Automatically set the site.url if not alreayd set.
      */
-    private static function _setSiteUrl()
+    private function _setSiteUrl()
     {
-        $config = Config::system()->section('site');
-        if (!isset($config['url'])) {
+        if (!Config::system()->exists('site', 'url')) {
             $site_url = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
             $site_url .= $_SERVER['HTTP_HOST'] . '/';
             Config::system()->set('site', 'url', $site_url);
         }
+        return $this;
     }
 
     /**
-     * Set the REMOTE_IP constant.
+     * Set the REMOTE_IP constant, the visitor's IP.
+     *
+     * Full support for ipv6.
      */
-    private static function _setRemoteIp()
+    private function _setRemoteIp()
     {
-        #Get IP address of visitor.
         $remote_addr = $_SERVER['REMOTE_ADDR'];
         /**
          * There may be multiple comma-separated IPs for the X-Forwarded-For header
@@ -247,35 +258,31 @@ class Core
             $limit = Config::system()->section('limit');
             $redirect = getKey($limit, 'redirect');
             $ips = getKey($limit, 'ips');
-            if (!in_array(REMOTE_IP, $ips)) {
-                self::redirect($redirect);
+            if (!in_array(REMOTE_IP, $ips) && !empty($redirect)) {
+                Request::redirect($redirect);
             }
         }
+        return $this;
     }
 
     /**
      * Get the request parts.
      * @return array
      */
-    private static function _getRequest()
+    private function _getParsedUri()
     {
-        //Start logic to find what page we load (without starting slash)
-        $request_uri = !empty($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        $pos = strpos($request_uri, '?');
-        if (!$pos) {
-            $pos = strlen($request_uri);
+        $request = getKey($_SERVER, 'REQUEST_URI');
+        $uri = parse_url($request, PHP_URL_PATH);
+        //Remove trailing, leading and double slashes.
+        $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
+        $clean2 = preg_replace('/[^a-z0-9\/\.]/', '', strtolower($clean));
+        $final = str_replace('%20', '+', $clean2);
+        if ($uri != '/' . $final) {
+            Request::redirect($final);
         }
-        $uri = parse_url(substr($request_uri, 0, $pos), PHP_URL_PATH);
-        $request = preg_replace('/\/+/', '/', trim($uri, '/ '));
-        //Redirect for double, trailing and leading slashes.
-        if ($uri != '/' . $request) {
-            Core::redirect($request);
-        }
-        //Store it away for other uses.
-        self::$url = $request;
-        Config::system()->set('site', 'pageurl', $request);
-        //Array of url parts
-        return !empty($request) ? explode('/', $request) : array();
+        self::$url = $final;
+        Config::system()->set('site', 'pageurl', $final);
+        return empty($final) ? array() : explode('/', $final);
     }
 
     /**
@@ -283,26 +290,23 @@ class Core
      * @param array $request
      * @return string
      */
-    private static function _getController($request)
+    private function _getController($request)
     {
         $routes = Config::system()->section('routes');
         $load = '';
-        if (empty($routes)) {
-            throw new Exception("Routes must be defined.");
-        }
         $rest = array();
         // Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
         while (!empty($request) && empty($load)) {
             $cur = implode('/', $request);
-            if (stream_resolve_include_path('controller/' . $cur . '.php')) {
+            if ($this->_getControllerFileName($cur)) {
                 $load = $cur;
             } elseif (!empty($routes[$cur])) {
                 $load = $routes[$cur];
-                #Store which route we're taking.
+                //Store which route we're taking.
                 self::$route = $cur;
             }
             if (empty($load)) {
-                #All we don't find, we put into the rest.
+                //All we don't find, we put into the rest.
                 array_unshift($rest, array_pop($request));
                 self::debug($cur, 'Not found');
             }
@@ -316,139 +320,28 @@ class Core
     }
 
     /**
-     * For noting debug messages, they are not shown (and Show is not loaded) if disabled.
-     *
-     * @param mixed $message
-     * @param string $title
+     * Get the filename for a controller, if it exists.
+     * @param string $controller
+     * @return string|boolean
      */
-    public static function debug($message, $title = 'Debug')
+    private function _getControllerFileName($controller)
     {
-        if (self::$debug) {
-            Show::debug($message, $title);
+        $result = PATH_APP . "controller/{$controller}.php";
+        if (!file_exists($result)) {
+            $result = false;
         }
-    }
-
-    /**
-     * Returns a specific segment of the url.
-     * @param int $int Segment part.
-     * @return string THe specified segment of the url.
-     */
-    public static function segment($int)
-    {
-        return !empty(self::$url[$int]) ? self::$url[$int] : false;
-    }
-
-    /**
-     * Include a page, can only be done once per page load!
-     * @param string $file
-     */
-    private static function _loadController($file)
-    {
-        $fileName = 'controller/' . self::sanitizeFileName($file) . '.php';
-        if (!empty(self::$page)) {
-            throw new Exception('Controller already loaded!');
-        }
-        $fileSrc = stream_resolve_include_path($fileName);
-
-        if (!file_exists($fileSrc)) {
-            throw new Exception("Controller not found: $fileName");
-        }
-        require_once($fileSrc);
-        self::$page = $file;
-        if (empty(self::$route)) {
-            self::$route = $file;
-        }
-        #Check if the pagefile has the proper definition.
-        if (!class_exists('Page')) {
-            throw new Exception("Controller missing class Page: $file");
-        }
-        if (!is_subclass_of('Page', 'Controller_Abstract')) {
-            throw new Exception("Controller not extended from abstract: $file");
-        }
-        return Page::load();
-    }
-
-    /**
-     * Load template file or reuse the one in memory.
-     *
-     * @param string $file
-     * @return string content
-     */
-    public static function loadView($file)
-    {
-        $fileName = 'view/' . self::sanitizeFileName($file) . '.html';
-
-        $result = '';
-        if (isset(self::$_included[$fileName])) {
-            $result = self::$_included[$fileName];
-        } else {
-
-            $fileSrc = stream_resolve_include_path($fileName);
-            if ($fileSrc === false) {
-                throw new Exception("View not found for $file");
-            }
-            $result = file_get_contents($fileSrc);
-            self::debug($fileName, 'Loading view');
-            self::$_included[$fileName] = $result;
-        }
-
-        if (empty($result)) {
-            throw new Exception("View empty for $file");
-        }
-
         return $result;
     }
 
     /**
-     * Output data with proper headers (length, etc.) and mime type.
-     *
-     * @param string $mime The mime-type. (ie. image/jpeg, text/plain, ...)
-     * @param mixed $data File data or filename to output .
-     * @param int $modified Unix timestamp of last modified date.
-     * @param string $filename Filename for the output
-     * @param boolean $isFile True if data is a filename. (if true, it will output a file directly to the browser)
+     * Get the derived classname for a controller.
+     * @param string $controller
+     * @return string
      */
-    public static function output($mime, $data, $modified = 0, $filename = null, $isFile = false)
+    private function _getControllerClass($controller)
     {
-        if (ob_get_contents() || headers_sent()) {
-            throw new Exception("Headers already sent.");
-        }
-        if ($isFile && !file_exists($data)) {
-            throw new Exception("File does not exist: $data");
-        }
-        $length = $isFile ? filesize($data) : strlen($data);
-        // Two weeks expiration.
-        $expires = 60 * 60 * 24 * 14;
-        header('Content-type: ' . $mime);
-        header('Content-Length: ' . $length);
-        header('Content-Transfer-Encoding: binary');
-        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
-        if (!empty($filename)) {
-            header('Content-Disposition: attachment; filename="' . trim($filename) . '"');
-        }
-        if (!empty($modified)) {
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified) . ' GMT');
-        }
-        header('Connection: close');
-        header('Vary: Accept');
-        if ($isFile) {
-            readfile($data);
-        } else {
-            echo $data;
-        }
-        exit;
-    }
-
-    /**
-     * Output data with a 304 not modified header.
-     * @param string $expires Expiration time.
-     */
-    public static function output_same($expires = '+30 days')
-    {
-        header('HTTP/1.1 304 Not Modified', null, 304);
-        header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
-        header('Connection: close');
-        exit;
+        $spaced = 'app controller ' . str_replace('/', ' ', $controller);
+        return '\\' . str_replace(' ', '\\', ucwords($spaced));
     }
 
     /**
@@ -461,7 +354,7 @@ class Core
      * @param type $request
      * @return type
      */
-    private static function outputStatic($request)
+    private function _outputStatic($request)
     {
         if (is_numeric($request[0])) {
             array_shift($request);
@@ -485,62 +378,101 @@ class Core
         }
 
         //Add minify/output_same here in the future.
-        self::output($mime, $original, filemtime($original), null, true);
+        Request::output($mime, $original, filemtime($original), null, true);
     }
 
     /**
-     * Remove unwanted characters from a filename, only allowing underscores, slashes and periods, next to letters.
+     * For noting debug messages, they are not shown (and Show is not loaded) if disabled.
      *
-     * @param string $string
-     * @return string The cleaned filename.
+     * @param mixed $message
+     * @param string $title
      */
-    public static function sanitizeFileName($string, $toLower = true)
+    public static function debug($message, $title = 'Debug')
     {
-        $string = ($toLower) ? strtolower(trim($string)) : trim($string);
-        //Strip unwanted characters.
-        $string = preg_replace('/[^A-Za-z0-9\_\/\.]/', '', $string);
-        //Remove double slashes.
-        $string = preg_replace('/\/+/', '/', $string);
-        //Remove leading/trailing dots, slashes. So ../ is removed.
-        $string = trim($string, './');
-        //Return cleaned string.
-        return $string;
+        if (self::$debug) {
+            Show::debug($message, self::time() . ' - ' . $title);
+        }
+    }
+
+    /**
+     * Include a page, can only be done once per page load!
+     * @param string $controller
+     */
+    private function _loadController($controller)
+    {
+        $class = $this->_getControllerClass($controller);
+        self::$_included = $class;
+        self::$page = $controller;
+        if (empty(self::$route)) {
+            self::$route = $controller;
+        }
+        self::loadClass($class);
+        if (!is_subclass_of($class, '\Core\Controller')) {
+            throw new Exception("Controller: \"{$controller}\" not extended from abstract controller.");
+        }
+        return $class::create();
     }
 
     /**
      * Does a redirect if desiredUrl is different from the current Url.
      * @param type $desiredUrl
      */
-    public static function force_url($desiredUrl = '')
+    public static function forceUrl($desiredUrl = '')
     {
         $desiredUrl = ltrim($desiredUrl, '/');
-        if ($desiredUrl != self::$url)
-            self::redirect($desiredUrl);
+        if ($desiredUrl != self::$url) {
+            Request::redirect($desiredUrl);
+        }
     }
 
     /**
-     * Simplified redirect function, needs to be called BEFORE output!
-     *
-     * @param type $url The absolute or relative url you wish to redirect to.
-     * @param int $code One of 301, 302 or 303
+     * Get the current time in microseconds from the start of this call.
+     * @return type
      */
-    public static function redirect($url = '', $code = 302)
+    public static function time()
     {
-        $url = empty($url) ? '' : trim($url);
-        if (substr($url, 0, 4) != 'http') {
-            $url = ltrim($url, '/');
-            $site_url = Config::system()->get('site', 'url');
-            $url = $site_url . $url;
-        }
-        $codes = array(
-            301 => 'HTTP/1.1 301 Moved Permanently',
-            302 => 'HTTP/1.1 302 Found',
-            303 => 'HTTP/1.1 303 See Other',
+        return round(microtime(true) - self::$start, 5);
+    }
+
+    /**
+     * Clean the paths from the filename.
+     * @param type $fileName
+     * @return type
+     */
+    public static function cleanPath($string)
+    {
+        $paths = array(
+            PATH_APP => 'APP/',
+            PATH_CORE => 'CORE/',
+            PATH_BASE => 'BASE/',
+            PATH_ASSETS => 'ASSETS/',
         );
-        if (empty($codes[$code]))
-            $code = 302;
-        header($codes[$code]);
-        header('Location: ' . $url);
-        exit;
+        return strtr($string, $paths);
+    }
+
+    /**
+     * Wrap a function for caching.
+     *
+     * The beauty here is that the cache class will not be loaded if not needed.
+     * @param callable $callable
+     * @param array $args
+     * @param int $time
+     * @return mixed
+     */
+    public static function wrapCache($callable, $args, $time = 0)
+    {
+        $useCache = (defined('PATH_CACHE') && is_writable(PATH_CACHE));
+        $name = $useCache ? strval(implode('_', $args)) : '';
+        $result = null;
+        if ($useCache) {
+            $result = \Core\Cache::load($name, $time);
+        }
+        if (empty($result)) {
+            $result = call_user_func_array($callable, $args);
+            if ($useCache) {
+                \Core\Cache::save($name, $result);
+            }
+        }
+        return $result;
     }
 }

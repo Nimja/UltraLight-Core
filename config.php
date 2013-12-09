@@ -10,7 +10,6 @@ class Config
      * @var \Config
      */
     private static $_system;
-
     /**
      * Current values from the ini file.
      * @var array
@@ -24,7 +23,7 @@ class Config
      */
     public function __construct($file, $depth = 99)
     {
-        $this->_values = self::parseIni($file, $depth);
+        $this->_values = self::parseConfig($file, $depth);
     }
 
     /**
@@ -32,7 +31,8 @@ class Config
      * @param string $section
      * @return mixed
      */
-    public function section($section) {
+    public function section($section)
+    {
         return getKey($this->_values, $section, array());
     }
 
@@ -40,7 +40,8 @@ class Config
      * Return the sections in this config.
      * @return array
      */
-    public function sections() {
+    public function sections()
+    {
         return array_keys($this->_values);
     }
 
@@ -49,7 +50,8 @@ class Config
      * @param string $section
      * @param string $key
      */
-    public function exists($section, $key = null) {
+    public function exists($section, $key = null)
+    {
         $result = isset($this->_values[$section]);
         if ($result && $key) {
             $result = isset($this->_values[$section][$key]);
@@ -64,7 +66,8 @@ class Config
      * @param mixed $default
      * @return mixed
      */
-    public function get($section, $key, $default = null) {
+    public function get($section, $key, $default = null)
+    {
         $section = $this->section($section);
         return getKey($section, $key, $default);
     }
@@ -76,7 +79,8 @@ class Config
      * @param mixed $value
      * @return void
      */
-    public function set($section, $key, $value) {
+    public function set($section, $key, $value)
+    {
         $this->_values[$section][$key] = $value;
     }
 
@@ -84,9 +88,10 @@ class Config
      * Add ini file to the current settings.
      * @param type $file
      */
-    public function add($file) {
-        $settings = self::parseIni($file);
-        $this->_values = self::_mergeRecursive($this->_values, $settings);
+    public function add($file, $depth = 99)
+    {
+        $settings = self::parseConfig($file, $depth);
+        $this->_values = self::mergeRecursive($this->_values, $settings);
     }
 
     /**
@@ -102,6 +107,9 @@ class Config
             } else {
                 self::$_system = new self($file);
             }
+            self::_loadSystemDefines();
+            self::_loadPHPSettings();
+            Core::debug($file, "Config loaded.");
         }
         return self::$_system;
     }
@@ -109,10 +117,11 @@ class Config
     /**
      * Put stuff in [system] block into the definitions, as uppercase.
      */
-    public static function loadSystemDefines() {
+    private static function _loadSystemDefines()
+    {
         $values = self::system()->section('system');
         if (isset($values['debug'])) {
-            Core::$debug = ($values['debug']);
+            Core::$debug = !empty($values['debug']);
             unset($values['debug']);
         }
         foreach ($values as $key => $value) {
@@ -126,7 +135,8 @@ class Config
     /**
      * Load the ini settings we're overriding.
      */
-    public static function loadPHPSettings() {
+    private static function _loadPHPSettings()
+    {
         $values = self::system()->section('php');
         $ini = getKey($values, 'ini');
         if (is_array($ini)) {
@@ -137,103 +147,21 @@ class Config
     }
 
     /**
-     * Simple parser for INI files with a very clean approach.
      *
-     * This parser supports multiple inheritance from other sections.
-     *
-     * @param string $filename
-     * @param int $depth How deep you want the recursive parsing to be.
-     * @return array
-     * @throws Exception
+     * @param string $file
+     * @param type $depth
      */
-    public static function parseIni($filename, $depth = 99)
+    public static function parseConfig($file, $depth = 99)
     {
-        $ini = parse_ini_file($filename, true);
-        if ($ini === false) {
-            throw new Exception('Unable to parse ini file.');
+        $extension = pathinfo($file, PATHINFO_EXTENSION);
+        switch ($extension) {
+            case 'ini':
+                $parser = '\Core\Parse\Ini';
+                break;
+            default:
+                throw new Exception("No parser for: $extension");
         }
-        $result = array();
-        foreach ($ini as $section => $values) {
-            if (!is_array($values)) {
-                continue;
-            }
-            unset($ini[$section]);
-            $expand = explode(':', $section);
-            $section = trim(array_shift($expand));
-            $max = count($expand);
-            if ($max > 0) {
-                $curSection = self::_processSection($values, $depth);
-                for ($i = 0; $i < $max; $i++) {
-                    $curName = trim($expand[$i]);
-                    if (!isset($result[$curName])) {
-                        throw new Exception("Unable to expand $section from $curName");
-                    }
-                    $curSection = self::_mergeRecursive($result[$curName], $curSection);
-                }
-                $result[$section] = $curSection;
-            } else {
-                $result[$section] = self::_processSection($values, $depth);
-            }
-        }
-        $result += $ini;
-        return $result;
-    }
-
-    /**
-     * Process a single section with values.
-     * @param array $values
-     * @return array With the result.
-     */
-    private static function _processSection($values, $depth = 99)
-    {
-        $result = array();
-        foreach ($values as $key => $value) {
-            $keys = explode('.', $key, $depth);
-            $result = self::_recurseValue($result, $keys, $value);
-        }
-        return $result;
-    }
-
-    /**
-     * Create the values recursively.
-     * @param array $array
-     * @param array $keys
-     * @param mixed $value
-     * @return array The original array, with changes.
-     */
-    private static function _recurseValue($array, $keys, $value)
-    {
-        $key = array_shift($keys);
-        if (count($keys) > 0) {
-            if (!isset($array[$key])) {
-                $array[$key] = array();
-            }
-            $array[$key] = self::_recurseValue($array[$key], $keys, $value);
-        } else {
-            $array = self::_mergeValue($array, $key, $value);
-        }
-        return $array;
-    }
-
-    /**
-     * Merge a value with the previous value.
-     * @param array $array
-     * @param string $key
-     * @param mixed $value
-     * @return array The original array, with changes.
-     */
-    private static function _mergeValue($array, $key, $value)
-    {
-        if (!isset($array[$key])) {
-            $array[$key] = $value;
-        } else {
-            if (is_array($value)) {
-                $array[$key] += $value;
-            } else {
-                $array[$key][] = $value;
-            }
-        }
-        return $array;
+        return \Core::wrapCache(array($parser, 'parse'), array($file, $depth), filemtime($file));
     }
 
     /**
@@ -245,7 +173,7 @@ class Config
      * @param mixed $right
      * @return mixed
      */
-    private static function _mergeRecursive($left, $right)
+    public static function mergeRecursive($left, $right)
     {
         // merge arrays if both variables are arrays
         if (is_array($left) && is_array($right)) {
@@ -254,7 +182,7 @@ class Config
                 if (is_int($key)) {
                     $left[] = $value;
                 } else if (isset($left[$key])) {
-                    $left[$key] = self::_mergeRecursive($left[$key], $value);
+                    $left[$key] = self::mergeRecursive($left[$key], $value);
                 } else {
                     $left[$key] = $value;
                 }

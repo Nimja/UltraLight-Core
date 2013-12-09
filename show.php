@@ -36,6 +36,7 @@ class Show
         } else {
             $trace = self::_getTraceInfo(self::_getDebug());
         }
+        $title = Core::cleanPath(Sanitize::clean($title));
         // Create result.
         $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
@@ -71,7 +72,7 @@ class Show
         foreach ($traces as $trace) {
             $function = getKey($trace, 'function');
             $line = getKey($trace, 'line');
-            $file = getKey($trace, 'file');
+            $file = Core::cleanPath(getKey($trace, 'file'));
             //Skip closure functions (they give us no info anyway.
             if ($function == '{closure}') {
                 continue;
@@ -79,24 +80,13 @@ class Show
             $info = pathinfo($file);
             $info_dirname = getKey($info, 'dirname');
             $info_basename = getKey($info, 'basename');
-            $core = strpos($info_dirname . '/', PATH_CORE);
-            $app = strpos($info_dirname . '/', PATH_APP);
+            $core = (strpos($file, 'CORE') !== false);
             //Skip the auto-class loading and the show class itself.
-            if ($core !== false
-                && ($info_basename == 'show.php' || ($info_basename == 'core.php' && $line < 26))
-            ) {
+            if ($file == 'CORE/show.php') {
                 continue;
             }
-            //Add nice dir identifiers.
-            if ($core !== false) {
-                $dir = '[Core] ' . substr($info_dirname, strlen(PATH_CORE)) . '/';
-            } else if ($app !== false) {
-                $dir = '[App] ' . substr($info_dirname, strlen(PATH_APP)) . '/';
-            } else {
-                $dir = '';
-            }
-
-            $lines[] = $dir . $info['basename'] . ' - line: ' . $line;
+            $dir = $core ? $file : '<span style="color: black">' . $file . '</span>';
+            $lines[] = $dir . ' - line: ' . $line;
         }
         return $lines;
     }
@@ -132,12 +122,10 @@ class Show
             $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
             $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
         }
-        $resultString = implode("\n", $result);
+        $resultString = Core::cleanPath(implode("\n", $result));
         return strtr(
             $resultString,
             array(
-            PATH_CORE => '[Core] ',
-            PATH_APP => '[App] ',
             '  ' => '&nbsp;&nbsp;',
             "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
             )
@@ -169,7 +157,7 @@ class Show
             }
             $result[] = $var;
         } else if (is_string($variable)) {
-            $result[] = $pad . '"' . str_replace("\n", '<br />', $variable) . '"';
+            $result[] = $pad . '"' . $variable . '"';
         } else if ($variable instanceof Exception) {
             $result[] = self::_getVarHeader($variable, $pad);
             $result[] = "{$padp}[file] => {$variable->getFile()}";
@@ -187,7 +175,7 @@ class Show
                     $result = array_merge($result, $values);
                 }
             }
-            $result[] = is_array($variable) ? "{$pad}]" :"{$pad}}";
+            $result[] = is_array($variable) ? "{$pad}]" : "{$pad}}";
         }
         return $result;
     }
@@ -198,7 +186,8 @@ class Show
      * @param string $pad
      * @return string
      */
-    private static function _getVarHeader($variable, $pad) {
+    private static function _getVarHeader($variable, $pad)
+    {
         return is_array($variable) ? "{$pad}array [" : $pad . get_class($variable) . ' {';
     }
 
@@ -234,5 +223,17 @@ class Show
     public static function debug($var, $title = 'Debug', $return = false)
     {
         return self::info($var, $title, 'debug', $return);
+    }
+
+    /**
+     * Can be registered as the error handler, to display errors inline.
+     * @param int $errNo
+     * @param string $errStr
+     * @param string $errFile
+     * @param int $errLine
+     */
+    public static function handleError($errNo, $errStr, $errFile, $errLine)
+    {
+        self::error("Code: $errNo, Line: $errLine, File: $errFile", $errStr);
     }
 }
