@@ -11,13 +11,13 @@ class Config
      */
     private static $_system;
     /**
-     * Current values from the ini file.
+     * Current values from the config file.
      * @var array
      */
     private $_values;
 
     /**
-     * Create a config object, using an ini file.
+     * Create a config object, using an config file.
      * @param string $file
      * @param int $depth
      */
@@ -85,7 +85,7 @@ class Config
     }
 
     /**
-     * Add ini file to the current settings.
+     * Add config file to the current settings.
      * @param type $file
      */
     public function add($file, $depth = 99)
@@ -95,7 +95,7 @@ class Config
     }
 
     /**
-     * Get the system settings (or load more through ini file).
+     * Get the system settings (or load more through config file).
      * @param string|null $file
      * @return \Config
      */
@@ -157,6 +157,10 @@ class Config
         switch ($extension) {
             case 'ini':
                 $parser = '\Core\Parse\Ini';
+                break;
+            case 'yaml':
+            case 'yml':
+                $parser = '\Core\Parse\Yaml';
                 break;
             default:
                 throw new Exception("No parser for: $extension");
