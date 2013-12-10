@@ -310,7 +310,8 @@ abstract class Model
     {
         $class = $class ? : get_called_class();
         if (empty(self::$_reflections[$class])) {
-            self::$_reflections[$class] = \Core::wrapCache(array('\Core\Model\Reflect', 'get'), array($class));
+            $time = filemtime(\Core::$classes[$class]['file']);
+            self::$_reflections[$class] = \Core::wrapCache(array('\Core\Model\Reflect', 'get'), array($class), $time);
         }
         return self::$_reflections[$class];
     }
