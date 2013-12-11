@@ -1,55 +1,65 @@
 <?php
 namespace Core;
 /**
- * The basic view function, containing possibilities for filling variables into a another string.
+ * Abstract class for cache.
  */
-class Cache
+abstract class Cache
 {
+    /**
+     *
+     * @var array
+     */
+    protected static $_instances = array();
+    /**
+     *
+     * @var string
+     */
+    protected $_group;
 
     /**
-     * Load from the cache.
-     * @param string $name
-     * @param int $expireTime
-     * @return mixed
+     * Create cache instance for group.
+     * @param string $group
      */
-    public static function load($name, $expireTime = 0)
+    public function __construct($group)
     {
-        $fileName = self::_makeFileName($name);
-        $result = null;
-        if (file_exists($fileName) && filemtime($fileName) >= $expireTime) {
-            $result = unserialize(file_get_contents($fileName));
+        if (empty($group) || !is_string($group)) {
+            throw new \Exception("Cache group must be a string.");
         }
-        return $result;
+        $this->_group = $this->_cleanKey($group);
     }
 
     /**
-     * Save to the cache.
-     * @param string $name
-     * @param mixed $content
-     * @return boolean
+     * Load abstract.
      */
-    public static function save($name, $content)
-    {
-        $fileName = self::_makeFileName($name);
-        if (empty($content) && file_exists($fileName)) {
-            unlink($fileName);
-        } else {
-            file_put_contents($fileName, serialize($content));
-            chmod($fileName, 0666);
-        }
-        return true;
+    abstract public function load($key, $time = 0);
+
+    /**
+     * Save abstract.
+     */
+    abstract public function save($key, $value);
+
+    /**
+     * Clean a string for cache key usage.
+     * @param string $key
+     * @return string
+     */
+    protected function _cleanKey($key) {
+        $replace = array('/', '\\', ':');
+        return trim(str_replace($replace, '+', \Core::cleanPath($key)), '+');
     }
 
     /**
-     * Make the filename.
-     * @param type $name
-     * @return type
+     * Get instance for this group.
+     * @param string $group
+     * @return \Core\Cache
      */
-    private static function _makeFileName($name)
+    public static function getInstance($group)
     {
-        if (empty($name)) {
-            throw new \Exception("Must give name for cache.");
+        $class = get_called_class();
+        $name = $class . $group;
+        if (!isset(self::$_instances[$name])) {
+            self::$_instances[$name] = new $class($group);
         }
-        return PATH_CACHE . str_replace(array('/', '\\'), '+', \Core::cleanPath($name)) . '.cache';
+        return self::$_instances[$name];
     }
 }

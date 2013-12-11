@@ -96,7 +96,7 @@ class Core
     public static $route = '';
     /**
      * Storing execution time.
-     * @var int
+     * @var float
      */
     public static $start = 0;
     /**
@@ -109,6 +109,11 @@ class Core
      * @var boolean
      */
     public static $debug = false;
+    /**
+     * If we use cache or not.
+     * @var boolean
+     */
+    private static $_useCache = false;
 
     /**
      * The main initialization function, can only be called ONCE!
@@ -140,13 +145,15 @@ class Core
      */
     private function __construct()
     {
+        self::$_useCache = (defined('PATH_CACHE') && is_writable(PATH_CACHE));
         spl_autoload_register('Core::loadClass');
         set_error_handler('Show::handleError', E_ALL);
         Config::system(PATH_CORE . 'config.ini');
-        $appConfig = PATH_BASE . 'config.ini';
+        $appConfig = PATH_APP . 'config.ini';
         if (file_exists($appConfig)) {
             Config::system($appConfig);
         }
+        self::$debug = Config::system()->get('system', 'debug', false);
     }
 
     /**
@@ -155,7 +162,9 @@ class Core
      */
     private function _startSession()
     {
-        session_start();
+        if (!isset($_SESSION)) {
+            session_start();
+        }
         date_default_timezone_set(Config::system()->get('php', 'timezone', 'Europe/Paris'));
         mb_internal_encoding(Config::system()->get('php', 'encoding', 'UTF8'));
         /**
@@ -454,24 +463,26 @@ class Core
      * Wrap a function for caching.
      *
      * The beauty here is that the cache class will not be loaded if not needed.
-     * @param callable $callable
+     * @param string $callable Using \Class::method
      * @param array $args
      * @param int $time
      * @return mixed
      */
     public static function wrapCache($callable, $args, $time = 0)
     {
-        $useCache = (defined('PATH_CACHE') && is_writable(PATH_CACHE));
-        $name = $useCache ? strval(implode('_', $args)) : '';
-        $result = null;
-        if ($useCache) {
-            $result = \Core\Cache::load($name, $time);
+        if (!is_string($callable)) {
+            throw new Exception("Please use \Class::method for wrapCache.");
         }
-        if (empty($result)) {
-            $result = call_user_func_array($callable, $args);
-            if ($useCache) {
-                \Core\Cache::save($name, $result);
+        if (self::$_useCache) {
+            $key = strval(implode('_', $args));
+            $cache = \Core\Cache\File::getInstance($callable);
+            $result = $cache->load($key, $time);
+            if (empty($result)) {
+                $result = call_user_func_array($callable, $args);
+                $cache->save($key, $result);
             }
+        } else {
+            $result = call_user_func_array($callable, $args);
         }
         return $result;
     }

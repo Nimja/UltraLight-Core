@@ -16,7 +16,7 @@ class Yaml
      * @return array
      * @throws Exception
      */
-    public static function parse($filename, $depth = 99)
+    public static function parse($filename)
     {
         $result = null;
         if (function_exists('yaml_parse_file')) {

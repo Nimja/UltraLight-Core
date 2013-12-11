@@ -21,9 +21,9 @@ class Config
      * @param string $file
      * @param int $depth
      */
-    public function __construct($file, $depth = 99)
+    public function __construct($file)
     {
-        $this->_values = self::parseConfig($file, $depth);
+        $this->_values = self::parseConfig($file);
     }
 
     /**
@@ -88,9 +88,9 @@ class Config
      * Add config file to the current settings.
      * @param type $file
      */
-    public function add($file, $depth = 99)
+    public function add($file)
     {
-        $settings = self::parseConfig($file, $depth);
+        $settings = self::parseConfig($file);
         $this->_values = self::mergeRecursive($this->_values, $settings);
     }
 
@@ -107,7 +107,7 @@ class Config
             } else {
                 self::$_system = new self($file);
             }
-            self::_loadSystemDefines();
+            self::_loadConstants();
             self::_loadPHPSettings();
             Core::debug($file, "Config loaded.");
         }
@@ -115,15 +115,11 @@ class Config
     }
 
     /**
-     * Put stuff in [system] block into the definitions, as uppercase.
+     * Put stuff in [constants] block into the PHP Constants, as uppercase.
      */
-    private static function _loadSystemDefines()
+    private static function _loadConstants()
     {
-        $values = self::system()->section('system');
-        if (isset($values['debug'])) {
-            Core::$debug = !empty($values['debug']);
-            unset($values['debug']);
-        }
+        $values = self::system()->section('constants');
         foreach ($values as $key => $value) {
             $key = strtoupper($key);
             if (!defined($key)) {
@@ -147,25 +143,24 @@ class Config
     }
 
     /**
-     *
+     * Parse config file and return the contents; wrapped by cache.
      * @param string $file
-     * @param type $depth
      */
-    public static function parseConfig($file, $depth = 99)
+    public static function parseConfig($file)
     {
         $extension = pathinfo($file, PATHINFO_EXTENSION);
         switch ($extension) {
             case 'ini':
-                $parser = '\Core\Parse\Ini';
+                $parser = '\Core\Parse\Ini::parse';
                 break;
             case 'yaml':
             case 'yml':
-                $parser = '\Core\Parse\Yaml';
+                $parser = '\Core\Parse\Yaml::parse';
                 break;
             default:
                 throw new Exception("No parser for: $extension");
         }
-        return \Core::wrapCache(array($parser, 'parse'), array($file, $depth), filemtime($file));
+        return \Core::wrapCache($parser, array($file), filemtime($file));
     }
 
     /**

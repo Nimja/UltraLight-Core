@@ -1,15 +1,20 @@
 <?php
 namespace Core;
 /**
- * Wrapper for $_SESSION with a nice interface.
+ * More complex wrapper for SESSION Cache.
  * Also allows more transparently for multiple "sessions" next to each other without interfering.
  */
 class Session {
-
+    const CACHE_GROUP = 'session';
     /**
      * Setting a variable with this value means it gets deleted.
      */
     const DELETE = 'DELETE';
+    /**
+     * The session cache.
+     * @var \Core\Cache\Session
+     */
+    private $_cache;
     /**
      * The key for the session.
      * @var string
@@ -28,7 +33,8 @@ class Session {
     public function __construct($key = 'session')
     {
         $this->_key = $key;
-        $this->_variables = getKey($_SESSION, $this->_key, array());
+        $this->_cache = \Core\Cache\Session::getInstance(self::CACHE_GROUP);
+        $this->_variables = $this->_cache->load($key);
     }
 
     /**
@@ -131,7 +137,7 @@ class Session {
      */
     private function _flush()
     {
-        $_SESSION[$this->_key] = $this->_variables;
+        $this->_cache->save($this->_key, $this->_variables);
     }
 
 }
