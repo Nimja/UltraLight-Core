@@ -370,6 +370,6 @@ class Js {
 }
 
 // -- Exceptions ---------------------------------------------------------------
-class JSMinException extends Exception {
+class JSMinException extends \Exception {
 
 }
