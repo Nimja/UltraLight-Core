@@ -9,6 +9,16 @@ class Request
      * @var array
      */
     private static $_values = null;
+    /**
+     * Contains the filtered SERVER variables.
+     * @var array
+     */
+    private static $_server = null;
+    /**
+     * Contains the filtered COOKIE variables.
+     * @var array
+     */
+    private static $_cookies = null;
 
     /**
      * Return true if current request is a post request.
@@ -16,7 +26,20 @@ class Request
      */
     public static function isPost()
     {
-        return $_SERVER['REQUEST_METHOD'] === 'POST';
+        return self::server('REQUEST_METHOD') === 'POST';
+    }
+
+    /**
+     * Get value from the global INPUT_SERVER
+     * @param type $name
+     * @param type $default
+     */
+    public static function server($name, $default = null)
+    {
+        if (self::$_server === null) {
+            self::$_server = filter_input_array(INPUT_SERVER, FILTER_UNSAFE_RAW);
+        }
+        return getKey(self::$_server, $name, $default);
     }
 
     /**
@@ -38,7 +61,9 @@ class Request
     public static function getValues()
     {
         if (self::$_values === null) {
-            self::$_values = Sanitize::clean(array_merge($_GET, $_POST));
+            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: array();
+            $post = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: array();
+            self::$_values = Sanitize::clean(array_merge($get, $post));
         }
         return self::$_values;
     }
@@ -55,13 +80,27 @@ class Request
     }
 
     /**
+     * Get the sanitized cookies.
+     * @return array
+     */
+    public static function getCookies()
+    {
+        if (self::$_cookies === null) {
+            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ?: array();
+            self::$_cookies = Sanitize::clean($cookies);
+        }
+        return self::$_cookies;
+    }
+
+    /**
      * get the cookie nicely.
      * @param string $name
      * @param mixed The default value.
+     * @return mixed
      */
     public static function getCookie($name, $default = null)
     {
-        return Sanitize::clean(getKey($_COOKIE, $name, $default));
+        return getKey(self::getCookies(), $name, $default);
     }
 
     /**
@@ -74,9 +113,10 @@ class Request
      */
     public static function clearCookie($name)
     {
-        $result = setcookie($name, '', strtotime('-2 days'), '/');
-        if (isset($_COOKIE[$name])) {
-            unset($_COOKIE[$name]);
+        $result = self::setCookie($name, '', '-2 days');
+        self::getCookies();
+        if (isset(self::$_cookies[$name])) {
+            unset(self::$_cookies[$name]);
         }
         return $result;
     }
@@ -122,6 +162,8 @@ class Request
         }
         if ($isFile && !file_exists($data)) {
             throw new Exception("File does not exist: $data");
+        } else if ($isFile) {
+            self::ifModifiedSince(filemtime($data));
         }
         $length = $isFile ? filesize($data) : strlen($data);
         // Two weeks expiration.
@@ -129,15 +171,15 @@ class Request
         header('Content-Type: ' . $mime);
         header('Content-Length: ' . $length);
         header('Content-Transfer-Encoding: binary');
-        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
         if (!empty($filename)) {
             header('Content-Disposition: attachment; filename="' . trim($filename) . '"');
         }
+        header("Cache-Control: max-age={$expires}");
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
         if (!empty($modified)) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified) . ' GMT');
         }
-        header('Connection: close');
-        header('Vary: Accept');
+        header('Connection: keep-alive');
         if ($isFile) {
             readfile($data);
         } else {
@@ -147,14 +189,23 @@ class Request
     }
 
     /**
-     * Output data with a 304 not modified header.
-     * @param string $expires Expiration time.
+     * Handle "if-modified-since" requests.
+     * @param int $compareTime
+     * @param string $expire
+     * @return void
      */
-    public static function outputSame($expires = '+30 days')
+    public static function ifModifiedSince($compareTime, $expires = '+14 days')
     {
+        $modified = self::server('HTTP_IF_MODIFIED_SINCE');
+        if (empty($compareTime) || empty($modified) || $compareTime > strtotime($modified)) {
+            return;
+        }
         header('HTTP/1.1 304 Not Modified', null, 304);
         header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
-        header('Connection: close');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $compareTime) . ' GMT');
+        header('Connection: keep-alive');
+        $maxAge = strtotime($expires, 0);
+        header("Cache-Control: max-age={$maxAge}");
         exit;
     }
 }

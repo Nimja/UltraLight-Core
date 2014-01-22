@@ -3,7 +3,7 @@ namespace Core\Form;
 /**
  * Validator for values, based on a validation array.
  */
-abstract class Validate
+class Validate
 {
     /**
      * Warnings as a result of the validation.
@@ -35,7 +35,8 @@ abstract class Validate
      * selected = At least one selected<br />
      * alpha = Alpha only, at least 2 letters.<br />
      * username = Letters, numbers and underscores.<br />
-     * ignore = Will not count in validation.
+     * ignore = Will not count in validation.<br />
+     * other = For dropdowns/selections with an 'other' option. Will check $field_other for the value.
      *
      * @param string $countrycode ISO Country code (for postal code checking, only NL/BE supported so far)
      *
@@ -87,12 +88,17 @@ abstract class Validate
         if ($minlen > strlen($value)) {
             $error = 'requires at least ' . $minlen . ' characters';
         } else {
-            $error = $this->_validateType($type, $value);
+            $error = $this->_validateType($type, $value, $field);
         }
         return $error;
     }
-
-    private function _validateType($type, $value, $post)
+    /**
+     * Validate for type.
+     * @param string $type
+     * @param mixed $value
+     * @return string
+     */
+    private function _validateType($type, $value, $field)
     {
         $result = null;
         switch ($type) {
@@ -126,12 +132,10 @@ abstract class Validate
                 $result = $this->_postalCheck($value);
                 break;
             case 'numeric':
-                $result = $this->_pregValidate('/^[0-9]+$/', $value, 'does not contain a valid number');
+                $result = $this->_filterVar($value, FILTER_VALIDATE_INT, 'does not contain a valid number');
                 break;
             case 'email': #email
-                if (!$this->_isEmail($value)) {
-                    $result = 'does not contain a valid email address';
-                }
+                $result = $this->_filterVar($value, FILTER_VALIDATE_EMAIL, 'does not contain a valid email address');
                 break;
             case 'other_ignore':
             case 'ignore': break;
@@ -149,12 +153,26 @@ abstract class Validate
      * @param string $preg
      * @param string  $value
      * @param string  $error
-     * @return string
+     * @return string|null
      */
     private function _pregValidate($preg, $value, $error)
     {
         $result = null;
         if (!preg_match($preg, $value)) {
+            $result = $error;
+        }
+        return $result;
+    }
+    /**
+     * Validate with php filter.
+     * @param string $value
+     * @param string $filter
+     * @param string $error
+     * @return string|null
+     */
+    private function _filterVar($value, $filter, $error) {
+        $result = null;
+        if (!filter_var($value, $filter)) {
             $result = $error;
         }
         return $result;
@@ -179,16 +197,5 @@ abstract class Validate
                 $regex = '/^[0-9]+$/i';
         }
         return $this->_pregValidate($regex, $value, 'is not valid for this country');
-    }
-
-    /**
-     * Check if string is a valid e-mail address.
-     *
-     * @param string $email
-     * @return boolean True for valid e-mail address.
-     */
-    private function _isEmail($string)
-    {
-        return preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix", $string);
     }
 }

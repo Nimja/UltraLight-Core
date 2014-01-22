@@ -10,6 +10,11 @@ class Session extends \Core\Cache
      * @var array
      */
     private $_variables;
+
+    /**
+     * Constructor; when creating a session; you need to use a group.
+     * @param string $group
+     */
     public function __construct($group)
     {
         parent::__construct($group);
@@ -21,6 +26,7 @@ class Session extends \Core\Cache
             $this->_variables = array();
         }
     }
+
     /**
      * Load from the cache.
      * @param string $cacheKey
@@ -59,6 +65,12 @@ class Session extends \Core\Cache
         $_SESSION[$this->_group] = &$this->_variables;
         return true;
     }
+
+    /**
+     * To store time, setting a timekey.
+     * @param string $key
+     * @return string
+     */
     private function _timeKey($key)
     {
         return ".time.{$key}";
