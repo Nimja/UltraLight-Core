@@ -20,7 +20,7 @@ abstract class Ajax extends \Core\Controller
         $result = array('time' => time());
         try {
             $result['content'] = $this->_run();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $result['error'] = $e->getMessage();
         }
         return json_encode($result);

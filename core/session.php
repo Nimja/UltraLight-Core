@@ -35,6 +35,9 @@ class Session {
         $this->_key = $key;
         $this->_cache = \Core\Cache\Session::getInstance(self::CACHE_GROUP);
         $this->_variables = $this->_cache->load($key);
+        if (!is_array($this->_variables)) {
+            $this->_variables = array();
+        }
     }
 
     /**
