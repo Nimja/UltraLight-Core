@@ -30,6 +30,16 @@ class Request
     }
 
     /**
+     * Return true if current request is an ajax/xhtml request.
+     * @return boolean
+     */
+    public static function isAjax()
+    {
+        $requestWith = self::server('HTTP_X_REQUESTED_WITH', '');
+        return strtolower($requestWith) === 'xmlhttprequest';
+    }
+
+    /**
      * Get value from the global INPUT_SERVER
      * @param type $name
      * @param type $default
