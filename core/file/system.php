@@ -66,7 +66,7 @@ class System
      * Nice recursive remove.
      * @param string $dir
      * @param boolean $self Include self.
-     * @throws Exception
+     * @throws \Exception
      */
     public static function rrmdir($dir, $self = true)
     {
@@ -96,7 +96,7 @@ class System
     }
 
     /**
-     * Get the exception of a file.
+     * Get the extension of a file.
      * @param type $file
      * @return type
      */

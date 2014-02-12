@@ -81,13 +81,12 @@ class Export
     /**
      * Validate resultset for export.
      * @param \mysqli_result $res
-     * @throws Exception
      * @throws \Exception
      */
     private static function _checkResult($res)
     {
         if (!($res instanceof \mysqli_result)) {
-            throw new Exception("Can only make csv of query result set.");
+            throw new \Exception("Can only make csv of query result set.");
         }
         if ($res->num_rows == 0) {
             throw new \Exception("Cannot generate for empty result set.");

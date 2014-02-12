@@ -14,7 +14,7 @@ class Ini
      * @param string $filename
      * @param int $depth How deep you want the recursive parsing to be.
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     public static function parse($filename, $depth = 99)
     {

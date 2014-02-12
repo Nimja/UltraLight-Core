@@ -27,7 +27,7 @@ function blank($var)
 function getKey(&$array, $key, $default = false)
 {
     if (!is_array($array)) {
-        throw new Exception("Not an array.");
+        throw new \Exception("Not an array.");
     }
     return isset($array[$key]) && !blank($array[$key]) ? $array[$key] : $default;
 }
@@ -42,7 +42,7 @@ function getKey(&$array, $key, $default = false)
 function getAttr($obj, $attr, $default = false)
 {
     if (!is_object($obj)) {
-        throw new Exception("Not an object.");
+        throw new \Exception("Not an object.");
     }
     return isset($obj->$attr) && !blank($obj->$attr) ? $obj->$attr : $default;
 }
@@ -122,7 +122,7 @@ class Core
     {
         self::$start = microtime(true);
         if (!empty(self::$_included)) {
-            throw new Exception("Core::start() called manually!");
+            throw new \Exception("Core::start() called manually!");
         }
         $core = new self();
         try {
@@ -133,7 +133,7 @@ class Core
                 ->_setRemoteIp()
                 ->_loadPage();
             $page->display();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Show::error($e);
         }
         self::debug(self::$classes, 'Loaded classes');
@@ -373,7 +373,7 @@ class Core
         $original = PATH_ASSETS . $url;
         if (!file_exists($original)) {
             header('HTTP/1.0 404 Not Found', null, 404);
-            throw new Exception("Unable to find file: $request");
+            throw new \Exception("Unable to find file: $request");
         }
 
         $extension = pathinfo($url, PATHINFO_EXTENSION);
@@ -417,7 +417,7 @@ class Core
         }
         self::loadClass($class);
         if (!is_subclass_of($class, '\Core\Controller')) {
-            throw new Exception("Controller: \"{$controller}\" not extended from abstract controller.");
+            throw new \Exception("Controller: \"{$controller}\" not extended from abstract controller.");
         }
         return $class::create();
     }
@@ -471,7 +471,7 @@ class Core
     public static function wrapCache($callable, $args, $time = 0)
     {
         if (!is_string($callable)) {
-            throw new Exception("Please use \Class::method for wrapCache.");
+            throw new \Exception("Please use \Class::method for wrapCache.");
         }
         if (self::$_useCache) {
             $key = strval(implode('_', $args));

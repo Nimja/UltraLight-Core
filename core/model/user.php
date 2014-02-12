@@ -142,7 +142,7 @@ class User extends Sessioned
     public static function getUserIdForLogin($name, $pass)
     {
         $re = self::re();
-        $db = $re->db;
+        $db = $re->db();
         $name = $db->escape($name);
         $pass = $db->escape($pass);
         $table = $re->table;

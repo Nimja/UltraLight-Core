@@ -158,7 +158,7 @@ class Config
                 $parser = '\Core\Parse\Yaml::parse';
                 break;
             default:
-                throw new Exception("No parser for: $extension");
+                throw new \Exception("No parser for: $extension");
         }
         return \Core::wrapCache($parser, array($file), filemtime($file));
     }

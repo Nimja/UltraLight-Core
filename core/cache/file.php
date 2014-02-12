@@ -10,14 +10,14 @@ class File extends \Core\Cache
     /**
      * Load from the cache.
      * @param string $cacheKey
-     * @param int $time
+     * @param int $expireTime
      * @return mixed
      */
-    public function load($key, $time = 0)
+    public function load($key, $expireTime = 0)
     {
         $fileName = $this->_makeFileName($key);
         $result = null;
-        if (file_exists($fileName) && filemtime($fileName) >= $time) {
+        if (file_exists($fileName) && filemtime($fileName) >= $expireTime) {
             $result = unserialize(file_get_contents($fileName));
         }
         return $result;

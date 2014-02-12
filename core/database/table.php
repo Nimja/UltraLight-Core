@@ -1,20 +1,26 @@
 <?php
+
 namespace Core\Database;
+
 /**
  * Basic table class for table creation and checking.
  */
-class Table
-{
+class Table {
+    const STRUCTURE_NOCHANGE = 'nochange';
+    const STRUCTURE_CREATED = 'created';
+    const STRUCTURE_UPDATED = 'updated';
     /**
      * The database we're connected to.
      * @var \Core\Database
      */
     private $_db;
+
     /**
      * Table name.
      * @var string
      */
     private $_table;
+
     /**
      * Escaped table name.
      * @var string
@@ -53,10 +59,10 @@ class Table
      */
     public function columns()
     {
-        $columns = $this->fetchRows("SHOW COLUMNS FROM {$this->_tableEscaped}");
+        $columns = $this->_db->fetchRows("SHOW COLUMNS FROM {$this->_tableEscaped}");
         $result = array();
         foreach ($columns as $column) {
-            $result[$column['Field']] = new Column($this->_db, $colum);
+            $result[$column['Field']] = new Column($this->_db, $column, true);
         }
         return $result;
     }
@@ -67,9 +73,9 @@ class Table
      * @param string $force
      * @return boolean
      */
-    public function structure($fields, $force = false)
+    public function applyStructure($fields, $force = false)
     {
-        $result = false;
+        $result = self::STRUCTURE_NOCHANGE;
         if (!$this->exists() || $force) {
             $result = $this->_create($fields);
         } else {
@@ -93,20 +99,21 @@ class Table
         }
         //Basic create table functionality
         $default = new Column($this->_db);
-        $sql = "CREATE TABLE {$table} (\n\t$default\n";
+        $sql = "CREATE TABLE {$table} (\n\t`id` {$default},\n";
         //Go over fields.
         foreach ($fields as $field => $type) {
             $eField = $this->_db->escape($field, true);
             $column = new Column($this->_db, $type);
-            $sql .= "\t{$eField} {$column}\n";
+            $sql .= "\t{$eField} {$column},\n";
         }
         $sql .= "\t PRIMARY KEY  (`id`) \n) ENGINE=innodb DEFAULT CHARSET=latin1;";
-        if (Core::$debug) {
-            Core::debug($sql, 'Creating table');
+        if (\Core::$debug) {
+            \Core::debug($sql, 'Creating table');
         } else {
-            $this->db->query($sql);
+            \Show::info($sql);
+            $this->_db->query($sql);
         }
-        return true;
+        return self::STRUCTURE_CREATED;
     }
 
     /**
@@ -122,11 +129,11 @@ class Table
         // Get the current situation.
         $columns = $this->columns();
         // If the ID column does not exist, table was never properly created.
-        $default = new Column($this->_db);
+        $default = new Column($db);
         if (empty($columns['id'])) {
             throw new \Exception("{$this->_table} has no id field.");
         } else if (!$default->compare($columns['id'])) {
-            throw new \Exception("{$this->_table} hes wrong id field: {$columns['id']}");
+            throw new \Exception("{$this->_table} has wrong id field: {$columns['id']}");
         } else {
             unset($columns['id']);
         }
@@ -139,14 +146,14 @@ class Table
         // No changes.
         $result = !empty($changes);
         if ($result) {
-            if (Core::$debug) {
-                Core::debug($changes, "Changing table: $table");
+            if (\Core::$debug) {
+                \Core::debug($changes, "Changing table: $table");
             } else {
                 $sql = "ALTER TABLE $table \n" . implode(",\n", $changes);
                 $db->query($sql);
             }
         }
-        return $result;
+        return $result ? self::STRUCTURE_UPDATED : self::STRUCTURE_NOCHANGE;
     }
 
     /**
@@ -155,7 +162,8 @@ class Table
      * @param array $desired
      * @return array
      */
-    private function _getDifference($columns, $desired) {
+    private function _getDifference($columns, $desired)
+    {
         // Do the compare.
         $changes = array();
         $prevField = $this->_db->escape('id', true);
@@ -181,4 +189,5 @@ class Table
         }
         return $changes;
     }
+
 }

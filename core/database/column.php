@@ -63,22 +63,15 @@ class Column
      */
     private function _setDetails($field)
     {
-        if (is_array($field)) {
-            $type = getKey($field, 'type', 'int');
-            $length = getKey($field, 'length', 0);
-            $default = getKey($field, 'default', '');
-            $unsigned = !empty($field['unsigned']);
-            $null = !empty($field['null']);
-            $extra = getKey($field, 'extra', '');
-        } else {
-            $parts = explode('|', $field);
-            $type = array_shift($parts);
-            $length = !empty($parts) ? intval(array_shift($parts)) : 0;
-            $default = !empty($parts) ? array_shift($parts) : '';
-            $unsigned = false;
-            $null = false;
-            $extra = '';
+        if (!is_array($field)) {
+            throw new \Exception('Cannot translate column.');
         }
+        $type =  getKey($field, 'type', 'int');
+        $length = getKey($field, 'length', 0);
+        $default = getKey($field, 'default', '');
+        $unsigned = !empty($field['unsigned']);
+        $null = !empty($field['null']);
+        $extra = getKey($field, 'extra', '');
         //If length has not been defined.
         $typeExtra = '';
         if (substr($type, -3) == 'int') {

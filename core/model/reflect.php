@@ -1,53 +1,64 @@
 <?php
+
 namespace Core\Model;
+
 /**
  * Class reflection for models.
  *
+ * This object is light and simple. To avoid accidentally going through reflection. And allows for better caching.
+ *
  * @author Nimja
  */
-class Reflect
-{
-    const DOCCOMMENT_REGEX = '/@([a-zA-Z-]+)(.*)/';
+class Reflect {
+
     /**
-     * The current class.
-     * @var ReflectionClass
+     * The database instance.
+     * @var \Core\Database
      */
-    private $_class;
+    private $_db;
+
     /**
-     * The class we are reflecting.
+     * The name for the databse connection.
      * @var string
      */
-    private $_className;
-    /**
-     * The database connection for this class.
-     * @var Library_Database
-     */
-    public $db;
+    public $dbName;
+
     /**
      * The table name.
      * @var string
      */
     public $table;
+
     /**
      * The type name.
      * @var string
      */
     public $type;
+
     /**
      * The listfield.
      * @var type
      */
     public $listField = null;
+
+    /**
+     * Names of all the fields.
+     * @var array
+     */
+    public $fieldNames = array();
+
     /**
      * The fields + types.
      * @var array
      */
     public $fields = array();
+
     /**
      * The validation array.
      * @var array
      */
     public $validate = array();
+
     /**
      * Database column information.
      * @var array
@@ -55,79 +66,15 @@ class Reflect
     public $columns = array();
 
     /**
-     * @param string $class
+     * Always get the DB instance dynamically.
+     * @return \Core\Database
      */
-    public function __construct($class)
+    public function db()
     {
-        if (!is_subclass_of($class, '\Core\Model')) {
-            throw new \Exception("Reflecting non model class: $class");
+        if (empty($this->_db)) {
+            $this->_db = \Core\Database::instance($this->dbName);
         }
-        $this->_className = $class;
-        $short = $class;
-        $this->table = $this->_getTableName($short);
-        $this->type = strtolower($short);
-        $this->_class = new \ReflectionClass($class);
-        $this->_getDb();
-        $this->_getSettings();
-        unset($this->_class);
-    }
-    private function _getDb()
-    {
-        $doc = self::parseDocComment($this->_class->getDocComment());
-        $dbName = '';
-        if (!empty($doc)) {
-            $dbName = getKey($doc, 'db-database', '');
-        }
-        //$this->db = Library_Database::getDatabase($dbName);
-
-    }
-
-    /**
-     * Get the settings information.
-     */
-    private function _getSettings()
-    {
-        $properties = $this->_class->getProperties();
-        foreach ($properties as $property) {
-            $prop = new Reflect\Property($property);
-            $prop->fillSettings($this);
-        }
-        if (empty($this->listField)) {
-            $this->listField = array_shift(array_keys($this->fields));
-        }
-    }
-
-    /**
-     * Get the table name.
-     * @param string $shortName
-     * @return string
-     */
-    private function _getTableName($shortName)
-    {
-        $prefix = \Config::system()->get('database', 'table_prefix', '');
-        return $prefix . $shortName;
-    }
-
-    /**
-     * Parse the doc comment into a nice array.
-     * @param string $docComment
-     * @return array
-     */
-    public static function parseDocComment($docComment)
-    {
-        $result = array();
-        if (!empty($docComment)) {
-            $matches = null;
-            if (preg_match_all(self::DOCCOMMENT_REGEX, $docComment, $matches)) {
-                $fields = $matches[1];
-                $values = $matches[2];
-                foreach ($fields as $key => $value) {
-                    $var = trim(getKey($values, $key, ''));
-                    $result[$value] = $var == '' ? true : $var;
-                }
-            }
-        }
-        return $result;
+        return $this->_db;
     }
 
     /**
@@ -137,6 +84,8 @@ class Reflect
      */
     public static function get($class)
     {
-        return new self($class);
+        $reflectClass = new Reflect\Model($class);
+        return $reflectClass->getReflect();
     }
+
 }

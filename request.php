@@ -164,14 +164,16 @@ class Request
      * @param int $modified Unix timestamp of last modified date.
      * @param string $filename Filename for the output
      * @param boolean $isFile True if data is a filename. (if true, it will output a file directly to the browser)
+     * @return void
+     * @throws \Exception
      */
     public static function output($mime, $data, $modified = 0, $filename = null, $isFile = false)
     {
         if (ob_get_contents() || headers_sent()) {
-            throw new Exception("Headers already sent.");
+            throw new \Exception("Headers already sent.");
         }
         if ($isFile && !file_exists($data)) {
-            throw new Exception("File does not exist: $data");
+            throw new \Exception("File does not exist: $data");
         } else if ($isFile) {
             self::ifModifiedSince(filemtime($data));
         }

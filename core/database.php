@@ -56,7 +56,7 @@ class Database
             $this->_result = $this->_mysqli->query($sql, MYSQLI_USE_RESULT);
         }
         if ($this->_result === false) {
-            throw new \Exception($this->_mysqli->error, $this->_mysqli->errno);
+            throw new \Exception($sql . "\n" . $this->_mysqli->error, $this->_mysqli->errno);
         }
         return $this->_result;
     }
@@ -138,7 +138,7 @@ class Database
         $res = $this->query($sql);
         $result = ($res === true) ? null : $res->fetch_assoc();
         $res->free();
-        Core::debug($result, 'Result:');
+        \Core::debug($result, 'Result:');
         return $result;
     }
 
@@ -216,11 +216,12 @@ class Database
      * @param string $table
      * @param array $values
      * @return int The newly inserted ID.
+     * @throws \Exception
      */
     public function insert($table, $values)
     {
         if (empty($table) || empty($values)) {
-            throw new Exception("Attempting to insert with empty data.");
+            throw new \Exception("Attempting to insert with empty data.");
         }
         $sql = "INSERT INTO {$this->escape($table, true)}
             SET {$this->_arrayToSql($values)}";
@@ -236,14 +237,15 @@ class Database
      * @param array @values
      * @param string|array $where
      * @return int $id with which we updated.
+     * @throws \Exception
      */
     public function update($table, $values, $search)
     {
         if (empty($table) || empty($values)) {
             throw new \Exception("Attempting to update with empty data.");
         }
-        if (empty($find)) {
-            throw new \Exception("Attmepting to update without find.");
+        if (empty($search)) {
+            throw new \Exception("Attempting to update without find.");
         }
         $result = false;
         if (!empty($table) && !empty($values)) {
@@ -277,7 +279,7 @@ class Database
     /**
      * Get a table object, to use for various functions.
      * @param string $table
-     * @return \Core\Database\Table
+     * @return Database\Table
      */
     public function table($table)
     {
@@ -438,7 +440,7 @@ class Database
      */
     public static function instance($database = null)
     {
-        $database = $database ? : Config::system()->get('database', 'default');
+        $database = $database ? : \Config::system()->get('database', 'default');
         if (empty(self::$_instances[$database])) {
             self::$_instances[$database] = new self(self::_getSettingsForDatabase($database));
         }
@@ -449,11 +451,11 @@ class Database
      * Get settings for this database.
      * @param string $database
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private static function _getSettingsForDatabase($database)
     {
-        $connections = Config::system()->get('database', 'connection');
+        $connections = \Config::system()->get('database', 'connection');
         if (empty($connections)) {
             throw new \Exception('No connections configured.');
         }

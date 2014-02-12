@@ -31,7 +31,7 @@ class Show
 
         self::$curError++;
         $info = self::_showVariable($var);
-        if ($var instanceof Exception) {
+        if ($var instanceof \Exception) {
             $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
         } else {
             $trace = self::_getTraceInfo(self::_getDebug());
@@ -153,12 +153,15 @@ class Show
             $var = $pad . $variable;
             //Assume date when handling big integers (> 1985).
             if ($variable > 500000000) {
-                $var .= date(' (Y-m-d H:i:s)');
+                $var .= date(' (Y-m-d H:i:s)', $variable);
             }
             $result[] = $var;
         } else if (is_string($variable)) {
-            $result[] = $pad . '"' . $variable . '"';
-        } else if ($variable instanceof Exception) {
+            $lines = explode(PHP_EOL, $variable);
+            foreach ($lines as $key => $line) {
+                $result[] = $pad . '"' . $line . '"';
+            }
+        } else if ($variable instanceof \Exception) {
             $result[] = self::_getVarHeader($variable, $pad);
             $result[] = "{$padp}[file] => {$variable->getFile()}";
             $result[] = "{$padp}[line] => {$variable->getLine()}";

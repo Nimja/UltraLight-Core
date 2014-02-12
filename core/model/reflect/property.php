@@ -26,7 +26,7 @@ class Property
     public function __construct($property)
     {
         $this->_property = $property;
-        $this->_doc = \Core\Model\Reflect::parseDocComment($property->getDocComment());
+        $this->_doc = Model::parseDocComment($property->getDocComment());
     }
 
     /**

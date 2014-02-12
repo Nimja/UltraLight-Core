@@ -224,7 +224,7 @@ class Xml
          * Main format method
          *
          * @param void
-         * @throws Exception
+         * @throws \Exception
          * @return void
          */
         public function format()

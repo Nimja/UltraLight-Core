@@ -1,43 +1,52 @@
 <?php
+
 namespace Core;
+
 /* - This is a simple class-holder for a model, using a DB connection.
  * Containing many useful functions for insert, delete, etc.
  * To understand the DB model; it uses reflection through Model_Reflect_Class.
  */
-abstract class Model
-{
+
+abstract class Model {
+
     const ID = 'id';
     const TYPE_BOOL = 'bool';
     const TYPE_SERIALIZE = 'serialize';
+
     /**
      * Reflection for each class, used for fields and columns.
      * @var array
      */
     private static $_reflections = array();
+
     /**
      * Cache per execution cycle, to prevent double queries.
      *
      * @var array
      */
     private static $_cache = array();
+
     /**
      * Static memory caching.
      *
      * @var array
      */
     protected static $cache = array();
+
     /**
      * The current class.
      *
      * @var string
      */
     protected $_class;
+
     /**
      * ID variable
      *
      * @var int
      */
     public $id = 0;
+
     /**
      * Is true if a save succeeded succesfully.
      *
@@ -101,8 +110,7 @@ abstract class Model
     public function getValues()
     {
         $result = array();
-        $class = $this->_class;
-        foreach ($this->_re()->fields as $field => $type) {
+        foreach ($this->_re()->fieldNames as $field) {
             $value = getAttr($this, $field);
             if (!blank($value)) {
                 $result[$field] = $this->$field;
@@ -114,16 +122,13 @@ abstract class Model
     }
 
     /**
-     * Save the current object to the DB, as new or update.
-     * @return $this
+     * Get values that are used as saving. Easy to overwrite.
+     * @param
+     * @return type
      */
-    public function save()
+    protected function _getValuesForSave($re)
     {
-        $re = $this->_re();
-        $db = $re->db;
         $values = $this->getValues();
-        //Do we want to do a validation check?
-        $id = intval($this->id);
         foreach ($re->fields as $field => $type) {
             if (!isset($values[$field])) {
                 continue;
@@ -133,12 +138,24 @@ abstract class Model
                 $values[$field] = serialize($values[$field]);
             }
         }
-        $table = $re->table;
+        return $values;
+    }
+
+    /**
+     * Save the current object to the DB, as new or update.
+     * @return $this
+     */
+    public function save()
+    {
+        $re = $this->_re();
+        $db = $re->db();
+        $values = $this->getValues();
+        $id = intval($this->id);
         //Switch between update and insert automatically.
         if ($id > 0) {
-            $db->update($table, $values, 'id=' . $id);
+            $db->update($re->table, $values, $id);
         } else {
-            $this->id = $db->insert($table, $values);
+            $this->id = $db->insert($re->table, $values);
         }
         self::_saveCache($this->_class, $this);
         return $this;
@@ -153,91 +170,14 @@ abstract class Model
     {
         $re = $this->_re();
         $table = $re->table;
-        $re->db->delete($table, $this->id);
+        $re->db()->delete($table, $this->id);
         self::_clearCache($this->_class, $this);
         $this->id = 0;
     }
 
     /**
-     * Install this model, ie. create the table if it is required.
-     *
-     * @return type
-     */
-    public function install($force = false)
-    {
-        $re = $this->_re();
-        $fields = $re->columns;
-        if (empty($fields)) {
-            return false;
-        }
-        $table = $re->table;
-        $db = $re->db;
-        if (!$this->check() || $force) {
-            $installed = $db->tableCreate($table, $fields, true);
-            #Install default values, if needs be.
-            $defaults = $this->getDefaults();
-            if (!empty($defaults)) {
-                $this->addMultiple($defaults);
-            }
-            if ($installed) {
-                return Show::info($this->_class, 'Installed', 'success', true);
-            } else {
-                return Show::info($this->_class, 'Not installed!', 'error', true);
-            }
-        } else {
-            $updated = $db->tableUpdate($table, $fields);
-            if ($updated) {
-                return Show::info($this->_class, 'Updated', 'good', true);
-            } else {
-                return Show::info($this->_class, 'No changes.', 'neutral', true);
-            }
-        }
-    }
-
-    /**
-     * Create multiple items at once with associative arrays.
-     *
-     * @param array $array
-     * @return type
-     */
-    public function addMultiple($array)
-    {
-        if (!is_array($array))
-            return false;
-
-        #Look over array and add them.
-        foreach ($array as $item) {
-            if (is_array($item)) {
-                $current = new $this->_class($item);
-                $current->save();
-            }
-        }
-    }
-
-    /**
-     * Return an array of default values.
-     * @return array Default values for this class.
-     */
-    protected function getDefaults()
-    {
-        $function = 'for' . $this->_class;
-        return method_exists('Library_Defaults', $function) ? Library_Defaults::$function() : array();
-    }
-
-    /**
-     * Check this model, only checking if the table exists.
-     *
-     * @return boolean Table exists or not.
-     */
-    protected function check()
-    {
-        $re = $this->_re();
-        return $re->db->table_exists($re->table);
-    }
-
-    /**
      * Get the reflect values.
-     * @return Model_Reflect_Class
+     * @return \Core\Model\Reflect
      */
     protected function _re()
     {
@@ -252,7 +192,7 @@ abstract class Model
     public function validate($exclude = array())
     {
         $result = array();
-        #No validation rules, always true.
+        // No validation rules, always true.
         if (!empty($this->_validate)) {
             $validateRules = $this->_validate;
             if (!empty($exclude)) {
@@ -266,26 +206,26 @@ abstract class Model
         }
         return $result;
     }
+
     /**
-     * Get a related object.
-     * @param string $type
+     * Get a related entity.
+     * @param string $field
+     * @param string $class
      * @return \Core\Model
      */
-    protected function _getRelated($type)
+    protected function _getRelated($field, $class)
     {
-        $typeId = $type . 'Id';
-        $class = 'Model_' . ucfirst($type);
-        if (empty($this->$typeId)) {
-            throw new \Exception("$typeId empty or not present.");
+        if (empty($this->$field) || !class_exists($class)) {
+            throw new \Exception("$field empty or not present.");
         }
-        if (empty($this->_related[$type])) {
-            $entity = $class::load($this->$typeId);
+        if (empty($this->_related[$class])) {
+            $entity = $class::load($this->$field);
             if (empty($entity)) {
-                throw new \Exception("No $class with id $typeId.");
+                throw new \Exception("No $class with id {$this->$field}.");
             }
-            $this->_related[$type] = $entity;
+            $this->_related[$class] = $entity;
         }
-        return $this->_related[$type];
+        return $this->_related[$class];
     }
 
     /**
@@ -294,8 +234,9 @@ abstract class Model
      */
     public function __toString()
     {
-        return Show::info($this, $this->_class, '#efe', true);
+        return \Show::info($this, $this->_class, '#efe', true);
     }
+
     /* ------------------------------------------------------------
      * 			STATIC FUNCTIONS
      * ------------------------------------------------------------
@@ -317,6 +258,43 @@ abstract class Model
     }
 
     /**
+     * Install this model, ie. create the table if it is required.
+     *
+     * @return void
+     */
+    public static function install($force = false)
+    {
+        $class = get_called_class();
+        $re = $class::re();
+        $fields = $re->columns;
+        if (empty($fields)) {
+            return false;
+        }
+        $table = $re->db()->table($re->table);
+        $result = $table->applyStructure($fields, $force);
+        switch ($result) {
+            case \Core\Database\Table::STRUCTURE_UPDATED:
+                $class::addMultiple($class::getDefaults(), $class);
+                \Show::info("$class", 'Table updated.');
+                break;
+            case \Core\Database\Table::STRUCTURE_CREATED:
+                \Show::info("$class", 'Table created.');
+                break;
+            default:
+                \Show::info("$class", 'No actions.');
+        }
+    }
+
+    /**
+     * Return an array of default values.
+     * @return array Default values for this class.
+     */
+    protected static function getDefaults()
+    {
+        return null;
+    }
+
+    /**
      * Load an object, with ID. This will return a cached object if present.
      * @param int $id
      * @return /self|null
@@ -330,7 +308,7 @@ abstract class Model
         $result = self::_loadCache($class, $id);
         if (!$result) {
             $re = self::re($class);
-            $values = $re->db->getById($re->table, $id);
+            $values = $re->db()->getById($re->table, $id);
             if (!empty($values)) {
                 $result = new $class($values);
                 self::_saveCache($class, $result);
@@ -369,7 +347,7 @@ abstract class Model
     {
         $class = get_called_class();
         $re = self::re($class);
-        $db = $re->db;
+        $db = $re->db();
         $listField = $re->listField;
         $order = $order ? : "{$listField} ASC";
         $res = $db->searchTable($re->table, $search, $order, $limit)->last;
@@ -419,4 +397,27 @@ abstract class Model
         $cacheId = $class . '::' . $id;
         return isset(self::$_cache[$cacheId]) ? self::$_cache[$cacheId] : false;
     }
+
+    /**
+     * Create multiple items at once with associative arrays.
+     *
+     * @param array $array
+     * @return void
+     */
+    public static function addMultiple($array, $class = null)
+    {
+        $class = $class ? : get_called_class();
+        if (!is_array($array)) {
+            return false;
+        }
+        // Loop over array and add them.
+        foreach ($array as $item) {
+            if (is_array($item)) {
+                $current = new $class($item);
+                /* @var $current \Core\Model */
+                $current->save();
+            }
+        }
+    }
+
 }
