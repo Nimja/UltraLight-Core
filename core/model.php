@@ -274,10 +274,10 @@ abstract class Model {
         $result = $table->applyStructure($fields, $force);
         switch ($result) {
             case \Core\Database\Table::STRUCTURE_UPDATED:
-                $class::addMultiple($class::getDefaults(), $class);
                 \Show::info("$class", 'Table updated.');
                 break;
             case \Core\Database\Table::STRUCTURE_CREATED:
+                $class::addMultiple($class::getDefaults(), $class);
                 \Show::info("$class", 'Table created.');
                 break;
             default:

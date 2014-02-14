@@ -8,7 +8,6 @@ namespace Core\Model;
  */
 class User extends Sessioned
 {
-    const COOKIE_NAME = 'login_remember';
     /**
      * Username.
      * @listfield
@@ -67,7 +66,7 @@ class User extends Sessioned
     {
         $cookie = $this->makeCookie();
         if (!empty($cookie)) {
-            \Request::setCookie(self::COOKIE_NAME, $cookie, '+2 months');
+            \Request::setCookie($this->_class, $cookie, '+2 months');
         }
         return $this;
     }
@@ -79,7 +78,7 @@ class User extends Sessioned
     public function hasCookie()
     {
         $cookie = $this->makeCookie();
-        $current = getKey($_COOKIE, self::COOKIE_NAME);
+        $current = \Request::getCookie($this->_class);
         return $current == $cookie;
     }
 
@@ -119,7 +118,8 @@ class User extends Sessioned
      */
     public static function loadFromCookie()
     {
-        $cookie = \Request::getCookie(self::COOKIE_NAME);
+        $class = get_called_class();
+        $cookie = \Request::getCookie($class);
         $result = null;
         if (!empty($cookie)) {
             $parts = explode('-', $cookie);
@@ -170,7 +170,8 @@ class User extends Sessioned
      */
     public static function logout()
     {
-        \Request::clearCookie(self::COOKIE_NAME);
+        $class = get_called_class();
+        \Request::clearCookie($class);
         self::clearSession();
     }
 
