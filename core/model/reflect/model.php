@@ -75,6 +75,7 @@ class Model {
         if (empty($this->_reflect->listField)) {
             $this->_reflect->listField = array_shift(array_keys($this->_reflect->fields));
         }
+        $this->_reflect->fieldNames = array_keys($this->_reflect->fields);
     }
 
     /**

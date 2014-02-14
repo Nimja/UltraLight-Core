@@ -116,8 +116,9 @@ abstract class Model {
                 $result[$field] = $this->$field;
             }
         }
-
-        $result[self::ID] = $this->id;
+        if (!empty($this->id)) {
+            $result[self::ID] = $this->id;
+        }
         return $result;
     }
 
@@ -149,7 +150,10 @@ abstract class Model {
     {
         $re = $this->_re();
         $db = $re->db();
-        $values = $this->getValues();
+        $values = $this->_getValuesForSave($re);
+        if (empty($values)) {
+            throw new \Exception("Attempting to save empty model.");
+        }
         $id = intval($this->id);
         //Switch between update and insert automatically.
         if ($id > 0) {
@@ -277,8 +281,11 @@ abstract class Model {
                 \Show::info("$class", 'Table updated.');
                 break;
             case \Core\Database\Table::STRUCTURE_CREATED:
-                $class::addMultiple($class::getDefaults(), $class);
                 \Show::info("$class", 'Table created.');
+                $count = self::addMultiple($class::getDefaults(), $class);
+                if ($count > 0) {
+                    \Show::info("$class","Inserted $count rows.");
+                }
                 break;
             default:
                 \Show::info("$class", 'No actions.');
@@ -411,13 +418,16 @@ abstract class Model {
             return false;
         }
         // Loop over array and add them.
+        $count = 0;
         foreach ($array as $item) {
             if (is_array($item)) {
                 $current = new $class($item);
                 /* @var $current \Core\Model */
                 $current->save();
+                $count++;
             }
         }
+        return $count;
     }
 
 }
