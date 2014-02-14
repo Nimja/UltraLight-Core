@@ -110,7 +110,6 @@ class Table {
         if (\Core::$debug) {
             \Core::debug($sql, 'Creating table');
         } else {
-            \Show::info($sql);
             $this->_db->query($sql);
         }
         return self::STRUCTURE_CREATED;
