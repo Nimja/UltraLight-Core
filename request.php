@@ -72,7 +72,7 @@ class Request
     {
         if (self::$_values === null) {
             $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: array();
-            $post = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: array();
+            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?: array();
             self::$_values = Sanitize::clean(array_merge($get, $post));
         }
         return self::$_values;
