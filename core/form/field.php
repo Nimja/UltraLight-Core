@@ -26,6 +26,12 @@ abstract class Field
      */
     public $hasError = false;
     /**
+     * Wrap this in a div.
+     *
+     * @var type
+     */
+    public $wrapDiv = true;
+    /**
      * Extra details, like values, style, etc.
      * @var array
      */
@@ -96,11 +102,18 @@ abstract class Field
             $data = $this->_addClass($data, 'error');
         }
         if (!empty($data)) {
+            $ignore = array(
+                'extra' => true,
+                'value' => true,
+                'values' => true,
+            );
             $parts = array();
-            $fields = array('class', 'style', 'id', 'onchange', 'alt', 'title', 'for', 'ref');
-            foreach ($fields as $field) {
+            foreach ($data as $field => $value) {
+                if (isset($ignore[$field])) {
+                    continue;
+                }
                 if (!empty($data[$field])) {
-                    $parts[] = $field . '="' . trim($data[$field]) . '"';
+                    $parts[] = $field . '="' . trim($value) . '"';
                 }
             }
             if (!empty($data['extra'])) {
@@ -136,7 +149,10 @@ abstract class Field
     public function __toString()
     {
         $type = strtolower(array_pop(explode("\\", get_class($this))));
-        $result = array('<field class="' . $type . '">');
+        $result = array();
+        if ($this->wrapDiv) {
+            $result[] = '<field class="' . $type . '">';
+        }
         if (!empty($this->_extra['label'])) {
             $result[] = '<label><span>' . $this->_extra['label'] . '</span>';
             $result[] = $this->_getHtml();
@@ -144,7 +160,9 @@ abstract class Field
         } else {
             $result[] = $this->_getHtml();
         }
-        $result[] = '<clear /></field>';
+        if ($this->wrapDiv) {
+            $result[] = '<clear /></field>';
+        }
         return implode('', $result);
     }
 }
