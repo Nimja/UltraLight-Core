@@ -62,6 +62,14 @@ class Database
     }
 
     /**
+     * Get last resource.
+     * @return \mysqli_result
+     */
+    public function getRes() {
+        return $this->_result;
+    }
+
+    /**
      * Return number of affected or returned rows of the last query.
      *
      * @return int The number of results.
@@ -82,12 +90,12 @@ class Database
     /**
      * Get an array with all the results.
      *
-     * @param \mysqli_result $res A MySQLi result resource.
+     * @param string|null Query or use previous result.
      * @return array Associative Array for this result.
      */
-    public function fetchRows($sql)
+    public function fetchRows($sql = null)
     {
-        $res = $this->query($sql);
+        $res = $sql ? $this->query($sql): $this->_result;
         $result = array();
         while ($row = $res->fetch_assoc()) {
             $result[] = $row;
@@ -130,14 +138,17 @@ class Database
     /**
      * Run a query and get the first result, if any. Good for checks or single objects.
      *
-     * @param string $sql The MySQL query.
+     * @param string|null Query or use previous result.
      * @return array|null Associative Array for this result.
      */
-    public function fetchFirstRow($sql)
+    public function fetchFirstRow($sql = null)
     {
-        $res = $this->query($sql);
-        $result = ($res === true) ? null : $res->fetch_assoc();
-        $res->free();
+        $res = $sql ? $this->query($sql): $this->_result;
+        $result = null;
+        if ($res && $res->num_rows > 0) {
+            $result = $res->fetch_assoc();
+            $res->free();
+        }
         \Core::debug($result, 'Result:');
         return $result;
     }
@@ -147,10 +158,10 @@ class Database
      *
      * If none are found, null is returned.
      *
-     * @param string $sql
+     * @param string|null Query or use previous result.
      * @return type
      */
-    public function fetchFirstValue($sql)
+    public function fetchFirstValue($sql = null)
     {
         $result = $this->fetchFirstRow($sql);
         return !empty($result) ? array_shift($result) : null;
@@ -159,12 +170,12 @@ class Database
     /**
      * Fetch a flat array of the first column of hte result.
      *
-     * @param string $sql
+     * @param string|null Query or use previous result.
      * @return array
      */
-    public function fetchColumn($sql)
+    public function fetchColumn($sql = null)
     {
-        $res = $this->query($sql);
+        $res = $sql ? $this->query($sql): $this->_result;
         $result = array();
         if ($res !== true) {
             while ($row = $res->fetch_assoc()) {
@@ -323,23 +334,43 @@ class Database
     }
 
     /**
-     * Common, easy way to get multiple rows from a single table.
+     * Search a table with simple searching mechanism.
+     *
+     * Can then call fetchX afterwards.
+     * 
      * @param string $table
      * @param string|array $search
+     * @param array $settings
+     * @return \self
      */
-    public function search($table, $search = null, $order = null, $limit = null)
+    public function search($table, $search = null, $settings = null)
     {
         $table = $this->escape($table, true);
         $where = empty($search) ? '' : $this->searchToSql($search);
-        $order = empty($order) ? 'ORDER BY id ASC' : "ORDER BY $order";
-        $limitString = empty($limit) ? '' : "LIMIT $limit";
-        $sql = "SELECT * FROM $table WHERE $where $order $limitString";
-        if ($limit == 1) {
-            $result = $this->fetchFirstRow($sql);
-        } else {
-            $result = $this->fetchRows($sql);
-        }
+        $settings = is_array($settings) ? $settings : array();
+        $order = getKey($settings, 'order', 'id ASC');
+        $limit = getKey($settings, 'limit');
+        $limitString = $limit ?  "LIMIT {$limit}" : '';
+        $fields = $this->_getFields(getKey($settings, 'fields'));
+        $sql = "SELECT {$fields} FROM {$table} WHERE {$where} ORDER BY {$order} {$limitString}";
+        $this->query($sql);
         return $this;
+    }
+    /**
+     * Get fields formatted for query..
+     * @param type $settings
+     * @return type
+     */
+    private function _getFields($fields)
+    {
+        $result = '*';
+        if (!empty($fields)) {
+            if (!is_array($fields)) {
+                $fields = explode(',', $fields);
+            }
+            $result = implode(', ', $fields);
+        }
+        return $result;
     }
 
     /**

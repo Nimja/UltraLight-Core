@@ -143,10 +143,12 @@ class User extends Sessioned
     {
         $re = self::re();
         $db = $re->db();
-        $name = $db->escape($name);
-        $pass = $db->escape($pass);
+        $search = array(
+            'username' => $name,
+            'password' => self::encryptPassword($name, $pass),
+        );
         $table = $re->table;
-        return $db->fetchFirstValue("SELECT id FROM $table WHERE username=$name AND password=$pass");
+        return $db->search($table, $search, array('fields' => self::ID, 'limit' => 1))->fetchFirstValue();
     }
 
     /**

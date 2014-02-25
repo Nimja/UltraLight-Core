@@ -315,7 +315,9 @@ abstract class Model {
         $result = self::_loadCache($class, $id);
         if (!$result) {
             $re = self::re($class);
-            $values = $re->db()->getById($re->table, $id);
+            $values = $re->db()
+                ->search($re->table, intval($id))
+                ->fetchFirstRow();
             if (!empty($values)) {
                 $result = new $class($values);
                 self::_saveCache($class, $result);
@@ -357,9 +359,13 @@ abstract class Model {
         $db = $re->db();
         $listField = $re->listField;
         $order = $order ? : "{$listField} ASC";
-        $res = $db->searchTable($re->table, $search, $order, $limit)->last;
+        $settings = array(
+            'order' => $order,
+            'limit' => $limit,
+        );
+        $res = $db->search($re->table, $search, $settings)->getRes();
         $result = array();
-        while ($row = $db->fetchRow($res)) {
+        while ($row = $res->fetch_assoc()) {
             $model = new $class($row);
             $result[$model->id] = $model;
             self::_saveCache($class, $model);

@@ -48,13 +48,18 @@ abstract class Controller
 
     /**
      * The function actually running the page.
+     *
+     * If any output has been sent (like echo/print_r, etc.) rather than returned we do NOT send type headers.
      */
     final public function display()
     {
-        if (!headers_sent()) {
+        ob_start();
+        $result = $this->_executeRun();
+        $output = ob_get_flush();
+        if (!headers_sent() && empty($output)) {
             header('Content-Type: ' . $this->_contentType);
         }
-        echo $this->_executeRun();
+        echo $result;
     }
 
 
