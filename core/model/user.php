@@ -187,13 +187,57 @@ class User extends Sessioned
     {
         return hash(HASH_TYPE, HASH_KEY . $pass . $user);
     }
+
     /**
      * Return a html form.
      * @param boolean $parsePost
-     * @return string
+     * @return \Core\Form|
      */
     public static function formLogin($parsePost = true)
     {
+        $class = get_called_class();
+        $warning = '';
+        $user = null;
+        if ($parsePost && \Request::isPost()) {
+            try {
+                $user = self::attemptLogin(\Request::value('user'), \Request::value('pass'), $class);
+            } catch (\Exception $e) {
+                $warning = $e->getMessage();
+            }
+        }
+        $result = null;
+        if ($user) {
+            $user->saveSession();
+        } else {
+            $form = new \Core\Form();
+            $form->fieldSet("Login");
+            if ($warning) {
+                $form->add("<div class=\"warning\">{$warning}</div>");
+            }
+            $form->add(new \Core\Form\Field\Input('user', array('label' => 'Username')))
+                ->add(new \Core\Form\Field\Password('pass', array('label' => 'Password')))
+                ->add(new \Core\Form\Field\Submit(null, array('value' => 'Login!')));
+            $result = $form;
+        }
+        return $result;
+    }
 
+    /**
+     * Attempt login and return user if login is correct.
+     * @param type $user
+     * @param type $pass
+     * @return \self
+     */
+    public static function attemptLogin($user, $pass, $class = null)
+    {
+        $class = $class ? : get_called_class();
+        if (empty($user) || empty($pass)) {
+            throw new \Exception('Please enter both username and password.');
+        }
+        $userId = $class::getUserIdForLogin($user, $pass);
+        if (empty($userId)) {
+            throw new \Exception('Username or password incorrect.');
+        }
+        return $class::load($userId);
     }
 }

@@ -36,7 +36,7 @@ class Show
         } else {
             $trace = self::_getTraceInfo(self::_getDebug());
         }
-        $title = Core::cleanPath(Sanitize::clean($title));
+        $title = Sanitize::clean($title);
         // Create result.
         $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
@@ -48,6 +48,7 @@ class Show
             . $info . '</div></div>';
 
         // Switch between returning or echoing. (echo is default);
+        $result = Core::cleanPath($result);
         if ($return) {
             return $result;
         } else {
@@ -77,9 +78,6 @@ class Show
             if ($function == '{closure}') {
                 continue;
             }
-            $info = pathinfo($file);
-            $info_dirname = getKey($info, 'dirname');
-            $info_basename = getKey($info, 'basename');
             $core = (strpos($file, 'CORE') !== false);
             //Skip the auto-class loading and the show class itself.
             if ($file == 'CORE/show.php') {
@@ -115,14 +113,14 @@ class Show
      */
     private static function _showVariable($var)
     {
-        $lines = self::_varToString($var);
+        $lines = \Core\Format\Variable::parse($var);
         $result = array();
         foreach ($lines as $index => $line) {
             $line = htmlentities($line);
             $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
             $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
         }
-        $resultString = Core::cleanPath(implode("\n", $result));
+        $resultString = implode(PHP_EOL, $result);
         return strtr(
             $resultString,
             array(
@@ -130,68 +128,6 @@ class Show
             "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
             )
         );
-    }
-
-    /**
-     * Parse a variable of different types into "lines" arrays.
-     * @param mixed $variable
-     * @return array
-     */
-    private static function _varToString($variable, $depth = 0)
-    {
-
-        $result = array();
-        $pad = str_repeat(self::STR_PAD, $depth);
-        $padp = str_repeat(self::STR_PAD, $depth + 1);
-        if (is_null($variable)) {
-            $result[] = "{$pad}NULL";
-        } else if (is_bool($variable)) {
-            $result[] = $variable ? "{$pad}TRUE" : "{$pad}FALSE";
-        } else if (is_float($variable)) {
-            $result[] = $pad . $variable;
-        } else if (is_int($variable)) {
-            $var = $pad . $variable;
-            //Assume date when handling big integers (> 1985).
-            if ($variable > 500000000) {
-                $var .= date(' (Y-m-d H:i:s)', $variable);
-            }
-            $result[] = $var;
-        } else if (is_string($variable)) {
-            $lines = explode(PHP_EOL, $variable);
-            foreach ($lines as $key => $line) {
-                $result[] = $pad . '"' . $line . '"';
-            }
-        } else if ($variable instanceof \Exception) {
-            $result[] = self::_getVarHeader($variable, $pad);
-            $result[] = "{$padp}[file] => {$variable->getFile()}";
-            $result[] = "{$padp}[line] => {$variable->getLine()}";
-            $result[] = "{$padp}[message] => {$variable->getMessage()}";
-            $result[] = "{$pad}}";
-        } else if (is_array($variable) || is_object($variable)) {
-            $result[] = self::_getVarHeader($variable, $pad);
-            $padp = str_repeat(self::STR_PAD, $depth + 1);
-            foreach ($variable as $key => $value) {
-                $values = self::_varToString($value, $depth + 2);
-                $first = trim(array_shift($values));
-                $result[] = "{$padp}[{$key}] => $first";
-                if (count($values) > 0) {
-                    $result = array_merge($result, $values);
-                }
-            }
-            $result[] = is_array($variable) ? "{$pad}]" : "{$pad}}";
-        }
-        return $result;
-    }
-
-    /**
-     * Get nice var header for object/arrays.
-     * @param object|array $variable
-     * @param string $pad
-     * @return string
-     */
-    private static function _getVarHeader($variable, $pad)
-    {
-        return is_array($variable) ? "{$pad}array [" : $pad . get_class($variable) . ' {';
     }
 
     /**

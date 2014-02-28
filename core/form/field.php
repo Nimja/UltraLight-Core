@@ -148,9 +148,9 @@ abstract class Field
      */
     public function __toString()
     {
-        $type = strtolower(array_pop(explode("\\", get_class($this))));
         $result = array();
         if ($this->wrapDiv) {
+            $type = strtolower(array_pop(explode("\\", get_class($this))));
             $result[] = '<field class="' . $type . '">';
         }
         if (!empty($this->_extra['label'])) {

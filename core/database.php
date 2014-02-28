@@ -337,7 +337,7 @@ class Database
      * Search a table with simple searching mechanism.
      *
      * Can then call fetchX afterwards.
-     * 
+     *
      * @param string $table
      * @param string|array $search
      * @param array $settings
@@ -346,7 +346,7 @@ class Database
     public function search($table, $search = null, $settings = null)
     {
         $table = $this->escape($table, true);
-        $where = empty($search) ? '' : $this->searchToSql($search);
+        $where = empty($search) ? '1' : $this->searchToSql($search);
         $settings = is_array($settings) ? $settings : array();
         $order = getKey($settings, 'order', 'id ASC');
         $limit = getKey($settings, 'limit');

@@ -307,9 +307,12 @@ class Core
         // Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
         while (!empty($request) && empty($load)) {
             $cur = implode('/', $request);
+            self::debug($cur, "Attempting path.");
             if ($this->_getControllerFileName($cur)) {
                 $load = $cur;
-            } elseif (!empty($routes[$cur])) {
+            } else if ($this->_getControllerFileName($cur . '/index')) {
+                $load = $cur . '/index';
+            } else if (!empty($routes[$cur])) {
                 $load = $routes[$cur];
                 //Store which route we're taking.
                 self::$route = $cur;

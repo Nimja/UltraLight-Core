@@ -41,7 +41,7 @@ class Form
      */
     public function __construct($page = null, $extra = null, $method = 'post')
     {
-        $page = !empty($page) ? $page : \Core::$url;
+        $page = !empty($page) ? $page : '/' . \Core::$url;
         $this->_formTag = sprintf('<form action="%s" method="%s" %s>', $page, $method, $this->_extra($extra));
         $this->_values = \Request::getValues();
     }
