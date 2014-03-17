@@ -9,14 +9,14 @@ namespace Core\Model;
 class User extends Sessioned
 {
     /**
-     * Username.
+     * User's name (or username if you will). Name they use for login.
      * @listfield
      * @db-type varchar
      * @db-length 64
      * @validate alpha|3
      * @var string
      */
-    public $username;
+    public $name;
     /**
      * Password.
      * @db-type varchar

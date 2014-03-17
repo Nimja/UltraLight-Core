@@ -262,46 +262,6 @@ abstract class Model {
     }
 
     /**
-     * Install this model, ie. create the table if it is required.
-     *
-     * @return void
-     */
-    public static function install($force = false)
-    {
-        $class = get_called_class();
-        $re = $class::re();
-        $fields = $re->columns;
-        if (empty($fields)) {
-            return false;
-        }
-        $table = $re->db()->table($re->table);
-        $result = $table->applyStructure($fields, $force);
-        switch ($result) {
-            case \Core\Database\Table::STRUCTURE_UPDATED:
-                \Show::info("$class", 'Table updated.');
-                break;
-            case \Core\Database\Table::STRUCTURE_CREATED:
-                \Show::info("$class", 'Table created.');
-                $count = self::addMultiple($class::getDefaults(), $class);
-                if ($count > 0) {
-                    \Show::info("$class","Inserted $count rows.");
-                }
-                break;
-            default:
-                \Show::info("$class", 'No actions.');
-        }
-    }
-
-    /**
-     * Return an array of default values.
-     * @return array Default values for this class.
-     */
-    protected static function getDefaults()
-    {
-        return null;
-    }
-
-    /**
      * Load an object, with ID. This will return a cached object if present.
      * @param int $id
      * @return /self|null

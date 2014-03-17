@@ -172,8 +172,8 @@ class Table {
             if (empty($columns[$field])) {
                 $changes[] = "ADD {$efield} {$column} AFTER {$prevField}";
             } else if (!$columns[$field]->compare($column)) {
-                $cur = trim(implode(' ', $column));
-                $compare = trim(implode(' ', $columns[$field]));
+                $cur ="{$column}";
+                $compare = "{$columns[$field]}";
                 if ($cur != $compare) {
                     $changes[] = "MODIFY {$efield} {$column} AFTER {$prevField}";
                 }
