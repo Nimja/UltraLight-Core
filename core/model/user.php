@@ -92,13 +92,13 @@ class User extends Sessioned
     }
 
     /**
-     * Get a generated hash based on ID, IP and hashed username.
+     * Get a generated hash based on ID, IP and hashed name.
      * @return type
      */
     private function _getCookieHash()
     {
         if (!isset(self::$_hashes[$this->id])) {
-            self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->username);
+            self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->name);
         }
         return self::$_hashes[$this->id];
     }
@@ -144,7 +144,7 @@ class User extends Sessioned
         $re = self::re();
         $db = $re->db();
         $search = array(
-            'username' => $name,
+            'name' => $name,
             'password' => self::encryptPassword($name, $pass),
         );
         $table = $re->table;
@@ -185,7 +185,7 @@ class User extends Sessioned
      */
     public static function encryptPassword($user, $pass)
     {
-        return hash(HASH_TYPE, HASH_KEY . $pass . $user);
+        return hash(HASH_TYPE, HASH_KEY . $pass . strtolower($user));
     }
 
     /**
