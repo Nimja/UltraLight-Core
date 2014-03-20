@@ -91,7 +91,7 @@ class Config
     public function add($file)
     {
         $settings = self::parseConfig($file);
-        $this->_values = self::mergeRecursive($this->_values, $settings);
+        $this->_values = \Core\Arrays::mergeRecursive($this->_values, $settings);
     }
 
     /**
@@ -161,35 +161,5 @@ class Config
                 throw new \Exception("No parser for: $extension");
         }
         return \Core::wrapCache($parser, array($file), filemtime($file));
-    }
-
-    /**
-     * Recursively merge arrays, as the PHP function does not overwrite values.
-     *
-     * The right (second) value overrides the left (first) value.
-     *
-     * @param mixed $left
-     * @param mixed $right
-     * @return mixed
-     */
-    public static function mergeRecursive($left, $right)
-    {
-        // merge arrays if both variables are arrays
-        if (is_array($left) && is_array($right)) {
-            // loop through each right array's entry and merge it into $a
-            foreach ($right as $key => $value) {
-                if (is_int($key)) {
-                    $left[] = $value;
-                } else if (isset($left[$key])) {
-                    $left[$key] = self::mergeRecursive($left[$key], $value);
-                } else {
-                    $left[$key] = $value;
-                }
-            }
-        } else {
-            // one of values is not an array
-            $left = $right;
-        }
-        return $left;
     }
 }

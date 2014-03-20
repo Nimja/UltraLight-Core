@@ -38,7 +38,7 @@ class Ini
                     if (!isset($result[$curName])) {
                         throw new \Exception("Unable to expand $section from $curName");
                     }
-                    $curSection = \Config::mergeRecursive($result[$curName], $curSection);
+                    $curSection = \Core\Arrays::mergeRecursive($result[$curName], $curSection);
                 }
                 $result[$section] = $curSection;
             } else {
