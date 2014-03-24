@@ -113,6 +113,16 @@ class User extends Sessioned
     }
 
     /**
+     * Update and save password.
+     * @param string $newPass
+     */
+    public function updatePassword($newPass)
+    {
+        $this->password = self::encryptPassword($this->name, $newPass);
+        $this->save();
+    }
+
+    /**
      * Check the current cookie and return a user object if it's vaild.
      * @return null|\self
      */

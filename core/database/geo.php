@@ -308,19 +308,4 @@ class Geo
         }
         return $result;
     }
-
-    /**
-     * Get data from geo result object.
-     * @param \GeoIp2\Model\City $data
-     * @param string $type
-     * @return string
-     */
-    private function _getName($data, $type)
-    {
-        $result = null;
-        if (!empty($data->$type)) {
-            $result = $data->$type->names[$this->_locale];
-        }
-        return $result;
-    }
 }
