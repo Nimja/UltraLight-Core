@@ -301,9 +301,9 @@ class Geo
     public function find($ip)
     {
         try {
-            $data = $this->_geo->city($ip);
+            $data = $this->_geo->country($ip);
             $result = $data->country->isoCode;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $result = null;
         }
         return $result;

@@ -58,7 +58,7 @@ class Crypt
     public static function encode($numbers)
     {
         if (empty($numbers) || !is_array($numbers)) {
-            Show::error('Trying to encode with empty array.');
+            \Show::error('Trying to encode with empty array.');
             return FALSE;
         }
 
@@ -69,7 +69,7 @@ class Crypt
         $digits = 1;
         foreach ($numbers as $number) {
             if ($number <= 0 || !is_numeric($number)) {
-                Show::error('Data needs to be numbers.');
+                \Show::error('Data needs to be numbers.');
                 return FALSE;
             }
             foreach (self::$limit as $digit => $limit) {
@@ -115,14 +115,14 @@ class Crypt
         $string = substr($string, 1);
 
         if (!is_numeric($digits) && $digits > 0) {
-            Show::error('Improper string for decoding.');
+            \Show::error('Improper string for decoding.');
             return FALSE;
         }
 
         $digits = intval($digits);
 
         if (strlen($string) % $digits != 0) {
-            Show::error('String is incorrect length.');
+            \Show::error('String is incorrect length.');
             return FALSE;
         }
 

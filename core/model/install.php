@@ -16,6 +16,7 @@ class Install
      */
     public function __construct($classes, $force)
     {
+        \Core::clearCache();
         foreach ($classes as $class) {
             $this->install($class, $force);
         }
@@ -65,6 +66,7 @@ class Install
             $user = new $class(array('name' => $name, 'role' => $role));
             $user->password = $class::encryptPassword($name, $password);
             $user->save();
+            $user->logout();
             \Show::info($class, "Added {$name}");
         }
         return $user;

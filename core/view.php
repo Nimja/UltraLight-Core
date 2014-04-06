@@ -115,7 +115,7 @@ class View
     public function show($view, $data = null)
     {
         if (!empty($data) && !is_array($data)) {
-            Show::error($data, 'Variable is not an array');
+            \Show::error($data, 'Variable is not an array');
             return false;
         }
         //Make sure data is an array and filled with default values.

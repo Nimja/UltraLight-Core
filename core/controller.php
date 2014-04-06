@@ -71,7 +71,7 @@ abstract class Controller
         try {
             $result = $this->_run();
         } catch (Exception $e) {
-            $result = Show::error($e, "Exception!", true);
+            $result = \Show::error($e, "Exception!", true);
         }
         return $result;
     }

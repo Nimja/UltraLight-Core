@@ -561,7 +561,7 @@ class Mp3
     public static function multiJoin($newFile, $files, $save = TRUE, $id3info = NULL)
     {
         if (empty($files)) {
-            Show::error('No files to join.');
+            \Show::error('No files to join.');
             return FALSE;
         }
 

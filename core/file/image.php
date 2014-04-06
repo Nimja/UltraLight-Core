@@ -28,18 +28,18 @@ class Image {
 		$ext = $parts['extension'];
 		#Load image
 		switch ($ext) {
-			case 'png': $img = imagecreatefrompng($src) or Show::error($src, 'PNG could not be loaded, corrupt?');
+			case 'png': $img = imagecreatefrompng($src) or \Show::error($src, 'PNG could not be loaded, corrupt?');
 				break;
 			case 'jpg':
-			case 'jpeg': $img = imagecreatefromjpeg($src) or Show::error($src, 'JPG could not be loaded, corrupt?');
+			case 'jpeg': $img = imagecreatefromjpeg($src) or \Show::error($src, 'JPG could not be loaded, corrupt?');
 				break;
-			case 'gif': $img = imagecreatefromgif($src) or Show::error($src, 'GIF could not be loaded, corrupt?');
+			case 'gif': $img = imagecreatefromgif($src) or \Show::error($src, 'GIF could not be loaded, corrupt?');
 				break;
 		}
 		$this->src = $src;
 		$this->img = $img;
 		if (empty($img)) {
-			Show::error($src, 'File is not an image.');
+			\Show::error($src, 'File is not an image.');
 			return;
 		}
 		$size = getimagesize($src);
@@ -90,7 +90,7 @@ class Image {
 		}
 		#Sanity check
 		if ($this->error || empty($this->img) || empty($this->size)) {
-			Show::error('Image not loaded');
+			\Show::error('Image not loaded');
 			return;
 		}
 
