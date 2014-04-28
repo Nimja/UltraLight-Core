@@ -284,7 +284,7 @@ class Core
         $uri = parse_url($request, PHP_URL_PATH);
         //Remove trailing, leading and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
-        $clean2 = preg_replace('/[^a-z0-9\/\.]/', '', strtolower($clean));
+        $clean2 = preg_replace('/[^a-z0-9\_\-\/\.]/', '', strtolower($clean));
         $final = str_replace('%20', '+', $clean2);
         if ($uri != '/' . $final) {
             Request::redirect($final);
