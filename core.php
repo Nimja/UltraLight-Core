@@ -489,4 +489,17 @@ class Core
         }
         return $result;
     }
+
+    /**
+     * Clear all files from the cache.
+     * @return boolean
+     */
+    public static function clearCache()
+    {
+        $result = false;
+        if (self::$_useCache) {
+            \Core\File\System::rrmdir(PATH_CACHE, false);
+        }
+        return $result;
+    }
 }
