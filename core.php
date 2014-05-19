@@ -239,6 +239,7 @@ class Core
             $site_url .= $_SERVER['HTTP_HOST'] . '/';
             Config::system()->set('site', 'url', $site_url);
         }
+        Config::system()->set('site', 'host', $_SERVER['HTTP_HOST']);
         return $this;
     }
 
