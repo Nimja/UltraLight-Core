@@ -18,7 +18,7 @@ function blank($var)
 }
 
 /**
- * Nice way to get an 'unknown' value from an array without having inline iffs everywhere.
+ * Nice way to get an 'unknown' value from an array without having inline ifs everywhere.
  * @param array $array
  * @param string $key
  * @param mixed $default
@@ -33,7 +33,7 @@ function getKey(&$array, $key, $default = false)
 }
 
 /**
- * Nice way to get an 'unknown' value from an object without having inline iffs everywhere.
+ * Nice way to get an 'unknown' value from an object without having inline ifs everywhere.
  * @param object $array
  * @param string $key
  * @param mixed $default

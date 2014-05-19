@@ -1,5 +1,5 @@
 <?php
-namespace \Core\Format;
+namespace Core\Format;
 /**
  * Encode/Decode an array of numbers into a simple string that fits as a filename.
  *
