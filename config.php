@@ -145,6 +145,7 @@ class Config
     /**
      * Parse config file and return the contents; wrapped by cache.
      * @param string $file
+     * @return array
      */
     public static function parseConfig($file)
     {
