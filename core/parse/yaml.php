@@ -7,12 +7,9 @@ class Yaml
 {
 
     /**
-     * Simple parser for INI files with a very clean approach.
-     *
-     * This parser supports multiple inheritance from other sections.
+     * Simple parser for YAML files, using the Symphony Yaml parser.
      *
      * @param string $filename
-     * @param int $depth How deep you want the recursive parsing to be.
      * @return array
      * @throws \Exception
      */
