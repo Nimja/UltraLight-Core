@@ -150,7 +150,9 @@ class Request
             302 => 'HTTP/1.1 302 Found',
             303 => 'HTTP/1.1 303 See Other',
         );
-        if (empty($codes[$code])) $code = 302;
+        if (empty($codes[$code])) {
+            $code = 302;
+        }
         header($codes[$code]);
         header('Location: ' . $url);
         exit;

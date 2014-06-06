@@ -281,7 +281,8 @@ class Core
      */
     private function _getParsedUri()
     {
-        $request = getKey($_SERVER, 'REQUEST_URI');
+        $siteUrl = Config::system()->get('site', 'url');
+        $request = rtrim($siteUrl, '/') . $_SERVER['REQUEST_URI'];
         $uri = parse_url($request, PHP_URL_PATH);
         //Remove trailing, leading and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
