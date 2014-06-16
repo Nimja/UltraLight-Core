@@ -234,12 +234,14 @@ class Core
      */
     private function _setSiteUrl()
     {
+        $host = filter_input(INPUT_SERVER, 'HTTP_HOST');
         if (!Config::system()->exists('site', 'url')) {
-            $site_url = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
-            $site_url .= $_SERVER['HTTP_HOST'] . '/';
+            $https = filter_input(INPUT_SERVER, 'HTTPS');
+            $site_url = !empty($https) ? 'https://' : 'http://';
+            $site_url .= $host . '/';
             Config::system()->set('site', 'url', $site_url);
         }
-        Config::system()->set('site', 'host', $_SERVER['HTTP_HOST']);
+        Config::system()->set('site', 'host', $host);
         return $this;
     }
 
@@ -250,7 +252,9 @@ class Core
      */
     private function _setRemoteIp()
     {
-        $remote_addr = $_SERVER['REMOTE_ADDR'];
+        $remote_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        $server_addr = filter_input(INPUT_SERVER, 'SERVER_ADDR');
+        $forwarded_for = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
         /**
          * There may be multiple comma-separated IPs for the X-Forwarded-For header
          * if the traffic is passing through more than one explict proxy.  Take the
@@ -258,9 +262,8 @@ class Core
          * which IP relates to the client computer.  We pick the first client IP as
          * this is the client closest to our upstream proxy.
          */
-        if (( $remote_addr == '127.0.0.1' || $remote_addr == $_SERVER['SERVER_ADDR'] ) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-            $remote_addrs = explode(', ', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $remote_addr = $remote_addrs[0];
+        if (( $remote_addr == '127.0.0.1' || $remote_addr == $server_addr ) && $forwarded_for) {
+            $remote_addr = substr($forwarded_for, 0, strpos($forwarded_for ,','));
         }
         define('REMOTE_IP', $remote_addr);
         //Limit access, for example on test sites.
@@ -282,7 +285,7 @@ class Core
     private function _getParsedUri()
     {
         $siteUrl = Config::system()->get('site', 'url');
-        $request = rtrim($siteUrl, '/') . $_SERVER['REQUEST_URI'];
+        $request = rtrim($siteUrl, '/') . filter_input(INPUT_SERVER, 'REQUEST_URI');
         $uri = parse_url($request, PHP_URL_PATH);
         //Remove trailing, leading and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
