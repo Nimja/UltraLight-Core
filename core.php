@@ -1,10 +1,4 @@
 <?php
-/**
- * Make sure PATH_VENDOR is always defined, it is an optional path.
- */
-if (!defined('PATH_VENDOR')) {
-    define('PATH_VENDOR', PATH_CORE . 'vendor/');
-}
 
 /**
  * Replacement function for "empty", easier to type and returns true when var is "0" or 0
@@ -118,13 +112,13 @@ class Core
     /**
      * The main initialization function, can only be called ONCE!
      */
-    public static function start()
+    public static function start($pathOptions)
     {
         self::$start = microtime(true);
         if (!empty(self::$_included)) {
             throw new \Exception("Core::start() called manually!");
         }
-        $core = new self();
+        $core = new self($pathOptions);
         try {
             header('X-Powered-By: UltraLight');
             header('Server: UltraLight');
@@ -142,10 +136,11 @@ class Core
 
     /**
      * Private constructor, to set up basic environment.
+     * @param mixed $options
      */
-    private function __construct()
+    private function __construct($options = null)
     {
-        self::$_useCache = (defined('PATH_CACHE') && is_writable(PATH_CACHE));
+        $this->_setPathConstants($options);
         spl_autoload_register('Core::loadClass');
         set_error_handler('Show::handleError', E_ALL);
         Config::system(PATH_CORE . 'config.ini');
@@ -154,6 +149,73 @@ class Core
             Config::system($appConfig);
         }
         self::$debug = Config::system()->get('system', 'debug', false);
+    }
+
+    /**
+     * This function defines all the PATH constants we need.
+     * @param type $options
+     * @throws Exception
+     */
+    private function _setPathConstants($options)
+    {
+        $isArray = is_array($options);
+        if (empty($options) || ($isArray && empty($options['base']))) {
+            throw new Exception('Startup requires base path at least.');
+        }
+        if (!$isArray) {
+            $options = array('base' => $options);
+        }
+        /**
+         * Path to the core library, only used internally.
+         */
+        define('PATH_CORE', $this->_getRealPath(__DIR__));
+        /**
+         * Path to the vendor library, used to include vendor libraries.
+         */
+        define('PATH_VENDOR', $this->_getPathForConstant($options, 'vendor', PATH_CORE . 'vendor'));
+        /**
+         * Path to the index.php file. Normally not used.
+         */
+        define('PATH_BASE', $this->_getPathForConstant($options, 'base'));
+        /**
+         * Path to the application files. Used for automatic file inclusion..
+         */
+        define('PATH_APP', $this->_getPathForConstant($options, 'application', PATH_BASE . 'application'));
+        /**
+         * Path to the assets, javascript, style sheets, images, etc.
+         */
+        define('PATH_ASSETS', $this->_getPathForConstant($options, 'assets', PATH_BASE . 'assets'));
+        $cachePath = getKey($options, 'cache', PATH_BASE . 'cache');
+        if (is_writable($cachePath)) {
+            /**
+             * Path to the cache, only available if the cache is present.
+             */
+            define('PATH_CACHE', $this->_getRealPath($cachePath));
+            self::$_useCache = true;
+        }
+    }
+    /**
+     * Set path constant for the application.
+     * @param string $name
+     * @param string $path
+     * @throws Exception
+     */
+    private function _getPathForConstant($options, $name, $default = null)
+    {
+        $path = getKey($options, $name, $default);
+        if (!file_exists($path)) {
+            throw new Exception("Unable to define $name - $path does not exist.");
+        }
+        return $this->_getRealPath($path);
+    }
+    /**
+     * Get the real path, with trailing slash.
+     * @param string $path
+     * @return string
+     */
+    private function _getRealPath($path)
+    {
+        return rtrim(realpath($path), '/').'/';
     }
 
     /**
