@@ -327,6 +327,10 @@ class Core
         if (( $remote_addr == '127.0.0.1' || $remote_addr == $server_addr ) && $forwarded_for) {
             $remote_addr = substr($forwarded_for, 0, strpos($forwarded_for ,','));
         }
+        /**
+         * Remote IP address.
+         * @var string
+         */
         define('REMOTE_IP', $remote_addr);
         //Limit access, for example on test sites.
         if (Config::system()->exists('limit')) {
