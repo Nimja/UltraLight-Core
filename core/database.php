@@ -450,7 +450,7 @@ class Database
             } else if ($operation == '|[') {
                 $condition = "FIND_IN_SET({$value}, {$field}) > 0";
             } else if ($operation == '|]') {
-                $condition = "FIND_IN_SET({$value}, {$field}) == 0";
+                $condition = "FIND_IN_SET({$value}, {$field}) = 0";
             } else {
                 $operand = '=';
                 switch ($operation) {
