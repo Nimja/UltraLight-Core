@@ -178,6 +178,7 @@ class Request
         $fileName = $fileName ?: pathinfo($file, PATHINFO_BASENAME);
         self::_sendOutputHeaders($mimeType, filesize($file), $fileName, $modifiedDate);
         readfile($file);
+        exit;
     }
     /**
      * Output file to browser.
@@ -198,6 +199,7 @@ class Request
         self::ifModifiedSince($modifiedDate);
         self::_sendOutputHeaders($mimeType, strlen($data), $fileName, time());
         echo $data;
+        exit;
     }
 
     /**

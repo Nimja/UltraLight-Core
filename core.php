@@ -126,7 +126,9 @@ class Core
                 ->_setSiteUrl()
                 ->_setRemoteIp()
                 ->_loadPage();
-            $page->display();
+            if ($page) {
+                $page->display();
+            }
         } catch (\Exception $e) {
             Show::error($e);
         }
