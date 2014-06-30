@@ -443,25 +443,21 @@ class Core
             array_shift($request);
         }
         $url = implode('/', $request);
-
         $original = PATH_ASSETS . $url;
         if (!file_exists($original)) {
             header('HTTP/1.0 404 Not Found', null, 404);
             throw new \Exception("Unable to find file: $request");
         }
-
         $extension = pathinfo($url, PATHINFO_EXTENSION);
-
         switch ($extension) {
-            case 'css': $mime = 'text/css';
+            case 'css': $mimeType = 'text/css';
                 break;
-            case 'js': $mime = 'text/javascript';
+            case 'js': $mimeType = 'text/javascript';
                 break;
-            default: $mime = 'text/plain';
+            default: $mimeType = 'text/plain';
         }
-
         //Add minify/output_same here in the future.
-        Request::output($mime, $original, filemtime($original), null, true);
+        Request::outputFile($original, $mimeType);
     }
 
     /**

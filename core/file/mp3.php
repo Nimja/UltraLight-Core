@@ -598,6 +598,6 @@ class Mp3
      */
     public function output($filename = NULL)
     {
-        Request::output('audio/mp3', $this->_str, 0, $filename);
+        \Request::outputData($this->_str, 'audio/mp3', $filename);
     }
 }

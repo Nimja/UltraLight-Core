@@ -38,6 +38,18 @@ abstract class Field
     protected $_extra;
 
     /**
+     * If this is a multiple
+     * @var boolean
+     */
+    protected $_isMultiple = false;
+
+    /**
+     * The class in which we wrap the label.
+     * @var type
+     */
+    protected $_labelClass = 'label';
+
+    /**
      *
      * @param type $fieldName
      * @param type $extra
@@ -50,6 +62,7 @@ abstract class Field
         } else {
             $this->_extra = is_array($extra) ? $extra : array('extra' => $extra);
             $this->_sanitizeExtra(array('value', 'values', 'default'));
+            $this->_isMultiple = $this->_isMultiple || !empty($this->_extra['multiple']);
         }
         $this->value = getKey($this->_extra, 'value');
     }
@@ -143,6 +156,39 @@ abstract class Field
     abstract protected function _getHtml();
 
     /**
+     * Get multiple values from the extra object (for select, checkboxes, etc.).
+     * @return array
+     */
+    protected function _getValues()
+    {
+        $values = getKey($this->_extra, 'values');
+        if (empty($values)) {
+            $values = array();
+        }
+        $default = getKey($this->_extra, 'default');
+        if (!empty($default)) {
+            array_unshift($values, $default);
+        }
+        return $values;
+    }
+
+    /**
+     * Check if value is selected.
+     * @param string $value
+     * @return boolean
+     */
+    protected function _isSelected($value)
+    {
+        $result = false;
+        if ($this->_isMultiple && is_array($this->value)) {
+            $result = in_array($value, $this->value) || isset($this->value[$value]);
+        } else {
+            $result = $value == $this->value;
+        }
+        return $result;
+    }
+
+    /**
      * Classes must implement this.
      * @return string
      */
@@ -151,12 +197,12 @@ abstract class Field
         $result = array();
         if ($this->wrapDiv) {
             $type = strtolower(array_pop(explode("\\", get_class($this))));
-            $result[] = '<field class="' . $type . '">';
+            $result[] = "<field class=\"{$type}\">";
         }
         if (!empty($this->_extra['label'])) {
-            $result[] = '<label><span>' . $this->_extra['label'] . '</span>';
+            $result[] = "<{$this->_labelClass}><span>{$this->_extra['label']}</span>";
             $result[] = $this->_getHtml();
-            $result[] = '</label>';
+            $result[] = "</{$this->_labelClass}>";
         } else {
             $result[] = $this->_getHtml();
         }

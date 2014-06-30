@@ -7,7 +7,8 @@ namespace Core;
  */
 class Database
 {
-    const SEARCH_PREG = '/(.+)(\|[\:\=\<\>\!])(.+)/';
+    const SEARCH_PREG = '/(.+)(\|[\:\=\<\>\!\[\]])(.+)/';
+    const SEARCH_FIELD = 'field';
     const SEARCH_VALUE = 'value';
     const SEARCH_OPERATION = 'operation';
     /**
@@ -120,6 +121,8 @@ class Database
     /**
      * Fetch results as a list, using keyField and valueField for example for drowpdowns.
      *
+     * @param string $keyField
+     * @param string $valueField
      * @param \mysqli_result $res A MySQLi result resource.
      * @return array
      */
@@ -418,7 +421,8 @@ class Database
             if (!$found || count($matches) != 4) {
                 continue;
             }
-            $result[trim($matches[1])] = array(
+            $result[] = array(
+                self::SEARCH_FIELD => trim($matches[1]),
                 self::SEARCH_VALUE => trim($matches[3]),
                 self::SEARCH_OPERATION => $matches[2],
             );
@@ -436,13 +440,17 @@ class Database
         $where = array();
         foreach ($searches as $field => $details) {
             if (!is_array($details)) {
-                $details = array('value' => $details);
+                $details = array('field' => $field, 'value' => $details);
             }
-            $value = getKey($details, self::SEARCH_VALUE);
+            $field= $this->escape(getKey($details, self::SEARCH_FIELD), true);
+            $value = $this->escape(getKey($details, self::SEARCH_VALUE));
             $operation = getKey($details, self::SEARCH_OPERATION, '|=');
-            $condition = $this->escape($field, true);
             if ($value == 'null') {
-                $condition .= ($operation != '|!') ? ' IS NULL' : ' IS NOT NULL';
+                $condition = ($operation != '|!') ? "{$field} IS NULL" : "{$field} IS NOT NULL";
+            } else if ($operation == '|[') {
+                $condition = "FIND_IN_SET({$value}, {$field}) > 0";
+            } else if ($operation == '|]') {
+                $condition = "FIND_IN_SET({$value}, {$field}) == 0";
             } else {
                 $operand = '=';
                 switch ($operation) {
@@ -454,10 +462,11 @@ class Database
                         break;
                     case '|:':
                         $operand = 'LIKE';
-                        $value = "%$value%";
+                        trim($value, "'");
+                        $value = "'%$value%'";
                         break;
                 }
-                $condition .= " $operand {$this->escape($value)}";
+                $condition = "{$field} {$operand} {$value}";
             }
             $where[] = $condition;
         }

@@ -159,47 +159,71 @@ class Request
     }
 
     /**
-     * Output data with proper headers (length, etc.) and mime type.
-     *
-     * @param string $mime The mime-type. (ie. image/jpeg, text/plain, ...)
-     * @param mixed $data File data or filename to output .
-     * @param int $modified Unix timestamp of last modified date.
-     * @param string $filename Filename for the output
-     * @param boolean $isFile True if data is a filename. (if true, it will output a file directly to the browser)
-     * @return void
+     * Output file to browser.
+     * @param string $file
+     * @param string $mimeType
+     * @param string $fileName
      * @throws \Exception
      */
-    public static function output($mime, $data, $modified = 0, $filename = null, $isFile = false)
+    public static function outputFile($file, $mimeType = 'application/octet-stream', $fileName = null)
     {
         if (ob_get_contents() || headers_sent()) {
             throw new \Exception("Headers already sent.");
         }
-        if ($isFile && !file_exists($data)) {
-            throw new \Exception("File does not exist: $data");
-        } else if ($isFile) {
-            self::ifModifiedSince(filemtime($data));
+        if (!file_exists($file)) {
+            throw new \Exception("File does not exist: $file");
         }
-        $length = $isFile ? filesize($data) : strlen($data);
-        // Two weeks expiration.
-        $expires = 60 * 60 * 24 * 14;
-        header('Content-Type: ' . $mime);
+        $modifiedDate = filemtime($file);
+        self::ifModifiedSince($modifiedDate);
+        $fileName = $fileName ?: pathinfo($file, PATHINFO_BASENAME);
+        self::_sendOutputHeaders($mimeType, filesize($file), $fileName, $modifiedDate);
+        readfile($file);
+    }
+    /**
+     * Output file to browser.
+     * @param string $file
+     * @param string $mimeType
+     * @param string $fileName
+     * @throws \Exception
+     */
+    public static function outputData($data, $mimeType = 'application/octet-stream', $fileName = null, $modifiedDate = 0)
+    {
+        if (ob_get_contents() || headers_sent()) {
+            throw new \Exception("Headers already sent.");
+        }
+        if (empty($data)) {
+            throw new \Exception("No data to send.");
+        }
+        $modifiedDate = $modifiedDate ?: time();
+        self::ifModifiedSince($modifiedDate);
+        self::_sendOutputHeaders($mimeType, strlen($data), $fileName, time());
+        echo $data;
+    }
+
+    /**
+     * Send output headers,
+     * @param type $mimeType
+     * @param type $length
+     * @param type $fileName
+     * @param type $modifiedDate
+     * @param type $expireDate
+     * @throws \Exception
+     */
+    private static function _sendOutputHeaders($mimeType, $length, $fileName, $modifiedDate, $expireDate = '+2 weeks') {
+        $expireDate = strtotime($expireDate);
+        $expireSeconds = $expireDate - time();
+        header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . $length);
         header('Content-Transfer-Encoding: binary');
-        if (!empty($filename)) {
-            header('Content-Disposition: attachment; filename="' . trim($filename) . '"');
+        if (!empty($fileName)) {
+            header('Content-Disposition: attachment; filename="' . trim($fileName) . '"');
         }
-        header("Cache-Control: max-age={$expires}");
-        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
-        if (!empty($modified)) {
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified) . ' GMT');
+        header("Cache-Control: max-age={$expireSeconds}");
+        header('Expires: ' . gmdate('D, d M Y H:i:s', $expireDate) . ' GMT');
+        if (!empty($modifiedDate)) {
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modifiedDate) . ' GMT');
         }
         header('Connection: keep-alive');
-        if ($isFile) {
-            readfile($data);
-        } else {
-            echo $data;
-        }
-        exit;
     }
 
     /**

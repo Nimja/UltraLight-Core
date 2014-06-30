@@ -212,27 +212,6 @@ abstract class Model {
     }
 
     /**
-     * Get a related entity.
-     * @param string $field
-     * @param string $class
-     * @return \Core\Model
-     */
-    protected function _getRelated($field, $class)
-    {
-        if (empty($this->$field) || !class_exists($class)) {
-            throw new \Exception("$field empty or not present.");
-        }
-        if (empty($this->_related[$class])) {
-            $entity = $class::load($this->$field);
-            if (empty($entity)) {
-                throw new \Exception("No $class with id {$this->$field}.");
-            }
-            $this->_related[$class] = $entity;
-        }
-        return $this->_related[$class];
-    }
-
-    /**
      * Simple generic to string method.
      * @return type
      */
@@ -268,6 +247,7 @@ abstract class Model {
      */
     public static function load($id)
     {
+        $id = intval($id);
         if (empty($id)) {
             return null;
         }
@@ -276,7 +256,7 @@ abstract class Model {
         if (!$result) {
             $re = self::re($class);
             $values = $re->db()
-                ->search($re->table, intval($id))
+                ->search($re->table, $id)
                 ->fetchFirstRow();
             if (!empty($values)) {
                 $result = new $class($values);

@@ -49,7 +49,7 @@ class System
                 }
             }
         } else {
-            throw new \Exception($path, 'Not listing a directory');
+            throw new \Exception("Not listing a directory: {$path}");
         }
         #Combine dirs and files in proper order, maintaining keys.
         $result = array();
