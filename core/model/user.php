@@ -211,6 +211,9 @@ class User extends Sessioned
         if ($parsePost && \Request::isPost()) {
             try {
                 $user = self::attemptLogin(\Request::value('user'), \Request::value('pass'), $class);
+                if (\Request::value('remember') && $user) {
+                    $user->setCookie();
+                }
             } catch (\Exception $e) {
                 $warning = $e->getMessage();
             }
@@ -226,6 +229,7 @@ class User extends Sessioned
             }
             $form->add(new \Core\Form\Field\Input('user', array('label' => 'Username')))
                 ->add(new \Core\Form\Field\Password('pass', array('label' => 'Password')))
+                ->add(new \Core\Form\Field\CheckBox('remember', array('label' => 'Remember me')))
                 ->add(new \Core\Form\Field\Submit(null, array('value' => 'Login!')));
             $result = $form;
         }
