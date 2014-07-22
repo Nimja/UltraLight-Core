@@ -196,6 +196,7 @@ class Core
             self::$_useCache = true;
         }
     }
+
     /**
      * Set path constant for the application.
      * @param string $name
@@ -210,6 +211,7 @@ class Core
         }
         return $this->_getRealPath($path);
     }
+
     /**
      * Get the real path, with trailing slash.
      * @param string $path
@@ -217,7 +219,7 @@ class Core
      */
     private function _getRealPath($path)
     {
-        return rtrim(realpath($path), '/').'/';
+        return rtrim(realpath($path), '/') . '/';
     }
 
     /**
@@ -327,7 +329,7 @@ class Core
          * this is the client closest to our upstream proxy.
          */
         if (( $remote_addr == '127.0.0.1' || $remote_addr == $server_addr ) && $forwarded_for) {
-            $remote_addr = substr($forwarded_for, 0, strpos($forwarded_for ,','));
+            $remote_addr = substr($forwarded_for, 0, strpos($forwarded_for, ','));
         }
         /**
          * Remote IP address.
@@ -540,13 +542,13 @@ class Core
      * @param int $time
      * @return mixed
      */
-    public static function wrapCache($callable, $args, $time = 0)
+    public static function wrapCache($callable, $args = array(), $time = 0)
     {
         if (!is_string($callable)) {
             throw new \Exception("Please use \Class::method for wrapCache.");
         }
         if (self::$_useCache) {
-            $key = strval(implode('_', $args));
+            $key = !empty($args) ? strval(implode('_', $args)) : 'call';
             $cache = \Core\Cache\File::getInstance($callable);
             $result = $cache->load($key, $time);
             if (empty($result)) {
