@@ -14,6 +14,7 @@ class Variable
         $this->_pad = $pad;
         $this->_addVariable($variable);
     }
+
     /**
      * Translate a variable nicely.
      * @param mixed $variable
@@ -69,13 +70,21 @@ class Variable
     private function _addString($variable, $depth, $parent, $array)
     {
         $lines = explode(PHP_EOL, $variable);
-        foreach ($lines as $line) {
-            $this->_addLine('"' . $line . '"', $depth, $parent, $array);
+        $lastIndex = count($lines) - 1;
+        foreach ($lines as $index => $line) {
+            $isLastIndex = ($lastIndex == $index);
+            $isArray = $isLastIndex ? $array : false;
+            $eol = $isLastIndex ? '' : '.';
+            $this->_addLine("\"{$line}\"$eol", $depth, $parent, $isArray);
+            if ($index == 0) {
+                $depth += 2;
+                $parent = '';
+            }
         }
     }
 
     /**
-     * Add integer.
+     * Add array.
      * @param array $variable
      * @param int $depth
      * @param string $parent
@@ -91,8 +100,8 @@ class Variable
     }
 
     /**
-     * Add integer.
-     * @param array $variable
+     * Add object.
+     * @param object $variable
      * @param int $depth
      * @param string $parent
      * @param boolean $array
@@ -109,6 +118,13 @@ class Variable
         }
     }
 
+    /**
+     * Add generic object.
+     * @param object $variable
+     * @param int $depth
+     * @param string $parent
+     * @param boolean $array
+     */
     private function _addGenericObject($variable, $depth, $parent, $array)
     {
         $class = get_class($variable);
@@ -145,6 +161,7 @@ class Variable
     {
         return $this->_lines;
     }
+
     /**
      * Return all lines as a single string.
      * @return type
@@ -153,6 +170,7 @@ class Variable
     {
         return implode(PHP_EOL, $this->_lines);
     }
+
     /**
      * Parse variable and return lines of data.
      * @param mixed $str
