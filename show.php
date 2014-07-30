@@ -147,6 +147,7 @@ class Show
      *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
+     * @param boolean $return
      */
     public static function error($var, $title = 'Error', $return = false)
     {
@@ -154,14 +155,26 @@ class Show
     }
 
     /**
-     * Display a basic error.
+     * Display debug info.
      *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
+     * @param boolean $return
      */
     public static function debug($var, $title = 'Debug', $return = false)
     {
         return self::info($var, $title, 'debug', $return);
+    }
+
+    /**
+     * Return formatted HTML output.
+     *
+     * @param string $var The variable you want to show.
+     * @param string $title The optional title for this variable.
+     */
+    public static function output($var, $title = 'Debug', $color = 'neutral')
+    {
+        return self::info($var, $title, $color, true);
     }
 
     /**

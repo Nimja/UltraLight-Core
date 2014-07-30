@@ -6,6 +6,11 @@ namespace Core\Controller;
 abstract class Ajax extends \Core\Controller
 {
     /**
+     * Extra data allowed on rootlevel.
+     * @var array
+     */
+    protected $_rootData = array();
+    /**
      * JSON mime-type as we send it back always.
      *
      * @var string
@@ -23,6 +28,6 @@ abstract class Ajax extends \Core\Controller
         } catch (\Exception $e) {
             $result['error'] = $e->getMessage();
         }
-        return json_encode($result);
+        return json_encode(array_merge($this->_rootData, $result));
     }
 }
