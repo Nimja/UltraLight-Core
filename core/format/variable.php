@@ -92,7 +92,8 @@ class Variable
      */
     private function _addArray($variable, $depth, $parent, $array)
     {
-        $this->_addLine('array (', $depth, $parent, false);
+        $count = count($variable);
+        $this->_addLine("array ({$count}) (", $depth, $parent, false);
         foreach ($variable as $key => $value) {
             $this->_addVariable($value, $depth + 1, $key, true);
         }
