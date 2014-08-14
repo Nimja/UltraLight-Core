@@ -47,7 +47,7 @@ class Request
     public static function server($name, $default = null)
     {
         if (self::$_server === null) {
-            self::$_server = filter_input_array(INPUT_SERVER, FILTER_UNSAFE_RAW);
+            self::$_server = $_SERVER;
         }
         return getKey(self::$_server, $name, $default);
     }

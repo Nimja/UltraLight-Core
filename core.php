@@ -18,7 +18,7 @@ function blank($var)
  * @param mixed $default
  * @return mixed
  */
-function getKey(&$array, $key, $default = false)
+function getKey($array, $key, $default = false)
 {
     if (!is_array($array)) {
         throw new \Exception("Not an array.");
@@ -110,6 +110,12 @@ class Core
     private static $_useCache = false;
 
     /**
+     * Server variables.
+     * @var array
+     */
+    private $_server;
+
+    /**
      * The main initialization function, can only be called ONCE!
      */
     public static function start($pathOptions)
@@ -142,6 +148,7 @@ class Core
      */
     private function __construct($options = null)
     {
+        $this->_server = $_SERVER;
         $this->_setPathConstants($options);
         spl_autoload_register('Core::loadClass');
         set_error_handler('Show::handleError', E_ALL);
@@ -277,7 +284,8 @@ class Core
     }
 
     /**
-     *
+     * Returns controller if possible.
+     * @return \Core\Controller
      */
     private function _loadPage()
     {
@@ -300,9 +308,9 @@ class Core
      */
     private function _setSiteUrl()
     {
-        $host = filter_input(INPUT_SERVER, 'HTTP_HOST');
+        $host = getKey($this->_server, 'HTTP_HOST');
         if (!Config::system()->exists('site', 'url')) {
-            $https = filter_input(INPUT_SERVER, 'HTTPS');
+            $https = getKey($this->_server, 'HTTPS');
             $site_url = !empty($https) ? 'https://' : 'http://';
             $site_url .= $host . '/';
             Config::system()->set('site', 'url', $site_url);
@@ -318,9 +326,9 @@ class Core
      */
     private function _setRemoteIp()
     {
-        $remote_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-        $server_addr = filter_input(INPUT_SERVER, 'SERVER_ADDR');
-        $forwarded_for = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
+        $remote_addr = getKey($this->_server, 'REMOTE_ADDR');
+        $server_addr = getKey($this->_server, 'SERVER_ADDR');
+        $forwarded_for = getKey($this->_server, 'HTTP_X_FORWARDED_FOR');
         /**
          * There may be multiple comma-separated IPs for the X-Forwarded-For header
          * if the traffic is passing through more than one explict proxy.  Take the
@@ -355,7 +363,7 @@ class Core
     private function _getParsedUri()
     {
         $siteUrl = Config::system()->get('site', 'url');
-        $request = rtrim($siteUrl, '/') . filter_input(INPUT_SERVER, 'REQUEST_URI');
+        $request = rtrim($siteUrl, '/') . getKey($this->_server, 'REQUEST_URI');
         $uri = parse_url($request, PHP_URL_PATH);
         //Remove trailing, leading and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
@@ -480,6 +488,7 @@ class Core
     /**
      * Include a page, can only be done once per page load!
      * @param string $controller
+     * @return \Core\Controller
      */
     private function _loadController($controller)
     {

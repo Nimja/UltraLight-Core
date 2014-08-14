@@ -73,7 +73,8 @@ class Model {
             $prop->fillSettings($this->_reflect);
         }
         if (empty($this->_reflect->listField)) {
-            $this->_reflect->listField = array_shift(array_keys($this->_reflect->fields));
+            $keys = array_keys($this->_reflect->fields);
+            $this->_reflect->listField = array_shift($keys);
         }
         $this->_reflect->fieldNames = array_keys($this->_reflect->fields);
     }

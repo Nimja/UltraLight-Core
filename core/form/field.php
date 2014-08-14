@@ -196,7 +196,8 @@ abstract class Field
     {
         $result = array();
         if ($this->wrapDiv) {
-            $type = strtolower(array_pop(explode("\\", get_class($this))));
+            $classParts = explode("\\", get_class($this));
+            $type = strtolower(array_pop($classParts));
             $result[] = "<field class=\"{$type}\">";
         }
         if (!empty($this->_extra['label'])) {
