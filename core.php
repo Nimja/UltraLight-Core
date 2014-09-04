@@ -571,14 +571,20 @@ class Core
     }
 
     /**
-     * Clear all files from the cache.
+     * Clear cache, either specifically or completely.
      * @return boolean
      */
-    public static function clearCache()
+    public static function clearCache($callable = null, $args = array())
     {
         $result = false;
         if (self::$_useCache) {
-            \Core\File\System::rrmdir(PATH_CACHE, false);
+            if (!empty($callable)) {
+                $cache = \Core\Cache\File::getInstance($callable);
+                $key = !empty($args) ? strval(implode('_', $args)) : 'call';
+                $result = $cache->delete($key);
+            } else {
+                $result = \Core\File\System::rrmdir(PATH_CACHE, false);
+            }
         }
         return $result;
     }

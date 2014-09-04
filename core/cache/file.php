@@ -44,6 +44,20 @@ class File extends \Core\Cache
         }
         return true;
     }
+    /**
+     * Delete from cache.
+     * @param string $key
+     * @return boolean
+     */
+    public function delete($key)
+    {
+        $fileName = $this->_makeFileName($key);
+        $result = false;
+        if (file_exists($fileName)) {
+            $result = unlink($fileName);
+        }
+        return $result;
+    }
 
     /**
      * Make the filename.

@@ -30,13 +30,29 @@ abstract class Cache
 
     /**
      * Load abstract.
+     *
+     * @param string $key
+     * @param int $time
+     * @return mixed
      */
     abstract public function load($key, $time = 0);
 
     /**
      * Save abstract.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return boolean
      */
     abstract public function save($key, $value);
+
+    /**
+     * Delete abstract
+     *
+     * @param string $key
+     * @return boolean
+     */
+    abstract public function delete($key);
 
     /**
      * Clean a string for cache key usage.

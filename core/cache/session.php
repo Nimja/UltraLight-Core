@@ -65,7 +65,19 @@ class Session extends \Core\Cache
         $_SESSION[$this->_group] = &$this->_variables;
         return true;
     }
-
+    /**
+     * Delete from cache.
+     * @param string $key
+     * @return boolean
+     */
+    public function delete($key)
+    {
+        $key = $this->_cleanKey($key);
+        $timeKey = $this->_timeKey($key);
+        unset($this->_variables[$key], $this->_variables[$timeKey]);
+        $_SESSION[$this->_group] = &$this->_variables;
+        return true;
+    }
     /**
      * To store time, setting a timekey.
      * @param string $key
