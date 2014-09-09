@@ -366,9 +366,10 @@ class Core
         $request = rtrim($siteUrl, '/') . getKey($this->_server, 'REQUEST_URI');
         $uri = parse_url($request, PHP_URL_PATH);
         //Remove trailing, leading and double slashes.
-        $clean = preg_replace('/\/{2,}/', '/', trim($uri, '/ '));
+        $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
         $clean2 = preg_replace('/[^a-z0-9\_\-\/\.]/', '', strtolower($clean));
-        $final = str_replace('%20', '+', $clean2);
+        $clean3 = preg_replace('/\.{2,}/', '.', strtolower($clean2));
+        $final = str_replace('%20', '+', $clean3);
         if ($uri != '/' . $final) {
             Request::redirect($final);
         }
@@ -458,7 +459,7 @@ class Core
         $original = PATH_ASSETS . $url;
         if (!file_exists($original)) {
             header('HTTP/1.0 404 Not Found', null, 404);
-            throw new \Exception("Unable to find file: $request");
+            throw new \Exception("Unable to find file: $url");
         }
         $extension = pathinfo($url, PATHINFO_EXTENSION);
         switch ($extension) {

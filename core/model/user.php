@@ -170,6 +170,9 @@ class User extends Sessioned
         $result = self::loadSession();
         if (empty($result)) {
             $result = self::loadFromCookie();
+            if ($result) {
+                $result->saveSession();
+            }
         }
         if (!empty($result) && !empty($result->ip) && $result->ip != REMOTE_IP) {
             $result = null;
