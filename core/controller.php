@@ -21,10 +21,15 @@ abstract class Controller
      */
     protected $_requiredRole = 0;
     /**
-     * The required role, if any.
+     * The user class, is required if setting role.
      * @var int
      */
-    protected $_userClass;
+    protected $_userClass = '\Core\Model\User';
+    /**
+     * Instance of user.
+     * @var \Core\Model\User
+     */
+    protected $_user = null;
     /**
      * Login redirect page if required role is not met.
      * @var string
@@ -42,6 +47,8 @@ abstract class Controller
             $role = !empty($user) ? $user->role : 0;
             if ($role < $this->_requiredRole) {
                 \Request::redirect($this->_loginRedirect, 303);
+            } else {
+                $this->_user = $user;
             }
         }
     }
