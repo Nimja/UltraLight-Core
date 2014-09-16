@@ -217,7 +217,7 @@ abstract class Model {
      */
     public function __toString()
     {
-        return \Show::info($this, $this->_class, '#efe', true);
+        return \Show::info($this, $this->_class, \Show::COLOR_NICE, true);
     }
 
     /* ------------------------------------------------------------

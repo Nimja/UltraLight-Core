@@ -5,30 +5,25 @@
 class Show
 {
     CONST STR_PAD = '  ';
+    const COLOR_SUCCESS = '#dfd'; // Green.
+    const COLOR_NICE = '#def'; // Blue.
+    const COLOR_NEUTRAL = '#eee'; // Gray.
+    const COLOR_ERROR = '#fdd'; // Orange.
+    const COLOR_FATAL = '#f99'; // Red.
+    const COLOR_DEBUG = '#ff9'; // Yellow.
     public static $curError = 0;
 
     /**
      * Show a variable in a neat HTML friendly way. - VERY handy.
      *
-     * @param string $var The variable you want to show.
+     * @param mixed $var The variable you want to show.
      * @param string $title The optional title for this variable.
-     * @param string $color One of fatal, error, neutral, good or success. CSS colors are also accepted.
+     * @param string $color A CSS color.
      * @param boolean $return Return the export as a string instead of echoing.
      * @return string Optional return value, if $return is true.
      */
-    public static function info($var, $title = 'Export Variable', $color = 'neutral', $return = false)
+    public static function info($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false)
     {
-        //Choose a color.
-        $colors = array(
-            'fatal' => '#f99',
-            'error' => '#fdd',
-            'neutral' => '#eee',
-            'good' => '#def',
-            'success' => '#dfd',
-            'debug' => '#ff9',
-        );
-        $color = !empty($colors[$color]) ? $colors[$color] : $color;
-
         self::$curError++;
         $info = self::_showVariable($var);
         if ($var instanceof \Exception) {
@@ -133,46 +128,70 @@ class Show
     /**
      * Show a variable/error and stop PHP.
      *
-     * @param string $var The variable you want to show.
+     * @param mixed $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */
     public static function fatal($var, $title = 'Fatal error')
     {
-        self::info($var, $title, 'fatal');
+        self::info($var, $title, self::COLOR_FATAL);
         exit;
     }
 
     /**
-     * Display a basic error.
+     * Display a basic (orange) error.
      *
-     * @param string $var The variable you want to show.
+     * @param mixed $var The variable you want to show.
      * @param string $title The optional title for this variable.
      * @param boolean $return
      */
     public static function error($var, $title = 'Error', $return = false)
     {
-        return self::info($var, $title, 'error', $return);
+        return self::info($var, $title, self::COLOR_ERROR, $return);
     }
 
     /**
-     * Display debug info.
+     * Display a basic (green) success message.
      *
      * @param string $var The variable you want to show.
      * @param string $title The optional title for this variable.
      * @param boolean $return
      */
+    public static function success($var, $title = 'Error', $return = false)
+    {
+        return self::info($var, $title, self::COLOR_SUCCESS, $return);
+    }
+
+    /**
+     * Display a basic (light blue) nice message.
+     *
+     * @param mixed $var The variable you want to show.
+     * @param string $title The optional title for this variable.
+     * @param boolean $return
+     */
+    public static function nice($var, $title = 'Error', $return = false)
+    {
+        return self::info($var, $title, self::COLOR_NICE, $return);
+    }
+
+    /**
+     * Display a basic (yellow) debug message.
+     *
+     * @param mixed $var The variable you want to show.
+     * @param string $title The optional title for this variable.
+     * @param boolean $return
+     */
     public static function debug($var, $title = 'Debug', $return = false)
     {
-        return self::info($var, $title, 'debug', $return);
+        return self::info($var, $title, self::COLOR_DEBUG, $return);
     }
 
     /**
      * Return formatted HTML output.
      *
-     * @param string $var The variable you want to show.
+     * @param mixed $var The variable you want to show.
      * @param string $title The optional title for this variable.
      */
-    public static function output($var, $title = 'Debug', $color = 'neutral')
+    public static function output($var, $title = 'Debug', $color = self::COLOR_NEUTRAL)
     {
         return self::info($var, $title, $color, true);
     }

@@ -1,7 +1,12 @@
 <?php
-namespace Core\Database;
+namespace Core\Database\Table;
 class Column
 {
+    /**
+     * The name of this field.
+     * @var type
+     */
+    public $field;
     /**
      * The type (+length) of this column.
      * @var string
@@ -107,7 +112,7 @@ class Column
         } else if ($type == 'date') {
             $length = null;
         } else if ($type == 'timestamp') {
-            $default = ' default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP';
+            $default = ' CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP';
         } else if ($type == 'varchar' || $type == 'char') {
             $null = true;
             if (empty($length)) {

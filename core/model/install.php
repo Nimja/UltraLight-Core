@@ -40,11 +40,11 @@ class Install
         $result = $table->applyStructure($fields, $force);
         switch ($result) {
             case \Core\Database\Table::STRUCTURE_UPDATED:
-                \Show::info("$class", 'Table updated.');
+                \Show::nice("$class", 'Table updated.');
                 break;
             case \Core\Database\Table::STRUCTURE_CREATED:
                 $this->_installed["$class"] = true;
-                \Show::info("$class", 'Table created.');
+                \Show::success("$class", 'Table created.');
                 break;
             default:
                 \Show::info("$class", 'No actions.');

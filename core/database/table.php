@@ -62,7 +62,7 @@ class Table {
         $columns = $this->_db->fetchRows("SHOW COLUMNS FROM {$this->_tableEscaped}");
         $result = array();
         foreach ($columns as $column) {
-            $result[$column['Field']] = new Column($this->_db, $column, true);
+            $result[$column['Field']] = new Table\Column($this->_db, $column, true);
         }
         return $result;
     }
@@ -98,12 +98,12 @@ class Table {
             $this->_db->query('DROP TABLE IF EXISTS ' . $table . ';');
         }
         //Basic create table functionality
-        $default = new Column($this->_db);
+        $default = new Table\Column($this->_db);
         $sql = "CREATE TABLE {$table} (\n\t`id` {$default},\n";
         //Go over fields.
         foreach ($fields as $field => $type) {
             $eField = $this->_db->escape($field, true);
-            $column = new Column($this->_db, $type);
+            $column = new Table\Column($this->_db, $type);
             $sql .= "\t{$eField} {$column},\n";
         }
         $sql .= "\t PRIMARY KEY  (`id`) \n) ENGINE=innodb DEFAULT CHARSET=latin1;";
@@ -128,7 +128,7 @@ class Table {
         // Get the current situation.
         $columns = $this->columns();
         // If the ID column does not exist, table was never properly created.
-        $default = new Column($db);
+        $default = new Table\Column($db);
         if (empty($columns['id'])) {
             throw new \Exception("{$this->_table} has no id field.");
         } else if (!$default->compare($columns['id'])) {
@@ -139,7 +139,7 @@ class Table {
         // Get the desired situation.
         $desired = array();
         foreach ($fields as $field => $type) {
-            $desired[$field] = new Column($db, $type);
+            $desired[$field] = new Table\Column($db, $type);
         }
         $changes = $this->_getDifference($columns, $desired);
         // No changes.

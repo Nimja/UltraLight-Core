@@ -1,24 +1,53 @@
-<?php
-namespace Core\Parse;
+<?php namespace Core\Parse;
 /**
  * Ini parser, parses an ini file to associative array.
  */
 class Ini
 {
+    private static $_depth = 99;
+
+    /**
+     * Set depth for parsing.
+     * @param type $depth
+     */
+    public static function setDepth($depth = 99)
+    {
+        self::$_depth = $depth;
+    }
+
+    /**
+     * Parse ini string.
+     * @param type $string
+     * @return array
+     */
+    public static function parseString($string)
+    {
+        $ini = parse_ini_string($string, true);
+        return self::_parse($ini);
+    }
+
+    /**
+     * Parse ini file.
+     * @param type $fileName
+     * @return array
+     */
+    public static function parse($fileName)
+    {
+        $ini = parse_ini_file($fileName, true);
+        return self::_parse($ini);
+    }
 
     /**
      * Simple parser for INI files with a very clean approach.
      *
      * This parser supports multiple inheritance from other sections.
      *
-     * @param string $filename
-     * @param int $depth How deep you want the recursive parsing to be.
+     * @param array $ini
      * @return array
      * @throws \Exception
      */
-    public static function parse($filename, $depth = 99)
+    private static function _parse($ini)
     {
-        $ini = parse_ini_file($filename, true);
         if ($ini === false) {
             throw new \Exception('Unable to parse ini file.');
         }
@@ -32,7 +61,7 @@ class Ini
             $section = trim(array_shift($expand));
             $max = count($expand);
             if ($max > 0) {
-                $curSection = self::_processSection($values, $depth);
+                $curSection = self::_processSection($values, self::$_depth);
                 for ($i = 0; $i < $max; $i++) {
                     $curName = trim($expand[$i]);
                     if (!isset($result[$curName])) {
@@ -42,7 +71,7 @@ class Ini
                 }
                 $result[$section] = $curSection;
             } else {
-                $result[$section] = self::_processSection($values, $depth);
+                $result[$section] = self::_processSection($values, self::$_depth);
             }
         }
         $result += $ini;
