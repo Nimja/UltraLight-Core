@@ -142,5 +142,4 @@ class Session {
     {
         $this->_cache->save($this->_key, $this->_variables);
     }
-
 }

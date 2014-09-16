@@ -54,7 +54,8 @@ abstract class Sessioned extends \Core\Model
     {
         $class = get_called_class();
         $session = self::_getSession();
-        return $session->get($class);
+        $result = $session->get($class);
+        return ($result instanceof self) ? $result : null;
     }
     /**
      * Clear the entity from the session.

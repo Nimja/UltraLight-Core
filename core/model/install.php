@@ -10,13 +10,17 @@ class Install
     protected $_installed = array();
 
     /**
-     * Contructor.
+     * Install constructor.
+     *
+     * This will remove all sessions, cookies (for session) and related.
      * @param array $classes
      * @param boolean $force
      */
     public function __construct($classes, $force)
     {
         \Core::clearCache();
+        \Core\Cache\Session::deleteAll();
+        \Request::clearCookie('PHPSESSID');
         foreach ($classes as $class) {
             $this->install($class, $force);
         }

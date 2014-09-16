@@ -87,4 +87,12 @@ class Session extends \Core\Cache
     {
         return ".time.{$key}";
     }
+
+    /**
+     * Destroy the session.
+     */
+    public static function deleteAll()
+    {
+        $_SESSION = array();
+    }
 }
