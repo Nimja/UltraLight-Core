@@ -129,6 +129,8 @@ abstract class Field
         if (!empty($data)) {
             $ignore = array(
                 'type' => true,
+                'multiple' => true,
+                'default' => true,
                 'label' => true,
                 'extra' => true,
                 'value' => true,
