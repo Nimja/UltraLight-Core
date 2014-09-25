@@ -1,4 +1,5 @@
-<?php namespace Core\Parse;
+<?php
+namespace Core\Parse;
 /**
  * Yaml parser, parses an yaml file to associative array.
  */

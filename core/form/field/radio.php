@@ -13,7 +13,8 @@ class Radio extends \Core\Form\Field
         $result = array();
         foreach ($values as $name => $label) {
             $checked = $this->_isSelected($name) ? 'checked="checked"' : '';
-            $result[] = "<label><l>$label</l><input type=\"radio\" name=\"{$this->name}\" value=\"$name\" {$checked}/></label>";
+            $radioInput = "<input type=\"radio\" name=\"{$this->name}\" value=\"$name\" {$checked}/>";
+            $result[] = "<label class=\"radio-inline\">{$radioInput}{$label}</label>";
         }
         return implode(PHP_EOL, $result);
     }

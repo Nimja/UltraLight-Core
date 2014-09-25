@@ -2,20 +2,21 @@
 namespace Core;
 /**
  * Beautifully simple form creator.
+ *
+ * The output is compatible with Bootstrap.
  */
 class Form
 {
-    const FIELDSET_BEFORE = 'BEFORE';
     /**
-     * The current fieldset.
+     * If we are in a fieldset.
      * @var string
      */
-    private $_currentFieldSet = self::FIELDSET_BEFORE;
+    private $_inFieldSet = false;
     /**
-     * All the fieldSets and their content.
-     * @var type
+     * Data, one for every "add".
+     * @var array
      */
-    private $_fieldSets = array();
+    private $_data = array();
     /**
      * The basic settings.
      * @var string
@@ -33,6 +34,12 @@ class Form
     private $_containsUpload = false;
 
     /**
+     * If form is inline.
+     * @var boolean
+     */
+    private $_isHorizontal = false;
+
+    /**
      * Change the fieldset.
      * @param string $page
      * @param null|array $extra
@@ -42,7 +49,10 @@ class Form
     public function __construct($page = null, $extra = null, $method = 'post')
     {
         $page = !empty($page) ? $page : '/' . \Core::$url;
-        $this->_formTag = sprintf('<form action="%s" method="%s" %s>', $page, $method, $this->_extra($extra));
+        if ($extra && isset($extra['class']) && strpos($extra['class'], 'form-horizontal') !== null) {
+            $this->_isHorizontal = true;
+        }
+        $this->_formTag = sprintf('<form action="%s" method="%s" %s role="form">', $page, $method, $this->_extra($extra));
         $this->_values = \Request::getValues();
     }
 
@@ -52,13 +62,27 @@ class Form
      * @param null|array $extra
      * @return \Core\Form
      */
-    public function fieldSet($legend, $extra = null)
+    public function fieldSet($legend = null, $extra = null)
     {
-        $fieldSet = "<fieldset {$this->_extra($extra)}>";
-        if (!empty($legend)) {
-            $fieldSet .= "<legend>{$legend}</legend>";
+        $this->fieldSetClose();
+        $this->add("<fieldset {$this->_extra($extra)}>");
+        if ($legend) {
+            $this->add("<legend>{$legend}</legend>");
         }
-        $this->_currentFieldSet = $fieldSet;
+        $this->_inFieldSet = true;
+        return $this;
+    }
+
+    /**
+     * Close currently open fieldset.
+     * @return \Core\Form
+     */
+    public function fieldSetClose()
+    {
+        if ($this->_inFieldSet) {
+            $this->add('</fieldset>');
+        }
+        $this->_inFieldSet = false;
         return $this;
     }
 
@@ -69,16 +93,14 @@ class Form
      */
     public function add($field)
     {
-        if (empty($this->_fieldSets[$this->_currentFieldSet])) {
-            $this->_fieldSets[$this->_currentFieldSet] = array();
-        }
         if ($field instanceof \Core\Form\Field) {
             $field->setValue(getKey($this->_values, $field->name));
+            $field->setHorizontal($this->_isHorizontal);
             if ($field->isUpload) {
                 $this->_containsUpload = true;
             }
         }
-        $this->_fieldSets[$this->_currentFieldSet][] = $field;
+        $this->_data[] = $field;
         return $this;
     }
 
@@ -136,27 +158,13 @@ class Form
      */
     public function __toString()
     {
+        $this->fieldSetClose();
         $tag = $this->_formTag;
         if ($this->_containsUpload) {
             $tag = trim(substr($tag, 0, -1)) . ' enctype="multipart/form-data">';
         }
         $result = array($tag);
-        $open = false;
-        foreach ($this->_fieldSets as $fieldSet => $fields) {
-            if ($fieldSet != self::FIELDSET_BEFORE) {
-                if ($open) {
-                    $result[] = '</fieldset>';
-                }
-                $open = true;
-                $result[] = $fieldSet;
-            }
-            foreach ($fields as $field) {
-                $result[] = "$field";
-            }
-        }
-        if ($open) {
-            $result[] = '</fieldset>';
-        }
+        $result = array_merge(array($tag), $this->_data);
         $result[] = '</form>';
         return implode(PHP_EOL, $result);
     }

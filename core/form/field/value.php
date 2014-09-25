@@ -14,7 +14,7 @@ class Value extends \Core\Form\Field
             $value = isset($values[$value]) ? $values[$value] : $value;
         }
         return sprintf(
-            '<value name="%s" %s>%s</value>',
+            '<p class="form-control-static" data-name="%s" %s >%s</p>',
             $this->name,
             $this->_extra($this->_extra),
             $value

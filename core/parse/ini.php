@@ -1,4 +1,5 @@
-<?php namespace Core\Parse;
+<?php
+namespace Core\Parse;
 /**
  * Ini parser, parses an ini file to associative array.
  */

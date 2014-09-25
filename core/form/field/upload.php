@@ -8,10 +8,10 @@ class Upload extends \Core\Form\Field
     public $isUpload = true;
     protected function _getHtml()
     {
+        $this->_extra = $this->_addClass($this->_extra, 'form-control');
         return sprintf(
-            '<input type="file" name="%s" value="%s" %s />',
+            '<input type="file" name="%s" %s />',
             $this->name,
-            $this->value,
             $this->_extra($this->_extra)
         );
     }

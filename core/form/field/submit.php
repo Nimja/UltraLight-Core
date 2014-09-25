@@ -1,5 +1,4 @@
-<?php
-namespace Core\Form\Field;
+<?php namespace Core\Form\Field;
 /**
  * A model with some automatic 'forms' based on the types.
  */
@@ -10,10 +9,7 @@ class Submit extends \Core\Form\Field
     {
         $value = getKey($this->_extra, 'value', "Submit");
         return sprintf(
-            '<input type="submit" name="%s" value="%s" %s />',
-            $this->name,
-            $value,
-            $this->_extra($this->_extra)
+            '<button type="submit" %s>%s</button>', $this->_extra($this->_extra), $value
         );
     }
 }

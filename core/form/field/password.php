@@ -3,15 +3,11 @@ namespace Core\Form\Field;
 /**
  * A model with some automatic 'forms' based on the types.
  */
-class Password extends \Core\Form\Field
+class Password extends Input
 {
-
     protected function _getHtml()
     {
-        return sprintf(
-            '<input type="password" name="%s" value="" %s />',
-            $this->name,
-            $this->_extra($this->_extra)
-        );
+        $this->_extra['type'] = 'password';
+        return parent::_getHtml();
     }
 }

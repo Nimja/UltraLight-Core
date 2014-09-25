@@ -1,5 +1,4 @@
-<?php
-namespace Core\Form;
+<?php namespace Core\Form;
 /**
  * A model with some automatic 'forms' based on the types.
  */
@@ -36,18 +35,21 @@ abstract class Field
      * @var array
      */
     protected $_extra;
-
     /**
      * If this is a multiple
      * @var boolean
      */
     protected $_isMultiple = false;
-
     /**
      * The class in which we wrap the label.
      * @var type
      */
     protected $_labelClass = 'label';
+    /**
+     * If the field is horizontal (label + input on one line).
+     * @var boolean
+     */
+    protected $_isHorizontal = false;
 
     /**
      *
@@ -93,6 +95,16 @@ abstract class Field
     }
 
     /**
+     * Set if we render as horizontal.
+     * @param boolean $isHorizontal
+     */
+    public function setHorizontal($isHorizontal)
+    {
+        $this->_isHorizontal = $isHorizontal;
+        return $this;
+    }
+
+    /**
      * Set the value from the form.
      * @param mixed $value
      */
@@ -116,6 +128,8 @@ abstract class Field
         }
         if (!empty($data)) {
             $ignore = array(
+                'type' => true,
+                'label' => true,
                 'extra' => true,
                 'value' => true,
                 'values' => true,
@@ -181,7 +195,7 @@ abstract class Field
     {
         $result = false;
         if ($this->_isMultiple && is_array($this->value)) {
-            $result = in_array($value, $this->value) || isset($this->value[$value]);
+            $result = blank($value) ? in_array($value, $this->value) || isset($this->value[$value]) : false;
         } else {
             $result = $value == $this->value;
         }
@@ -198,18 +212,49 @@ abstract class Field
         if ($this->wrapDiv) {
             $classParts = explode("\\", get_class($this));
             $type = strtolower(array_pop($classParts));
-            $result[] = "<field class=\"{$type}\">";
+            $result[] = "<div class=\"form-group {$type}\">";
         }
         if (!empty($this->_extra['label'])) {
-            $result[] = "<{$this->_labelClass}><span>{$this->_extra['label']}</span>";
-            $result[] = $this->_getHtml();
-            $result[] = "</{$this->_labelClass}>";
+            $result[] = $this->_isHorizontal ? $this->_getHorizontalLabel() : $this->_getNormalLabel();
         } else {
-            $result[] = $this->_getHtml();
+            $result[] = $this->_isHorizontal ? $this->_getHorizontalHtml() : $this->_getHtml();
         }
         if ($this->wrapDiv) {
-            $result[] = '<clear /></field>';
+            $result[] = '</div>';
         }
         return implode('', $result);
+    }
+
+    /**
+     * Get with label for horizontal display.
+     * @return string
+     */
+    protected function _getHorizontalLabel()
+    {
+        $result = "<{$this->_labelClass} class=\"col-sm-2 control-label\">{$this->_extra['label']}</{$this->_labelClass}>";
+        $result .= '<div class="col-sm-10">';
+        $result .= $this->_getHtml();
+        $result .= '</div>';
+        return $result;
+    }
+
+    /**
+     * Get with label for normal display.
+     * @return string
+     */
+    protected function _getNormalLabel()
+    {
+        $result = "<{$this->_labelClass} for=\"{$this->name}\">{$this->_extra['label']}</{$this->_labelClass}>";
+        $result .= $this->_getHtml();
+        return $result;
+    }
+
+    /**
+     * Wrap offset around html/
+     * @return string
+     */
+    protected function _getHorizontalHtml()
+    {
+        return '<div class="col-sm-offset-2 col-sm-10">' . $this->_getHtml() . '</div>';
     }
 }
