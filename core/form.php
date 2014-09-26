@@ -105,6 +105,26 @@ class Form
     }
 
     /**
+     * Set warnings and add them.
+     * @param array $warnings
+     * @return \Core\Form
+     */
+    public function setWarnings($warnings)
+    {
+        $result = array();
+        if (!empty($warnings)) {
+            $result[] = '<div class="alert alert-danger">';
+            foreach ($warnings as $field => $message) {
+                $field = ucfirst($field);
+                $result[] = "<p><b>{$field}</b> {$message}</p>";
+            }
+            $result[] = '</div>';
+        }
+        $this->add(implode(PHP_EOL, $result));
+        return $this;
+    }
+
+    /**
      * Add class to extra variable, without overwriting existing classes.
      *
      * @param array $extra details
