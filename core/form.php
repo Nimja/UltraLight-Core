@@ -94,7 +94,7 @@ class Form
     public function add($field)
     {
         if ($field instanceof \Core\Form\Field) {
-            $field->setValue(getKey($this->_values, $field->name));
+            $field->setValue($this->getValue($field->name));
             $field->setHorizontal($this->_isHorizontal);
             if ($field->isUpload) {
                 $this->_containsUpload = true;
@@ -170,6 +170,16 @@ class Form
             }
         }
         return $this;
+    }
+
+    /**
+     * Get value of field.
+     * @param string $field
+     * @return mixed
+     */
+    public function getValue($field)
+    {
+        return getKey($this->_values, $field);
     }
 
     /**
