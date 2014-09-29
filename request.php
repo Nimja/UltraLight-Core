@@ -154,7 +154,7 @@ class Request
             $code = 302;
         }
         header($codes[$code]);
-        header('Location: ' . $url);
+        header('Location: ' . $url, true, $code);
         exit;
     }
 
