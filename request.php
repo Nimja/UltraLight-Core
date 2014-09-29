@@ -175,7 +175,6 @@ class Request
         }
         $modifiedDate = filemtime($file);
         self::ifModifiedSince($modifiedDate);
-        $fileName = $fileName ?: pathinfo($file, PATHINFO_BASENAME);
         self::_sendOutputHeaders($mimeType, filesize($file), $fileName, $modifiedDate);
         readfile($file);
         exit;
@@ -215,9 +214,10 @@ class Request
         $expireDate = strtotime($expireDate);
         $expireSeconds = $expireDate - time();
         header('Content-Type: ' . $mimeType);
-        header('Content-Length: ' . $length);
-        header('Content-Transfer-Encoding: binary');
         if (!empty($fileName)) {
+            \Core::setOutputCompression(false);
+            header('Content-Length: ' . $length);
+            header('Content-Transfer-Encoding: binary');
             header('Content-Disposition: attachment; filename="' . trim($fileName) . '"');
         }
         header("Cache-Control: max-age={$expireSeconds}");

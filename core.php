@@ -110,6 +110,12 @@ class Core
     private static $_useCache = false;
 
     /**
+     * Output compression enabled or no.
+     * @var boolean
+     */
+    private static $_allowOutputCompression = false;
+
+    /**
      * Server variables.
      * @var array
      */
@@ -148,7 +154,8 @@ class Core
      */
     private function __construct($options = null)
     {
-        $this->_server = $_SERVER;
+        $this->_server = $_SERVER ? : array();
+        $this->_setOutputCompression();
         $this->_setPathConstants($options);
         spl_autoload_register('Core::loadClass');
         set_error_handler('Show::handleError', E_ALL);
@@ -158,6 +165,16 @@ class Core
             Config::system($appConfig);
         }
         self::$debug = Config::system()->get('system', 'debug', false);
+    }
+
+    /**
+     * Set output compression, default on.
+     */
+    private function _setOutputCompression()
+    {
+        $accepted = explode(',', getKey($this->_server, 'HTTP_ACCEPT_ENCODING'));
+        self::$_allowOutputCompression = in_array('gzip', $accepted);
+        self::setOutputCompression(true);
     }
 
     /**
@@ -504,6 +521,19 @@ class Core
             throw new \Exception("Controller: \"{$controller}\" not extended from abstract controller.");
         }
         return $class::create();
+    }
+
+    /**
+     * Enable output compression.
+     * @param type $enable
+     */
+    public static function setOutputCompression($enable = true)
+    {
+        if ($enable && self::$_allowOutputCompression) {
+            ini_set("zlib.output_compression", "On");
+        } else {
+            ini_set("zlib.output_compression", "Off");
+        }
     }
 
     /**
