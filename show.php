@@ -33,7 +33,7 @@ class Show
         }
         $title = Sanitize::clean($title);
         // Create result.
-        $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
+        $result = '<div style="z-index: 99999; font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
             // Trace block
             . $trace

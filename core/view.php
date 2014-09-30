@@ -51,6 +51,7 @@ class View
     public function fillValues($string, $values)
     {
         $variables = self::getVariables($string);
+        array_walk($values, function(&$item, $key) { $item = strval($item); });
         if (!empty($variables)) {
             $translate = $this->getTranslateArray($variables, $values);
             //str_replace like this is about 30% faster than strtr.

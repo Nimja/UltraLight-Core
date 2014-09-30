@@ -2,12 +2,12 @@
 /**
  * Quick & dirty Navbar in bootstrap.
  *
- * This class returns an object that will generate a bootstrap navbar with __toString.
+ * The returned object can be cast to string.
  */
 class Navbar
 {
     /**
-     *
+     * Title of the current site.
      * @var string
      */
     private $_title;
@@ -27,6 +27,13 @@ class Navbar
      */
     private $_curPage;
 
+    /**
+     * Construct the navbar.
+     * @param string $title
+     * @param array $menuArray
+     * @param string $curUrl
+     * @param string $barClass
+     */
     public function __construct($title, $menuArray, $curPage, $barClass = 'navbar-fixed-top')
     {
         $this->_title = $title;
