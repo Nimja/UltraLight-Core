@@ -382,10 +382,15 @@ class Core
         $siteUrl = Config::system()->get('site', 'url');
         $request = rtrim($siteUrl, '/') . getKey($this->_server, 'REQUEST_URI');
         $uri = parse_url($request, PHP_URL_PATH);
-        //Remove trailing, leading and double slashes.
-        $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
+        //Remove /index.
+        $withoutIndex = str_replace('/index', '/', strtolower($uri));
+        //Remove leading, trailing and double slashes.
+        $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($withoutIndex), '/ '));
+        //We only allow alphanumeric, underscores, dashes, periods and slashes.
         $clean2 = preg_replace('/[^a-z0-9\_\-\/\.]/', '', strtolower($clean));
+        //We replace multiple periods by a single one.
         $clean3 = preg_replace('/\.{2,}/', '.', strtolower($clean2));
+        //We unify the url to use + instead of %20.
         $final = str_replace('%20', '+', $clean3);
         if ($uri != '/' . $final) {
             Request::redirect($final);
