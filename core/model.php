@@ -9,6 +9,8 @@ namespace Core;
 
 abstract class Model {
 
+    const DATE_FORMAT_SHORT = 'Y-m-d';
+    const DATE_FORMAT_LONG = 'Y-m-d H:i:s';
     const ID = 'id';
     const TYPE_BOOL = 'bool';
     const TYPE_SERIALIZE = 'serialize';
