@@ -257,6 +257,9 @@ abstract class Field
      */
     protected function _getHorizontalHtml()
     {
+        if (!$this->wrapDiv) {
+            return $this->_getHtml();
+        }
         return '<div class="col-sm-offset-2 col-sm-10">' . $this->_getHtml() . '</div>';
     }
 }
