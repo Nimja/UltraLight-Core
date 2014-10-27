@@ -127,7 +127,7 @@ abstract class Model {
     /**
      * Get values that are used as saving. Easy to overwrite.
      * @param Model\Reflect $re
-     * @return type
+     * @return array
      */
     protected function _getValuesForSave($re)
     {

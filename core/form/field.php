@@ -66,7 +66,7 @@ abstract class Field
             $this->_sanitizeExtra(array('value', 'values', 'default'));
             $this->_isMultiple = $this->_isMultiple || !empty($this->_extra['multiple']);
         }
-        $this->value = getKey($this->_extra, 'value');
+        $this->_setValue(getKey($this->_extra, 'value'));
     }
 
     /**
@@ -89,9 +89,18 @@ abstract class Field
     public function setValue($value)
     {
         if (!empty($value)) {
-            $this->value = $value;
+            $this->_setValue($value);
         }
         return $this;
+    }
+
+    /**
+     * Encode + because of variables.
+     * @param string $value
+     */
+    protected function _setValue($value)
+    {
+        $this->value = \Core\View::escape($value);
     }
 
     /**

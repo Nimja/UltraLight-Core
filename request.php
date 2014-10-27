@@ -225,7 +225,6 @@ class Request
         if (!empty($modifiedDate)) {
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modifiedDate) . ' GMT');
         }
-        header('Connection: keep-alive');
     }
 
     /**
@@ -243,7 +242,6 @@ class Request
         header('HTTP/1.1 304 Not Modified', null, 304);
         header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $compareTime) . ' GMT');
-        header('Connection: keep-alive');
         $maxAge = strtotime($expires, 0);
         header("Cache-Control: max-age={$maxAge}");
         exit;

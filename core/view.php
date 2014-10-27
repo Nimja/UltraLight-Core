@@ -206,4 +206,13 @@ class View
     {
         return preg_match(self::PREG_VARIABLES, $string);
     }
+
+    /**
+     * Escape placeholder values.
+     * @param string $string
+     * @return string
+     */
+    public static function escape($string) {
+        return str_replace('+', '&#x2B;', $string);
+    }
 }
