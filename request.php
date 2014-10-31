@@ -71,8 +71,8 @@ class Request
     public static function getValues()
     {
         if (self::$_values === null) {
-            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: array();
-            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?: array();
+            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ? : array();
+            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ? : array();
             self::$_values = Sanitize::clean(array_merge($get, $post));
         }
         return self::$_values;
@@ -96,7 +96,7 @@ class Request
     public static function getCookies()
     {
         if (self::$_cookies === null) {
-            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ?: array();
+            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ? : array();
             self::$_cookies = Sanitize::clean($cookies);
         }
         return self::$_cookies;
@@ -137,7 +137,7 @@ class Request
      * @param type $url The absolute or relative url you wish to redirect to.
      * @param int $code One of 301, 302 or 303
      */
-    public static function redirect($url = '', $code = 302)
+    public static function redirect($url = '', $code = 302, $includeRequest = false)
     {
         $url = empty($url) ? '' : trim($url);
         if (substr($url, 0, 4) != 'http') {
@@ -152,6 +152,9 @@ class Request
         );
         if (empty($codes[$code])) {
             $code = 302;
+        }
+        if ($includeRequest) {
+            $url .= '?' . self::server('QUERY_STRING');
         }
         header($codes[$code]);
         header('Location: ' . $url, true, $code);
@@ -179,6 +182,7 @@ class Request
         readfile($file);
         exit;
     }
+
     /**
      * Output file to browser.
      * @param string $file
@@ -194,7 +198,7 @@ class Request
         if (empty($data)) {
             throw new \Exception("No data to send.");
         }
-        $modifiedDate = $modifiedDate ?: time();
+        $modifiedDate = $modifiedDate ? : time();
         self::ifModifiedSince($modifiedDate);
         self::_sendOutputHeaders($mimeType, strlen($data), $fileName, time());
         echo $data;
@@ -210,7 +214,8 @@ class Request
      * @param type $expireDate
      * @throws \Exception
      */
-    private static function _sendOutputHeaders($mimeType, $length, $fileName, $modifiedDate, $expireDate = '+2 weeks') {
+    private static function _sendOutputHeaders($mimeType, $length, $fileName, $modifiedDate, $expireDate = '+2 weeks')
+    {
         $expireDate = strtotime($expireDate);
         $expireSeconds = $expireDate - time();
         header('Content-Type: ' . $mimeType);
