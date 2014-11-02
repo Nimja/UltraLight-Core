@@ -284,7 +284,8 @@ class Core
         } else if ($nameSpace == self::NAMESPACE_APP) {
             $fileName = PATH_APP . implode('/', $parts);
         } else {
-            $fileName = PATH_VENDOR . str_replace('\\', '/', trim($class, './\\ '));
+            $replace = strpos($class, '\\') !== false ? '\\' : '_';
+            $fileName = PATH_VENDOR . str_replace($replace, '/', trim($class, './\\ '));
         }
         $fileName .= self::PHP_EXT;
         if (!$error && !file_exists($fileName)) {

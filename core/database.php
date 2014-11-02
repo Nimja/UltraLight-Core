@@ -454,6 +454,9 @@ class Database
             } else {
                 $operand = '=';
                 switch ($operation) {
+                    case '|l': $field = "LENGTH($field)";
+                        $operand = '>';
+                        break;
                     case '|!': $operand = '!=';
                         break;
                     case '|<': $operand = '<';
