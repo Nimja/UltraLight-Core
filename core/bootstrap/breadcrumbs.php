@@ -73,6 +73,12 @@ class Breadcrumbs
             if (is_array($url)) {
                 $subResult = $this->_parseMenuArray($url);
                 $result = array_merge($result, $subResult);
+                reset($subResult);
+                $firstKey = key($subResult);
+                $urlBefore = substr($firstKey, 0, strrpos($firstKey, '/'));
+                if (!isset($result[$urlBefore])) {
+                    $result[$urlBefore] = $title;
+                }
             } else {
                 $result[$url] = $title;
             }
