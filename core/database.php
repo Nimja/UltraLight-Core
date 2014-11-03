@@ -7,7 +7,7 @@ namespace Core;
  */
 class Database
 {
-    const SEARCH_PREG = '/(.+)(\|[\:\=\<\>\!\[\]])(.+)/';
+    const SEARCH_PREG = '/(.+)(\|[l\:\=\<\>\!\[\]])(.+)/';
     const SEARCH_FIELD = 'field';
     const SEARCH_VALUE = 'value';
     const SEARCH_OPERATION = 'operation';
