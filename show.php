@@ -34,11 +34,11 @@ class Show
         $title = Sanitize::clean($title);
         // Create result.
         $result = '<div style="z-index: 99999; font-family: arial; font-size: 14px; text-align: left; color: black; background: '
-            . $color . '; margin: 5px; padding: 3px 5px; border-radius: 5px; border: 2px solid #999; ">'
+            . $color . '; margin: 2px; padding: 2px; border: 1px solid gray; ">'
             // Trace block
             . $trace
             // Title
-            . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid #ccc; background: #f9f9f9;">'
+            . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray; background: #f9f9f9;">'
             // Actual content.
             . $info . '</div></div>';
 
@@ -79,7 +79,7 @@ class Show
                 continue;
             }
             $dir = $core ? $file : '<span style="color: black">' . $file . '</span>';
-            $lines[] = $dir . ' - line: ' . $line;
+            $lines[] = $dir . ' : ' . $line;
         }
         return $lines;
     }
@@ -93,8 +93,8 @@ class Show
         $curError = self::$curError;
         $location = $locations[0];
         $locations = implode("<br />", $locations);
-        $style = 'position: absolute; display: none; width: 250px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;';
-        return "<div style=\"float: right; color: #999; width: 250px;\">
+        $style = 'position: absolute; display: none; width: 350px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;';
+        return "<div style=\"float: right; color: #999; width: 350px;\">
                     <div style=\"$style\" id=\"trace-$curError\" onclick=\"document.getElementById('trace-$curError').style.display='none'\">$locations</div>
                     <div onclick=\"document.getElementById('trace-$curError').style.display='block'\">$location</div>
                 </div>";
