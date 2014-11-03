@@ -77,30 +77,43 @@ abstract class Model {
     }
 
     /**
-     * Fill the object, empty means everything is blank.
+     * Fill the object with values.
+     *
+     * Properties in the entity that are not set in the array, become blank unless $add is true.
      *
      * @var array $values
+     * @var array $add If true, we add values and leave alone missing values from the array.
      * @return array All the values of this object.
      */
-    public function setValues($values)
+    public function setValues($values, $add = false)
     {
         if (empty($values) || !is_array($values)) {
             return false;
         }
         $class = $this->_class;
         foreach ($this->_re()->fields as $field => $type) {
-            $value = getKey($values, $field, '');
-            if ($type == self::TYPE_BOOL) {
-                $this->$field = $value ? true : false;
-            } else if ($type == self::TYPE_SERIALIZE) {
-                $this->$field = is_string($value) ? unserialize($value) : $value;
-            } else {
-                $this->$field = $value;
-            }
+            $value = getKey($values, $field, $add ? $this->$field : '');
+            $this->_setValue($field, $type, $value);
         }
-        if (!empty($values[self::ID])) {
+        if (!empty($values[self::ID]) && !$add) {
             $this->id = intval($values[self::ID]);
             self::_saveCache($class, $this);
+        }
+    }
+
+    /**
+     * Set value.
+     * @param string $field
+     * @param string $type
+     * @param mixed $value
+     */
+    protected function _setValue($field, $type, $value) {
+        if ($type == self::TYPE_BOOL) {
+            $this->$field = $value ? true : false;
+        } else if ($type == self::TYPE_SERIALIZE) {
+            $this->$field = is_string($value) ? unserialize($value) : $value;
+        } else {
+            $this->$field = $value;
         }
     }
 
@@ -156,6 +169,20 @@ abstract class Model {
         if (empty($values)) {
             throw new \Exception("Attempting to save empty model.");
         }
+        $this->_saveValues($values);
+        self::_saveCache($this->_class, $this);
+        return $this;
+    }
+
+    /**
+     * Save values, allowing to update only a single value.
+     * @param array $values
+     * @return $this
+     */
+    protected function _saveValues($values)
+    {
+        $re = $this->_re();
+        $db = $re->db();
         $id = intval($this->id);
         //Switch between update and insert automatically.
         if ($id > 0) {
@@ -163,7 +190,6 @@ abstract class Model {
         } else {
             $this->id = $db->insert($re->table, $values);
         }
-        self::_saveCache($this->_class, $this);
         return $this;
     }
 

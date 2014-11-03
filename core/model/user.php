@@ -1,5 +1,4 @@
-<?php
-namespace Core\Model;
+<?php namespace Core\Model;
 /**
  * Description of type
  *
@@ -57,6 +56,24 @@ class User extends Sessioned
      * @var array
      */
     private static $_hashes = array();
+
+    /**
+     * Return true if role is admin or higher.
+     * @return boolean
+     */
+    public function isAdmin()
+    {
+        return $this->role >= self::ROLE_ADMIN;
+    }
+
+    /**
+     * Return true if role is editor or higher.
+     * @return boolean
+     */
+    public function isEditor()
+    {
+        return $this->role >= self::ROLE_EDITOR;
+    }
 
     /**
      * Set the cookie for this user for remembering.
