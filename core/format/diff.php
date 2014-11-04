@@ -2,7 +2,7 @@
 /**
  * Complex and powerful class to render differences to HTML.
  *
- * Usage: $diff = new Diff($from, $to, Diff::DEPTH_CHARACTERS);
+ * Usage: $diff = Diff::compare($from, $to, Diff::DEPTH_CHARACTERS);
  * $output = $diff->toLines(2); - Render only different lines, with 2 lines above/below.
  */
 class Diff
@@ -83,17 +83,16 @@ class Diff
      * Basic constructer, used for every level.
      *
      * It does basic comparisons, which are much faster than the in-depth finding of differences.
+     *
+     * Constructor is private, to make sure that the 'root' object is set correctly.
+     *
      * @param string $from
      * @param string $to
      * @param int $recurseDepth
      * @param int $depth
      */
-    private function __construct($from, $to, $recurseDepth = self::DEPTH_LINES, $depth = self::DEPTH_FILE)
+    private function __construct($from, $to, $recurseDepth = self::DEPTH_LINES, $depth = self::DEPTH_LINES)
     {
-        if ($depth == self::DEPTH_FILE) {
-            $depth = self::DEPTH_LINES;
-            $this->_isRoot = true;
-        }
         $this->_depth = $depth;
         $emptyFrom = empty($from);
         $emptyTo = empty($to);
@@ -474,7 +473,8 @@ class Diff
     }
 
     /**
-     * We protect the constructor so we can make sure the root is clear.
+     * We protect the constructor so we can make sure the root is defined.
+     *
      * @param string $from
      * @param string $to
      * @param int $depth
@@ -482,6 +482,8 @@ class Diff
      */
     public static function compare($from, $to, $depth = self::DEPTH_WORDS)
     {
-        return new self($from, $to, $depth);
+        $result = new self($from, $to, $depth);
+        $result->_isRoot = true;
+        return $result;
     }
 }
