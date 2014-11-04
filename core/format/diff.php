@@ -10,9 +10,11 @@ class Diff
     /**
      * How deep you want to seek.
      */
+    const DEPTH_FILE = 99;
     const DEPTH_LINES = 1;
     const DEPTH_WORDS = 2;
     const DEPTH_CHARACTERS = 3;
+    const DEPTH_MAX = 3;
     /**
      * Various states.
      */
@@ -20,7 +22,6 @@ class Diff
     const STATE_INSERTED = 1;
     const STATE_DELETED = 2;
     const STATE_CHANGED = 3;
-    const MAX_DEPTH = 3;
     /**
      * The split characters based on depth.
      *
@@ -42,6 +43,11 @@ class Diff
         self::STATE_DELETED => 'del',
         self::STATE_CHANGED => 'adj',
     );
+    /**
+     * If this level is the file.
+     * @var boolean
+     */
+    private $_isRoot = false;
     /**
      * Current state.
      * @var int
@@ -82,8 +88,12 @@ class Diff
      * @param int $recurseDepth
      * @param int $depth
      */
-    public function __construct($from, $to, $recurseDepth = self::DEPTH_LINES, $depth = self::DEPTH_LINES)
+    private function __construct($from, $to, $recurseDepth = self::DEPTH_LINES, $depth = self::DEPTH_FILE)
     {
+        if ($depth == self::DEPTH_FILE) {
+            $depth = self::DEPTH_LINES;
+            $this->_isRoot = true;
+        }
         $this->_depth = $depth;
         $emptyFrom = empty($from);
         $emptyTo = empty($to);
@@ -97,7 +107,7 @@ class Diff
         } else if ($emptyFrom && !$emptyTo) {
             $this->_string = $to;
             $this->_state = self::STATE_INSERTED;
-        } else if ($recurseDepth > self::MAX_DEPTH || $recurseDepth == 0) {
+        } else if ($recurseDepth > self::DEPTH_MAX || $recurseDepth == 0) {
             // If we do not recurse deeper, the strings have simply been changed.
             $this->_insertState($from, null);
             $this->_insertState(null, $to);
@@ -213,7 +223,7 @@ class Diff
         $right = array_slice($rightParts, $rightIndex, null, true);
         if (count($left) > 0 && count($right) > 0) {
             //We seek twice, left and right, and use the 'earliest' common.
-            if ($recurseDepth > 1 && $this->_depth < self::MAX_DEPTH) {
+            if ($recurseDepth > 1 && $this->_depth < self::DEPTH_MAX) {
                 $resultLeft = $this->_compareDeep($left, $right);
                 $resultRight = $this->_compareDeep($right, $left);
             } else {
@@ -449,7 +459,7 @@ class Diff
     public function __toString()
     {
         $result = array();
-        if ($this->_depth == self::DEPTH_LINES) {
+        if ($this->_isRoot) {
             $result = (!empty($this->_states)) ? $this->_renderLinesFromStates() : $this->_renderLinesFromString();
         } else if (!empty($this->_states)) {
             foreach ($this->_states as $state) {
@@ -461,5 +471,17 @@ class Diff
         }
         $joinChar = getKey(self::$_splitCharacters, $this->_depth, '');
         return implode($joinChar, $result);
+    }
+
+    /**
+     * We protect the constructor so we can make sure the root is clear.
+     * @param string $from
+     * @param string $to
+     * @param int $depth
+     * @return \self
+     */
+    public static function compare($from, $to, $depth = self::DEPTH_WORDS)
+    {
+        return new self($from, $to, $depth);
     }
 }
