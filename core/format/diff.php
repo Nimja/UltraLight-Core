@@ -99,8 +99,8 @@ class Diff
             $this->_state = self::STATE_INSERTED;
         } else if ($recurseDepth > self::MAX_DEPTH || $recurseDepth == 0) {
             // If we do not recurse deeper, the strings have simply been changed.
-            $this->_insertState(0, $from, null);
-            $this->_insertState(0, null, $to);
+            $this->_insertState($from, null);
+            $this->_insertState(null, $to);
         } else {
             $this->_string = null;
             // Find the differences.
@@ -157,10 +157,7 @@ class Diff
             if ($leftIndexFound < $leftMax && $rightIndexFound < $rightMax) {
                 //Go one level deeper.
                 $this->_insertState(
-                    $leftParts[$leftIndexFound],
-                    $rightParts[$rightIndexFound],
-                    $recurseDepth - 1,
-                    $this->_depth + 1
+                    $leftParts[$leftIndexFound], $rightParts[$rightIndexFound], $recurseDepth - 1, $this->_depth + 1
                 );
                 $leftIndex++;
                 $rightIndex++;
@@ -401,7 +398,7 @@ class Diff
      * Renders HTML to Ordered List (ol) with offset.
      * @return array
      */
-    protected function _renderLines()
+    private function _renderLinesFromStates()
     {
         $result = array();
         $showedEmpty = false;
@@ -420,7 +417,28 @@ class Diff
             }
         }
         $result[] = '</ol>';
-        $result[] = '</diff>';
+        $result[] = '</div>';
+        return $result;
+    }
+
+    /**
+     * This occurs when the WHOLE string is new or deleted.
+     * @return array
+     */
+    private function _renderLinesFromString()
+    {
+        $domObj = getKey(self::$_stateHtml, $this->_state, '');
+        $result = array();
+        $result[] = '<div class="diff-output">';
+        $result[] = '<ol>';
+        $splitChar = getKey(self::$_splitCharacters, $this->_depth, '');
+        $lines = explode($splitChar, $this->_string);
+        foreach ($lines as $line) {
+            $line = $domObj ? "<{$domObj}>{$line}</{$domObj}>" : $line;
+            $result[] = "<li>" . str_replace('  ', '&nbsp; ', $line) . '</li>';
+        }
+        $result[] = '</ol>';
+        $result[] = '</div>';
         return $result;
     }
 
@@ -431,19 +449,15 @@ class Diff
     public function __toString()
     {
         $result = array();
-        if (!empty($this->_states)) {
-            if ($this->_depth == self::DEPTH_LINES) {
-                $result = $this->_renderLines();
-            } else {
-                foreach ($this->_states as $state) {
-                    $result[] = strval($state);
-                }
+        if ($this->_depth == self::DEPTH_LINES) {
+            $result = (!empty($this->_states)) ? $this->_renderLinesFromStates() : $this->_renderLinesFromString();
+        } else if (!empty($this->_states)) {
+            foreach ($this->_states as $state) {
+                $result[] = strval($state);
             }
         } else {
             $domObj = getKey(self::$_stateHtml, $this->_state, '');
-            $domStart = !$domObj ? '' : "<{$domObj}>";
-            $domEnd = !$domObj ? '' : "</{$domObj}>";
-            $result[] = $domStart . $this->_string . $domEnd;
+            $result[] = $domObj ? "<{$domObj}>{$this->_string}</{$domObj}>" : $this->_string;
         }
         $joinChar = getKey(self::$_splitCharacters, $this->_depth, '');
         return implode($joinChar, $result);
