@@ -479,9 +479,9 @@ class Database
     /**
      * Get an instanced Database object.
      * @param string $database
-     * @return Library_Database
+     * @return self
      */
-    public static function instance($database = null)
+    public static function getInstance($database = null)
     {
         $database = $database ? : \Config::system()->get('database', 'default');
         if (empty(self::$_instances[$database])) {

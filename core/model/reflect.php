@@ -72,7 +72,7 @@ class Reflect {
     public function db()
     {
         if (empty($this->_db)) {
-            $this->_db = \Core\Database::instance($this->dbName);
+            $this->_db = \Core\Database::getInstance($this->dbName);
         }
         return $this->_db;
     }
