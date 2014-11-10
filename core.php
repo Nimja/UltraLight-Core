@@ -272,6 +272,9 @@ class Core
      */
     public static function loadClass($class, $returnSuccess = false)
     {
+        if (isset(self::$classes[$class])) {
+            return true;
+        }
         $parts = explode('\\', strtolower(trim($class, './\\ ')));
         $first = array_shift($parts);
         $nameSpace = '\\' . ucfirst($first);

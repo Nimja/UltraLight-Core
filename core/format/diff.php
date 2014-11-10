@@ -10,7 +10,6 @@ class Diff
     /**
      * How deep you want to seek.
      */
-    const DEPTH_FILE = 99;
     const DEPTH_LINES = 1;
     const DEPTH_WORDS = 2;
     const DEPTH_CHARACTERS = 3;
@@ -147,9 +146,8 @@ class Diff
      */
     private function _findDifference($from, $to, $recurseDepth)
     {
-        $splitChar = getKey(self::$_splitCharacters, $this->_depth, '');
-        $leftParts = empty($splitChar) ? str_split($from) : explode($splitChar, $from);
-        $rightParts = empty($splitChar) ? str_split($to) : explode($splitChar, $to);
+        $leftParts = $this->_getExplodedString($from);
+        $rightParts = $this->_getExplodedString($to);
         $leftIndex = 0;
         $rightIndex = 0;
         $leftMax = count($leftParts);
@@ -188,6 +186,28 @@ class Diff
     }
 
     /**
+     * Get exploded string for the current depth.
+     * @param string $string
+     * @return array
+     */
+    private function _getExplodedString($string) {
+        if ($string == '') {
+            $result = array();
+        } else if ($this->_depth == self::DEPTH_LINES) {
+            $result = explode(self::$_splitCharacters[self::DEPTH_LINES], $string);
+        } else if ($this->_depth == self::DEPTH_WORDS) {
+            $result = preg_split('/ ([^\ ]+)/', $string, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            // Because of losing empty strings, a SINGLE space at the beginning of a sentence is lost.
+            if ($string[0] == ' ' && $result[0][0] != ' ') {
+                $result[0] = ' ' . $result[0];
+            }
+        } else {
+            $result = str_split($string);
+        }
+        return $result;
+    }
+
+    /**
      * Calculate the similarity.
      *
      * To get a more honest result, we use the max of left and right, not the total amount of states.
@@ -199,7 +219,8 @@ class Diff
         foreach ($this->_states as $state) {
             $result += $state->getSimilarity();
         }
-        return $result / $total;
+        $result /= $total;
+        return $result;
     }
 
     /**
