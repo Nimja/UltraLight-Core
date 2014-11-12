@@ -2,8 +2,6 @@
 namespace Core\View\Transform;
 /**
  * Class to make text look glitched (randomly switches the character's case).
- *
- * @author Nimja
  */
 class Glitch extends \Core\View\Transform {
 

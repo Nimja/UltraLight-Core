@@ -48,12 +48,12 @@ class View
      * @param array $values
      * @return string
      */
-    public function fillValues($string, $values)
+    public function fillValues($string, $values, $varName = '')
     {
         $variables = self::getVariables($string);
         array_walk($values, function(&$item, $key) { $item = strval($item); });
         if (!empty($variables)) {
-            $translate = $this->getTranslateArray($variables, $values);
+            $translate = $this->getTranslateArray($variables, $values, $varName);
             //str_replace like this is about 30% faster than strtr.
             $string = str_replace(array_keys($translate), $translate, $string);
         }
@@ -79,26 +79,30 @@ class View
      *
      * @param array $variables
      * @param array $values
+     * @param string $originVarName
      * @return array
      */
-    public function getTranslateArray($variables, $values)
+    public function getTranslateArray($variables, $values, $originVarName = '')
     {
         $translate = array();
         foreach ($variables as $name) {
             // First translate the name of the variable, if need be.
             if (strpos($name, self::TRANSFORM) !== false) {
                 $commands = explode(self::TRANSFORM, $name);
-                $varname = array_shift($commands);
+                $varName = array_shift($commands);
                 $transform = array_shift($commands);
             } else {
                 $transform = false;
-                $varname = $name;
+                $varName = $name;
             }
-            $value = getKey($values, $varname, '');
+            $value = getKey($values, $varName, '');
             if (self::hasVars($value)) {
-                $value = $this->fillValues($value, $values);
+                if ($originVarName && $originVarName == $varName) {
+                    throw new \Exception("Recursion found in $varName");
+                }
+                $value = $this->fillValues($value, $values, $varName);
             }
-            if ($transform && !empty($value)) {
+            if ($transform && !blank($value)) {
                 $value = $this->_transform($transform, $value, $commands);
             }
             $translate[self::VAR_PREFIX . $name . self::VAR_SUFFIX] = $value;

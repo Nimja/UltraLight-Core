@@ -3,7 +3,7 @@ namespace Core\View\Transform;
 /**
  * Class to 'speak' out integers in a fairly large range.
  *
- * @author Nimja
+ * ie. 22 becomes twenty-two, 123 becomes one-hundred twenty-three.
  */
 class Number extends \Core\View\Transform {
 

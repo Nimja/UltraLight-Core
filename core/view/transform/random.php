@@ -2,8 +2,6 @@
 namespace Core\View\Transform;
 /**
  * Class to take a randomly selected value from a string, split up by the | symbol.
- *
- * @author Nimja
  */
 class Random extends \Core\View\Transform {
 
