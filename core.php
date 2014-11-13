@@ -253,6 +253,8 @@ class Core
     private function _startSession()
     {
         if (!isset($_SESSION)) {
+            //Set session timeout to be 1 hour.
+            session_set_cookie_params(3600);
             session_start();
         }
         date_default_timezone_set(Config::system()->get('php', 'timezone', 'Europe/Paris'));

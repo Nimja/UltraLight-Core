@@ -27,7 +27,7 @@ abstract class Field
     /**
      * Wrap this in a div.
      *
-     * @var type
+     * @var boolean
      */
     public $wrapDiv = true;
     /**
