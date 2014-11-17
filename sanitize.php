@@ -31,15 +31,15 @@ class Sanitize
             $string = str_replace(chr(226) . chr(130) . chr(172), '&euro;', trim($string));
             //Remove non-printable characters (like 255 and others, but keep unicode characters intact).
             $string = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', '', $string);
-            $string = utf8_decode($string);
-            $string = html_entity_decode($string, ENT_COMPAT, 'ISO-8859-15');
+            //$string = utf8_decode($string);
+            $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
             //Normalize linebreaks to LINUX format.
             $string = strtr($string, array("\r\n" => "\n", "\r" => "\n"));
             if ($stripHtml) {
                 $allowedTags = is_array($keepTags) ? $keepTags : null;
                 $string = strip_tags($string, $allowedTags);
             }
-            $result = htmlentities($string, ENT_COMPAT, 'ISO-8859-15');
+            $result = htmlentities($string, ENT_COMPAT, 'UTF-8');
         }
         return $result;
     }
