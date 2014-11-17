@@ -12,6 +12,11 @@ class Navbar
      */
     private $_title;
     /**
+     * Home link defaults to /.
+     * @var string
+     */
+    private $_homeLink;
+    /**
      * Menu array, keys are the links, values the description.
      * @var type
      */
@@ -34,12 +39,13 @@ class Navbar
      * @param string $curUrl
      * @param string $barClass
      */
-    public function __construct($title, $menuArray, $curPage, $barClass = 'navbar-fixed-top')
+    public function __construct($title, $menuArray, $curPage, $barClass = 'navbar-fixed-top', $homeLink = '/')
     {
         $this->_title = $title;
         $this->_menuArray = $menuArray;
         $this->_curPage = "/{$curPage}";
         $this->_barClass = $barClass;
+        $this->_homeLink = $homeLink;
     }
 
     /**
@@ -91,7 +97,7 @@ class Navbar
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">' . $this->_title . '</a>
+            <a class="navbar-brand" href="' . $this->_homeLink . '">' . $this->_title . '</a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
