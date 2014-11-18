@@ -1,5 +1,4 @@
-<?php
-namespace Core;
+<?php namespace Core;
 /* This is a simple controller class, containing basic functions for
  * AJAX, GET and POST variables and a few other useful things.
  */
@@ -69,12 +68,12 @@ abstract class Controller
         echo $result;
     }
 
-
     /**
      * Executing the run function, so it can be overwritten in child classes.
      * @return type
      */
-    protected function _executeRun() {
+    protected function _executeRun()
+    {
         try {
             $result = $this->_run();
         } catch (Exception $e) {
@@ -122,7 +121,8 @@ abstract class Controller
      * Create an instance, can only be done once.
      * @return \self
      */
-    public static function create() {
+    public static function create()
+    {
         $class = get_called_class();
         return new $class();
     }

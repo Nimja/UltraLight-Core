@@ -93,8 +93,8 @@ class Diff
     private function __construct($from, $to, $recurseDepth = self::DEPTH_LINES, $depth = self::DEPTH_LINES)
     {
         $this->_depth = $depth;
-        $emptyFrom = empty($from);
-        $emptyTo = empty($to);
+        $emptyFrom = strlen($from) == 0;
+        $emptyTo = strlen($to) == 0;
         if ($from == $to) {
             $this->_string = $from;
             $this->_state = self::STATE_IDENTICAL;
@@ -190,7 +190,8 @@ class Diff
      * @param string $string
      * @return array
      */
-    private function _getExplodedString($string) {
+    private function _getExplodedString($string)
+    {
         if ($string == '') {
             $result = array();
         } else if ($this->_depth == self::DEPTH_LINES) {
@@ -250,7 +251,7 @@ class Diff
                 $resultLeft = $this->_compareFlat($left, $right);
                 $resultRight = $this->_compareFlat($right, $left);
             }
-            $result = $this->_getNicestResult($resultLeft, $resultRight);
+            $result = $this->_getNicestResult($resultLeft, $resultRight, $leftIndex, $rightIndex);
         } else {
             $result = array('L' => false, 'R' => false);
         }
@@ -310,14 +311,16 @@ class Diff
     /**
      * Get "nicest" result.
      *
-     * A result is nicer, if the average value of the found indexes is higher.
+     * A result is nicer, if the average value of the found indexes is lower.
      *
      * This avoids words being moved forwards to flag the whole text as removed.
      * @param array $resultLeft
      * @param array $resultRight
+     * @param int $leftIndex
+     * @param int $rightIndex
      * @result array The best of the two.
      */
-    private function _getNicestResult($resultLeft, $resultRight)
+    private function _getNicestResult($resultLeft, $resultRight, $leftIndex, $rightIndex)
     {
         $emptyLeft = empty($resultLeft);
         $emptyRight = empty($resultRight);
@@ -326,8 +329,8 @@ class Diff
         } else if ($emptyLeft || $emptyRight) {
             $result = $emptyRight ? $resultLeft : $this->_resultSwitch($resultRight);
         } else {
-            $averageLeft = ($resultLeft['L'] + $resultLeft['R']) / 2;
-            $averageRight = ($resultRight['L'] + $resultRight['R']) / 2;
+            $averageLeft = (($resultLeft['L'] - $leftIndex) + ($resultLeft['R'] - $rightIndex)) / 2;
+            $averageRight = (($resultLeft['L'] - $rightIndex) + ($resultLeft['R'] - $leftIndex)) / 2;
             $result = $averageLeft <= $averageRight ? $resultLeft : $this->_resultSwitch($resultRight);
         }
         return $result;

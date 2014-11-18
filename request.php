@@ -154,7 +154,10 @@ class Request
             $code = 302;
         }
         if ($includeRequest) {
-            $url .= '?' . self::server('QUERY_STRING');
+            $query = self::server('QUERY_STRING');
+            if ($query) {
+                $url .= '?' . $query;
+            }
         }
         header($codes[$code]);
         header('Location: ' . $url, true, $code);

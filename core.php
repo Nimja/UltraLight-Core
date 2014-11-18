@@ -126,12 +126,12 @@ class Core
      */
     public static function start($pathOptions)
     {
-        self::$start = microtime(true);
-        if (!empty(self::$_included)) {
-            throw new \Exception("Core::start() called manually!");
-        }
-        $core = new self($pathOptions);
         try {
+            if (!empty(self::$start)) {
+                throw new \Exception("Core::start() called manually!");
+            }
+            self::$start = microtime(true);
+            $core = new self($pathOptions);
             header('X-Powered-By: UltraLight');
             header('Server: UltraLight');
             $page = $core->_startSession()
@@ -399,7 +399,7 @@ class Core
         //We unify the url to use + instead of %20.
         $final = str_replace('%20', '+', $clean3);
         if ($uri != '/' . $final) {
-            Request::redirect($final);
+            Request::redirect($final, 302, true);
         }
         self::$url = $final;
         Config::system()->set('site', 'pageurl', $final);
