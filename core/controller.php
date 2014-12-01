@@ -65,6 +65,9 @@ abstract class Controller
         if (!headers_sent() && empty($output)) {
             header('Content-Type: ' . $this->_contentType);
         }
+        if (class_exists('\Core\View', false)) {
+            $result = \Core\View::unescape($result);
+        }
         echo $result;
     }
 

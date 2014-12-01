@@ -217,6 +217,15 @@ class View
      * @return string
      */
     public static function escape($string) {
-        return str_replace('+', '&#x2B;', $string);
+        return str_replace('+', '-|', $string);
+    }
+
+    /**
+     * Unescape placeholder values.
+     * @param string $string
+     * @return string
+     */
+    public static function unescape($string) {
+        return str_replace('-|', '+', $string);
     }
 }
