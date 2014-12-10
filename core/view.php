@@ -129,6 +129,9 @@ class View
         foreach ($site_vars as $key => $value) {
             $data['site.' . $key] = $value;
         }
+        $data['site.page.route'] = \Core::$route;
+        $data['site.page.rest'] = \Core::$rest;
+        $data['site.page.url'] = \Core::$url;
         // Load the template.
         $view = $this->loadView($view);
         // Fill in the data if all goes well.
