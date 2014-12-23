@@ -3,7 +3,7 @@ namespace Core\View\Transform;
 /**
  * Class to 'speak' out integers in a fairly large range.
  *
- * ie. 22 becomes twenty-two, 123 becomes one-hundred twenty-three.
+ * @author Nimja
  */
 class Number extends \Core\View\Transform {
 
@@ -60,7 +60,10 @@ class Number extends \Core\View\Transform {
         } else if ($number < 100) {
             $tens = $number - $number % 10;
             $number -= $tens;
-            $result = $this->_dictionary[$tens] . $this->_hyphen . $this->_translate($number);
+            $result = $this->_dictionary[$tens];
+            if ($number > 0) {
+                $result .= $this->_hyphen . $this->_translate($number);
+            }
         } else if ($number < 1000) {
             $result = $this->_highNumbers($number, 100);
         } else if ($number < 1000000) {
