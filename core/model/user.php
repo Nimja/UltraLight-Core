@@ -250,7 +250,7 @@ class User extends Sessioned
             $form->add(new \Core\Form\Field\Input('user', array('label' => 'Username')))
                 ->add(new \Core\Form\Field\Password('pass', array('label' => 'Password')))
                 ->add(new \Core\Form\Field\CheckBox('remember', array('label' => 'Remember me')))
-                ->add(new \Core\Form\Field\Submit(null, array('value' => 'Login!')));
+                ->add(new \Core\Form\Field\Submit(null, array('value' => 'Login!', 'class' => 'btn-success')));
             $result = $form;
         }
         return $result;
