@@ -341,7 +341,7 @@ class Color
     /**
      * Get RGBA css string.
      */
-    public function getRgba($alpha)
+    public function getRgba($alpha = 1)
     {
         $values = array(
             intval($this->_red),
@@ -350,6 +350,24 @@ class Color
             $alpha
         );
         return 'rgba(' . implode(', ', $values) . ')';
+    }
+
+    /**
+     * Get colors as array, with multiplier.
+     *
+     * This is useful to get them from 0..1 for example.
+     * @param array $alpha
+     * @param float $multiplier
+     * @return array
+     */
+    public function getAsArray($alpha = 1, $multiplier = 1)
+    {
+        return array(
+            $this->_red * $multiplier,
+            $this->_green * $multiplier,
+            $this->_blue * $multiplier,
+            $alpha,
+        );
     }
 
     /**
