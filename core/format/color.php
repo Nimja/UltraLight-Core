@@ -402,7 +402,8 @@ class Color
      */
     private function _limit($value, $min, $max)
     {
-        return $value < $min ? $min : $value > $max ? $max : $value;
+        $lowerLimit = $value < $min ? $min : $value;
+        return $lowerLimit > $max ? $max : $lowerLimit;
     }
 
     /**
