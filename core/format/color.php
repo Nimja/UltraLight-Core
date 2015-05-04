@@ -381,6 +381,8 @@ class Color
 
     /**
      * Fade from one color to the next.
+     *
+     * This uses squared values, as it provides a MUCH better visual result.
      * @param float $from
      * @param float $to
      * @param float $amount
@@ -388,9 +390,10 @@ class Color
      */
     private function _fadeValue($from, $to, $amount)
     {
-        $diff = $to - $from;
-        $result = $from + $diff * $amount;
-        return $result;
+        $fromSquared = $from * $from;
+        $diff = ($to * $to) - $fromSquared;
+        $result = $fromSquared + $diff * $amount;
+        return sqrt($result);
     }
 
     /**
