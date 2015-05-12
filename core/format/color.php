@@ -1,16 +1,18 @@
 <?php namespace Core\Format;
 /**
  * Useful color class for fading and HSL/HSV calculations.
- * @property int $red
- * @property int $green
- * @property int $blue
- * @property int $hue
- * @property float $saturation
- * @property float $lightness
- * @property boolean $valid
+ * @property-read int $red Red value, from 0 to 255.
+ * @property-read int $green Green value, from 0 to 255.
+ * @property-read int $blue Blue value, from 0 to 255.
+ * @property-read int $gray Gray value, from 0 to 1.
+ * @property-read int $hue Hue value, from 0 to 360.
+ * @property-read float $saturation Saturation value, from 0 to 1.
+ * @property-read float $lightness Lightness value, from 0 to 1.
+ * @property-read boolean $valid
  */
 class Color
 {
+    const GAMMA = 1.5;
     /**
      * All named CSS colors according to: http://www.w3schools.com/cssref/css_colornames.asp
      * @var array
@@ -158,30 +160,35 @@ class Color
         'yellowgreen' => '#9ACD32',
     );
     /**
-     * Red value, from 0 to 255
+     * Red value, from 0 to 255.
      * @var int
      */
     private $_red = 0;
     /**
-     * Red value, from 0 to 255
+     * Red value, from 0 to 255.
      * @var int
      */
     private $_green = 0;
     /**
-     * Red value, from 0 to 255
+     * Red value, from 0 to 255.
      * @var int
      */
     private $_blue = 0;
+    /**
+     * Gray value, from 0 to 1.
+     * @var float
+     */
+    private $_gray = 0;
     /**
      * Hue value, from 0 to 360
      */
     private $_hue = 0;
     /**
-     * Saturation value, from 0 to 1
+     * Saturation value, from 0 to 1.
      */
     private $_saturation = 0;
     /**
-     * Lightness value, from 0 to 1
+     * Lightness value, from 0 to 1.
      */
     private $_lightness = 0;
     /**
@@ -390,10 +397,11 @@ class Color
      */
     private function _fadeValue($from, $to, $amount)
     {
-        $fromSquared = $from * $from;
-        $diff = ($to * $to) - $fromSquared;
-        $result = $fromSquared + $diff * $amount;
-        return sqrt($result);
+        $fromG = pow($from, self::GAMMA);
+        $toG = pow($to, self::GAMMA);
+        $diff = $toG - $fromG;
+        $result = $fromG + $diff * $amount;
+        return pow($result, 1 / self::GAMMA);
     }
 
     /**
@@ -434,6 +442,8 @@ class Color
         $r = $this->_red / 255;
         $g = $this->_green / 255;
         $b = $this->_blue / 255;
+        $this->_calculateGray();
+
         //Find min and max.
         $min = min($r, $g, $b);
         $max = max($r, $g, $b);
@@ -478,45 +488,55 @@ class Color
         $huePart = floor($this->_hue / 60);
         // Fraction, from 0..1.
         $hueFraction = ($this->_hue % 60) / 60;
-        $greyValue = $this->_lightness * (1 - $this->_saturation);
+        $grayValue = $this->_lightness * (1 - $this->_saturation);
         $nValue = $this->_lightness * (1 - $this->_saturation * $hueFraction);
         $kValue = $this->_lightness * (1 - $this->_saturation * (1 - $hueFraction));
         switch ($huePart) {
             case 0:
                 $red = $this->_lightness;
                 $green = $kValue;
-                $blue = $greyValue;
+                $blue = $grayValue;
                 break;
             case 1:
                 $red = $nValue;
                 $green = $this->_lightness;
-                $blue = $greyValue;
+                $blue = $grayValue;
                 break;
             case 2:
-                $red = $greyValue;
+                $red = $grayValue;
                 $green = $this->_lightness;
                 $blue = $kValue;
                 break;
             case 3:
-                $red = $greyValue;
+                $red = $grayValue;
                 $green = $nValue;
                 $blue = $this->_lightness;
                 break;
             case 4:
                 $red = $kValue;
-                $green = $greyValue;
+                $green = $grayValue;
                 $blue = $this->_lightness;
                 break;
             case 5:
             case 6:
                 $red = $this->_lightness;
-                $green = $greyValue;
+                $green = $grayValue;
                 $blue = $nValue;
                 break;
         }
         $this->_red = $red * 255;
         $this->_green = $green * 255;
         $this->_blue = $blue * 255;
+        $this->_calculateGray();
+    }
+
+    /**
+     * Calculate the gray value of the current RGB.
+     * @return void
+     */
+    private function _calculateGray()
+    {
+        $this->_gray = (0.2126 * $this->_red + 0.7152 * $this->_green + 0.0722 * $this->_blue) / 255;
     }
 
     /**
