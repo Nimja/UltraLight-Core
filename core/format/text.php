@@ -99,8 +99,8 @@ class Text
             // Add links.
             if ($makeLinks) {
                 $result = preg_replace_callback('/&quot;(.+)&quot;=&gt;([^\s\<]+)/', '\Core\Format\Text::makeLink', $result);
-                $reg_exUrl = "/[^\"](http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
-                $result = preg_replace($reg_exUrl, '<a href="$0">$0</a>', $result);
+                $reg_exUrl = "/([^\"])(http|https|ftp|ftps)(\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3})(\/\S*)?/";
+                $result = preg_replace($reg_exUrl, '$1<a href="$2$3$4" target="_blank">$2$3$4</a>', $result);
             } else {
                 $result = preg_replace('/&quot;(.+)&quot;=&gt;([^\s\<]+)/', '$1', $result);
             }
