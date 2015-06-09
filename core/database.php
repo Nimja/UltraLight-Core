@@ -250,7 +250,7 @@ class Database
      * @param string $table
      * @param array @values
      * @param string|array $where
-     * @return int $id with which we updated.
+     * @return int How many rows we updated.
      * @throws \Exception
      */
     public function update($table, $values, $search)

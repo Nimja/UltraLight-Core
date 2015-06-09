@@ -219,21 +219,22 @@ abstract class Model {
     /**
      * Validate the object, using the validation rules.
      *
+     * If there are no validation rules, obviously it is valid.
+     *
      * @return array Returns empty array on success, or array with warnings on failure.
      */
     public function validate($exclude = array())
     {
         $result = array();
-        // No validation rules, always true.
-        if (!empty($this->_validate)) {
-            $validateRules = $this->_validate;
+        $validateRules = $this->_re()->validate;
+        if (!empty($validateRules)) {
             if (!empty($exclude)) {
                 foreach ($exclude as $field) {
                     unset($validateRules[$field]);
                 }
             }
-            $validator = new Library_Validate();
-            $validator->validate($this->values(), $validateRules);
+            $validator = new \Core\Form\Validate();
+            $validator->validate($this->getValues(), $validateRules);
             $result = $validator->warnings;
         }
         return $result;

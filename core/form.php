@@ -105,7 +105,9 @@ class Form
     }
 
     /**
-     * Set warnings and add them.
+     * Set warnings and add them to the top of the form.
+     *
+     * This is the only function that 'bypasses' the add functionality.
      * @param array $warnings
      * @return \Core\Form
      */
@@ -120,7 +122,7 @@ class Form
             }
             $result[] = '</div>';
         }
-        $this->add(implode(PHP_EOL, $result));
+        array_unshift($this->_data, implode(PHP_EOL, $result));
         return $this;
     }
 
