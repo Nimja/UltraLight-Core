@@ -84,7 +84,7 @@ class Order
         }
         $result = array(
             '<table class="table table-striped table-bordered table-condensed">',
-            '<tr><th></th><th>Down</th><th>Up</th></tr>',
+            '<tr><th>Title</th><th>Up &uArr;</th><th>Down &dArr;</th></tr>',
         );
         if ($this->_currentId > 0) {
             $item = $this->getParent();
