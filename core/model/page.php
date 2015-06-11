@@ -14,7 +14,7 @@ class Page extends \Core\Model
      * @listfield
      * @db-type varchar
      * @db-length 64
-     * @validate alpha|3
+     * @validate empty|3
      * @var string
      */
     public $title;
