@@ -52,7 +52,7 @@ class Pager
     private $_lastPage;
     /**
      * The url.
-     * @var type
+     * @var string
      */
     private $_baseUrl = '';
     /**

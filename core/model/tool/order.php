@@ -65,7 +65,7 @@ class Order
     public function getItems()
     {
         $class = $this->_entityClass;
-        $items = $class::find(array($this->_fieldId => $this->_currentId), 'position ASC');
+        $items = $class::getChildren($this->_currentId);
         if (empty($items)) {
             \Request::redirect($this->_orderLink);
         }

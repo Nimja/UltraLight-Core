@@ -75,6 +75,20 @@ class Page extends \Core\Model
     }
 
     /**
+     * Get page entity for url.
+     * @param string $url
+     * @return \Core\Model\Page
+     */
+    public static function getPageForUrl($url)
+    {
+        $menu = self::getMenu();
+        $fullUrl = '/' . trim($url, '/');
+        $urls = $menu[Tool\Menu::NODE_URLS];
+        $pageId = getKey($urls, $fullUrl);
+        return !empty($pageId) ? self::load($pageId) : null;
+    }
+
+    /**
      * Get menu structure.
      * @return Tool\Menu[]
      */
@@ -114,6 +128,16 @@ class Page extends \Core\Model
             $urls[$menu->fullUrl] = $id;
         }
         return array(Tool\Menu::NODE_ROOT => $items[0], Tool\Menu::NODE_URLS => $urls);
+    }
+
+    /**
+     * Get children pages for parentId.
+     * @param int $parentId
+     * @return array
+     */
+    public static function getChildren($parentId)
+    {
+        return self::find(array('parentId' => $parentId), 'position ASC');
     }
 
     /**
