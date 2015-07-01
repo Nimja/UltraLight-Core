@@ -66,23 +66,28 @@ class System
      * Nice recursive remove.
      * @param string $dir
      * @param boolean $self Include self.
+     * @param boolean $includeHidden If we should include hidden files (starting with dot).
      * @throws \Exception
      */
-    public static function rrmdir($dir, $self = true)
+    public static function rrmdir($dir, $self = true, $includeHidden = false)
     {
         $result = true;
         if (is_dir($dir)) {
             $entries = scandir($dir);
             foreach ($entries as $entry) {
-                if ($entry != '.' && $entry != '..') {
-                    $file = $dir . '/' . $entry;
-                    if (is_dir($file)) {
-                        self::rrmdir($file);
-                    } else {
-                        $success = unlink($file);
-                        if (!$success) {
-                            throw new \Exception($file, 'Could not remove directory.');
-                        }
+                if ($entry == '.' || $entry == '..') {
+                    continue;
+                }
+                if (!$includeHidden && substr($entry, 0, 1) == '.') {
+                    continue;
+                }
+                $file = $dir . '/' . $entry;
+                if (is_dir($file)) {
+                    self::rrmdir($file);
+                } else {
+                    $success = unlink($file);
+                    if (!$success) {
+                        throw new \Exception($file, 'Could not remove directory.');
                     }
                 }
             }
@@ -93,6 +98,7 @@ class System
         if (!$result) {
             throw new \Exception($dir, 'Could not remove directory.');
         }
+        return $result;
     }
 
     /**

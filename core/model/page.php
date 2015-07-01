@@ -81,16 +81,15 @@ class Page extends \Core\Model
      */
     public static function getPageForUrl($url)
     {
-        $menu = self::getMenu();
         $fullUrl = '/' . trim($url, '/');
-        $urls = $menu[Tool\Menu::NODE_URLS];
+        $urls = self::getMenu()->urls;
         $pageId = getKey($urls, $fullUrl);
         return !empty($pageId) ? self::load($pageId) : null;
     }
 
     /**
-     * Get menu structure.
-     * @return Tool\Menu[]
+     * Get menu structure, an array with 2 items.
+     * @return Tool\Menu\Root
      */
     public static function getMenu()
     {
@@ -103,18 +102,18 @@ class Page extends \Core\Model
      *
      * root => The root object, which includes the full tree.
      * urls => A flat array with key url and value page-id.
-     * @return array
+     * @return Tool\Menu\Root
      */
     public static function buildMenu()
     {
         $re = self::re();
         $db = $re->db();
         $table = $db->escape($re->table, true);
-        $root = new Tool\Menu(array('id' => 0, 'title' => 'root', 'url' => ''));
+        $root = new Tool\Menu\Item(array('id' => 0, 'title' => 'root', 'url' => ''));
         $items = array(0 => $root);
         $res = $db->query("SELECT id, title, url, parentId FROM $table ORDER BY `position` ASC");
         while ($row = $res->fetch_assoc()) {
-            $items[$row['id']] = new Tool\Menu($row);
+            $items[$row['id']] = new Tool\Menu\Item($row);
         }
         foreach ($items as $id => $menu) {
             if ($id == 0) {
@@ -127,7 +126,7 @@ class Page extends \Core\Model
         foreach ($items as $id => $menu) {
             $urls[$menu->fullUrl] = $id;
         }
-        return array(Tool\Menu::NODE_ROOT => $items[0], Tool\Menu::NODE_URLS => $urls);
+        return new Tool\Menu\Root($items[0], $urls);
     }
 
     /**
@@ -166,16 +165,16 @@ class Page extends \Core\Model
 
     /**
      * Get basic list with id and title.
-     * @param Tool\Menu $entity
+     * @param Tool\Menu\Item $entity
      * @param int $excludeId
      * @param type $level
      * @return array();
      */
     public static function getEntityList($entity = null, $excludeId = 0, $level = 0)
     {
-        if (!$entity instanceof Tool\Menu) {
+        if (!$entity instanceof Tool\Menu\Item) {
             $list = self::getMenu();
-            $entity = $list[Tool\Menu::NODE_ROOT];
+            $entity = self::getMenu()->root;
         }
         $result = array();
         $title = str_repeat('. . ', $level) . $entity->title;
