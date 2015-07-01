@@ -34,6 +34,11 @@ abstract class Controller
      * @var string
      */
     protected $_loginRedirect = 'admin/login';
+    /**
+     * Login redirect http status code.
+     * @var int
+     */
+    protected $_loginRedirectCode = 303;
 
     /**
      * Basic constructor, switch between several display types.
@@ -45,7 +50,7 @@ abstract class Controller
             $user = $class::login();
             $role = !empty($user) ? $user->role : 0;
             if ($role < $this->_requiredRole) {
-                \Request::redirect($this->_loginRedirect, 303);
+                \Request::redirect($this->_loginRedirect, $this->_loginRedirectCode);
             } else {
                 $this->_user = $user;
             }
