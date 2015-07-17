@@ -48,7 +48,6 @@ class Edit
     {
         $class = $this->_entityClass;
         $values = \Request::getValues();
-        $warnings = array();
         $entity = $class::load(\Core::$rest);
         /* @var $entity \Core\Model */
         if (!empty(\Core::$rest) && empty($entity)) {
