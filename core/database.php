@@ -446,7 +446,7 @@ class Database
             $originalValue = getKey($details, self::SEARCH_VALUE);
             $value = $this->escape($originalValue);
             $operation = getKey($details, self::SEARCH_OPERATION, '|=');
-            if ($originalValue == 'null') {
+            if ($originalValue === 'null') {
                 $condition = ($operation != '|!') ? "{$field} IS NULL" : "{$field} IS NOT NULL";
             } else if ($operation == '|[') {
                 $condition = "FIND_IN_SET({$value}, {$field}) > 0";

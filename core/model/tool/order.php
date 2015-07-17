@@ -66,7 +66,7 @@ class Order
     {
         $class = $this->_entityClass;
         $items = $class::getChildren($this->_currentId);
-        if (empty($items)) {
+        if (empty($items) && $this->_currentId > 0) {
             \Request::redirect($this->_orderLink);
         }
         return $items;
