@@ -160,6 +160,11 @@ class Color
         'yellowgreen' => '#9ACD32',
     );
     /**
+     * Gamma value, defaults to 1.5
+     * @var int
+     */
+    private $_gamma = self::GAMMA;
+    /**
      * Red value, from 0 to 255.
      * @var int
      */
@@ -200,8 +205,9 @@ class Color
     /**
      * Create with css color or RGB in an array.
      * @param string|array $color
+     * @param float $gamma
      */
-    public function __construct($color = null)
+    public function __construct($color = null, $gamma = self::GAMMA)
     {
         if (is_array($color)) {
             list ($red, $green, $blue) = $color;
@@ -210,6 +216,7 @@ class Color
         } else if ($color) {
             $this->setCss($color);
         }
+        $this->_gamma = floatval($gamma);
     }
 
     /**
@@ -397,11 +404,11 @@ class Color
      */
     private function _fadeValue($from, $to, $amount)
     {
-        $fromG = pow($from, self::GAMMA);
-        $toG = pow($to, self::GAMMA);
+        $fromG = pow($from, $this->_gamma);
+        $toG = pow($to, $this->_gamma);
         $diff = $toG - $fromG;
         $result = $fromG + $diff * $amount;
-        return pow($result, 1 / self::GAMMA);
+        return pow($result, 1 / $this->_gamma);
     }
 
     /**
