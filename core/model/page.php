@@ -93,7 +93,8 @@ class Page extends \Core\Model
      */
     public static function getMenu()
     {
-        return \Core::wrapCache('\Core\Model\Page::buildMenu');
+        $class = get_called_class();
+        return \Core::wrapCache($class . '::buildMenu');
     }
     /**
      * Get menu with 2 items in the array.

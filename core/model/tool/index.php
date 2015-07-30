@@ -44,18 +44,22 @@ class Index
      */
     public function __toString()
     {
-        $entities = $this->getEntityList();
-        $result = array(
-            '<div class="list-group">',
-            $this->_makeLink(),
-        );
-        foreach ($entities as $id => $title) {
-            if ($id < 1) {
-                continue;
+        try {
+            $entities = $this->getEntityList();
+            $result = array(
+                '<div class="list-group">',
+                $this->_makeLink(),
+            );
+            foreach ($entities as $id => $title) {
+                if ($id < 1) {
+                    continue;
+                }
+                $result[] = $this->_makeLink($id, $title);
             }
-            $result[] = $this->_makeLink($id, $title);
+            $result[] = '</div>';
+        } catch (\Exception $ex) {
+            $result = array(\Show::output($ex, 'Exception!', \Show::COLOR_ERROR));
         }
-        $result[] = '</div>';
         return implode(PHP_EOL, $result);
     }
 

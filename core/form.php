@@ -93,6 +93,82 @@ class Form
      */
     public function add($field)
     {
+        $this->_addAtIndex(-1, $field);
+        return $this;
+    }
+
+
+    /**
+     * Attempt to add before an existing field in the form.
+     * @param string $name
+     * @param string|\Core\Form\Field $field
+     * @return \Core\Form
+     */
+    public function addBefore($name, $field)
+    {
+        return $this->_addAtIndex($this->_getIndex($name), $field);
+    }
+    /**
+     * Attempt to add after an existing field in the form.
+     * @param string $name
+     * @param string|\Core\Form\Field $field
+     * @return \Core\Form
+     */
+    public function addAfter($name, $field)
+    {
+        $index = $this->_getIndex($name);
+        if ($index > -1) {
+            $index++;
+        }
+        return $this->_addAtIndex($index, $field);
+    }
+
+    /**
+     * Simple function to find the index for a field.
+     *
+     * This of course only works for instances of \Core\Form\Field.
+     * @param string $name
+     * @return int
+     */
+    protected function _getIndex($name)
+    {
+        $result = -1;
+        $index = 0;
+        foreach ($this->_data as $item) {
+            if ($item instanceof \Core\Form\Field && $item->name == $name) {
+                $result = $index;
+                break;
+            }
+            $index++;
+        }
+        return $result;
+    }
+
+    /**
+     * Add item at index.
+     * @param int $index
+     * @param string|\Core\Form\Field $field
+     * @return \Core\Form
+     */
+    protected function _addAtIndex($index, $field)
+    {
+        $fieldData = $this->_configureField($field);
+        if ($index < 0 || $index >= count($this->_data)) {
+            $this->_data[] = $fieldData;
+        } else {
+            array_splice($this->_data, $index, 0, array($fieldData));
+        }
+        return $this;
+    }
+
+
+    /**
+     * Configure field.
+     * @param string|\Core\Form\Field $field
+     * @return \Core\Form\Field
+     */
+    private function _configureField($field)
+    {
         if ($field instanceof \Core\Form\Field) {
             $field->setValue($this->getValue($field->name));
             $field->setHorizontal($this->_isHorizontal);
@@ -100,8 +176,7 @@ class Form
                 $this->_containsUpload = true;
             }
         }
-        $this->_data[] = $field;
-        return $this;
+        return $field;
     }
 
     /**
