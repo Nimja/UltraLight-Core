@@ -92,10 +92,12 @@ class Order
         }
         $max = count($items) - 1;
         $order = 0;
+        $class = $this->_entityClass;
         foreach ($items as $item) {
             $up = ($order > 0);
             $down = ($order < $max);
-            $result[] = $this->_makeRow($item->id, $item->{$this->_fieldTitle}, $up, $down);
+            $hasChildren = $class::getChildCount($item->id) > 0;
+            $result[] = $this->_makeRow($item->id, $item->{$this->_fieldTitle}, $up, $down, $hasChildren);
             $order++;
         }
         $result[] = '</table>';
@@ -155,9 +157,9 @@ class Order
      * @param boolean $up
      * @param boolean $down
      */
-    private function _makeRow($id, $title, $up = false, $down = false)
+    private function _makeRow($id, $title, $up = false, $down = false, $hasChildren = true)
     {
-        $mainLink = $this->_makeLink($id, $title);
+        $mainLink = $hasChildren ? $this->_makeLink($id, $title) : $this->_fakeLink($title);
         $upLink = !$up ? '' : $this->_makeLink($this->_currentId, '&uArr;', -$id);
         $downLink = !$down ? '' : $this->_makeLink($this->_currentId, '&dArr;', $id);
         return "<tr><td>{$mainLink}</td><td>{$upLink}</td><td>{$downLink}</td></tr>";
@@ -179,6 +181,16 @@ class Order
             $class .= ' btn-block';
         }
         return "<a href=\"{$url}\" class=\"{$class}\">{$title}</a>";
+    }
+
+    /**
+     * Fake link, for items without children.
+     * @param string $title
+     * @return string
+     */
+    private function _fakeLink($title)
+    {
+        return "<span class=\"btn text-muted\">{$title}</span>";
     }
 
     /**

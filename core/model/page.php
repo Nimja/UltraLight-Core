@@ -46,12 +46,18 @@ class Page extends \Core\Model
      * @var string
      */
     public $content;
+
     /**
      * Override save to clear cache after.
+     *
+     * Also, if position is blank, we add it to the end.
      * @return self
      */
     public function save()
     {
+        if (blank($this->position)) {
+            $this->position = self::getChildCount($this->parentId);
+        }
         $result = parent::save();
         self::clearCache();
         return $result;
@@ -96,6 +102,7 @@ class Page extends \Core\Model
         $class = get_called_class();
         return \Core::wrapCache($class . '::buildMenu');
     }
+
     /**
      * Get menu with 2 items in the array.
      *
@@ -141,6 +148,21 @@ class Page extends \Core\Model
     }
 
     /**
+     * Get child count, as efficiently as possible.
+     * @param int $parentId
+     * @return int
+     */
+    public static function getChildCount($parentId)
+    {
+        $re = self::re();
+        $db = $re->db();
+        $table = $db->escape($re->table, true);
+        $parentInt = intval($parentId);
+        $sql = "SELECT COUNT(id) FROM {$table} WHERE parentId = {$parentInt};";
+        return intval($db->fetchFirstValue($sql));
+    }
+
+    /**
      * Get form for editing this entity.
      * @param \Core\Model $entity
      * @return \Core\Form
@@ -174,7 +196,6 @@ class Page extends \Core\Model
     public static function getEntityList($entity = null, $excludeId = 0, $level = 0)
     {
         if (!$entity instanceof Tool\Menu\Item) {
-            $list = self::getMenu();
             $entity = self::getMenu()->root;
         }
         $result = array();
@@ -187,5 +208,54 @@ class Page extends \Core\Model
             $result = $result + self::getEntityList($child, $excludeId, $level + 1);
         }
         return $result;
+    }
+
+    /**
+     * Create multiple items at once with associative arrays.
+     *
+     * Use the 'children' to automatically set parentId.
+     *
+     * @param array $items
+     * @return int Number of inserted models.
+     */
+    public static function addMultiple($items)
+    {
+        $class = get_called_class();
+        return self::_addMultipleForParentId($class, $items);
+    }
+
+    /**
+     * Add multiple for parentId, this allows for a properly constructed array.
+     *
+     * @param string $class
+     * @param array $items
+     * @param int $parentId
+     * @return int Number of inserted models.
+     */
+    private static function _addMultipleForParentId($class, $items, $parentId = null)
+    {
+        if (!is_array($items)) {
+            return false;
+        }
+        // Loop over array and add them.
+        $count = 0;
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $children = getKey($item, 'children');
+            unset($item['children']);
+            if (!blank($parentId)) {
+                $item['parentId'] = $parentId;
+            }
+            $current = new $class($item);
+            /* @var $current \Core\Model */
+            $current->save();
+            $count++;
+            if (is_array($children) && !empty($children)) {
+                $count += self::_addMultipleForParentId($class, $children, $current->id);
+            }
+        }
+        return $count;
     }
 }

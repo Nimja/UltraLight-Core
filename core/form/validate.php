@@ -34,7 +34,7 @@ class Validate
      * postal = Postal code (country specific)<br />
      * selected = At least one selected<br />
      * alpha = Alpha only, at least 2 letters.<br />
-     * url = lowercase letters, underscores and numbers<br />
+     * url = lowercase letters, dashes, underscores and numbers<br />
      * username = Letters, numbers and underscores.<br />
      * ignore = Will not count in validation.<br />
      * other = For dropdowns/selections with an 'other' option. Will check $field_other for the value.
@@ -107,7 +107,7 @@ class Validate
                 $result = $this->_pregValidate('/^[a-z\ ]+$/i', $value, 'Can only be letters and single spaces');
                 break;
             case 'url':
-                $result = $this->_pregValidate('/^[a-z0-9\_]+$/', $value, 'Can only be lower-case letters and numbers');
+                $result = $this->_pregValidate('/^[a-z0-9\_\-]+$/', $value, 'Can only be lower-case letters and numbers');
                 break;
             case 'username':
                 $result = $this->_pregValidate(

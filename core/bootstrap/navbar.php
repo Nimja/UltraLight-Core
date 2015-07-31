@@ -59,7 +59,6 @@ class Navbar
         $result = array();
         $hasActive = false;
         foreach ($buttons as $label => $link) {
-            $isActive = ($link == $this->_curPage);
             if (is_array($link)) {
                 $buttonResult = $this->_renderButtons($link);
                 $isActive = $buttonResult['active'];
@@ -70,6 +69,7 @@ class Navbar
                 $item .= $buttonResult['buttons'];
                 $item .= '</ul>';
             } else {
+                $isActive = (strpos($this->_curPage, $link) === 0) && $link != $this->_homeLink;
                 $active = $isActive ? ' class="active"' : '';
                 $item = "<li{$active}><a href=\"$link\">{$label}</a>";
             }

@@ -383,18 +383,18 @@ abstract class Model {
     /**
      * Create multiple items at once with associative arrays.
      *
-     * @param array $array
+     * @param array $items
      * @return void
      */
-    public static function addMultiple($array, $class = null)
+    public static function addMultiple($items)
     {
-        $class = $class ? : get_called_class();
-        if (!is_array($array)) {
+        $class = get_called_class();
+        if (!is_array($items)) {
             return false;
         }
         // Loop over array and add them.
         $count = 0;
-        foreach ($array as $item) {
+        foreach ($items as $item) {
             if (is_array($item)) {
                 $current = new $class($item);
                 /* @var $current \Core\Model */
