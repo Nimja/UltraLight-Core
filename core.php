@@ -113,7 +113,7 @@ class Core
      * Output compression enabled or no.
      * @var boolean
      */
-    private static $_allowOutputCompression = false;
+    public static $_allowOutputCompression = false;
 
     /**
      * Server variables.
@@ -541,9 +541,9 @@ class Core
     public static function setOutputCompression($enable = true)
     {
         if ($enable && self::$_allowOutputCompression) {
-            ini_set("zlib.output_compression", "On");
+            ini_set("zlib.output_compression", true);
         } else {
-            ini_set("zlib.output_compression", "Off");
+            ini_set("zlib.output_compression", false);
         }
     }
 

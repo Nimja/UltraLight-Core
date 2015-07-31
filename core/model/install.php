@@ -16,11 +16,21 @@ class Install
      * @param array $classes
      * @param boolean $force
      */
-    public function __construct($classes, $force)
+    public function __construct()
     {
         \Core::clearCache();
         \Core\Cache\Session::deleteAll();
         \Request::clearCookie('PHPSESSID');
+    }
+
+    /**
+     * Install multiple models at once.
+     * @param array $classes
+     * @param boolean $force
+     * @return void
+     */
+    public function installMultiple($classes, $force = false)
+    {
         foreach ($classes as $class) {
             $this->install($class, $force);
         }
