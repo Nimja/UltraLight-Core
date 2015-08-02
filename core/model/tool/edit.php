@@ -53,7 +53,7 @@ class Edit
         if (!empty(\Core::$rest) && empty($entity)) {
             \Request::redirect($this->_editLink);
         }
-        if (!empty($values)) {
+        if (!empty($values) && \Request::isPost()) {
             $entity = $entity ? : new $class();
             $entity->setValues($values);
             $this->warnings = $entity->validate();

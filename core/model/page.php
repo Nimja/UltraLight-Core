@@ -1,4 +1,7 @@
-<?php namespace Core\Model;
+<?php
+
+namespace Core\Model;
+
 /**
  * Page model, this model allows for a tree-based simple page structure.
  *
@@ -7,8 +10,8 @@
  * @author Nimja
  * @db-database live
  */
-class Page extends \Core\Model
-{
+class Page extends \Core\Model {
+
     /**
      * Page title.
      * @listfield
@@ -18,6 +21,7 @@ class Page extends \Core\Model
      * @var string
      */
     public $title;
+
     /**
      * Partial URL.
      * @db-type varchar
@@ -26,6 +30,7 @@ class Page extends \Core\Model
      * @var string
      */
     public $url;
+
     /**
      * Order, lower means higher.
      * @db-type int
@@ -33,12 +38,14 @@ class Page extends \Core\Model
      * @var int
      */
     public $parentId;
+
     /**
      * Position, lower means higher.
      * @db-type tinyint
      * @var int
      */
     public $position;
+
     /**
      * Page content.
      * @db-type text
@@ -64,13 +71,37 @@ class Page extends \Core\Model
     }
 
     /**
+     * Format/parse content.
+     * @return type
+     */
+    public function getString()
+    {
+        return \Core\Format\Text::parse($this->content);
+    }
+
+    /**
      * Get the nicely formatted content.
      * @return string
      */
     public function __toString()
     {
-        return \Core\Format\Text::parse($this->content);
+        return $this->getString();
     }
+
+    /**
+     * Get children.
+     *
+     * @return array
+     */
+    public function children()
+    {
+        return self::getChildren($this->id);
+    }
+
+    /* ------------------------------------------------------------
+     * 			STATIC FUNCTIONS
+     * ------------------------------------------------------------
+     */
 
     /**
      * Clear related caches.
@@ -127,14 +158,16 @@ class Page extends \Core\Model
             if ($id == 0) {
                 continue;
             }
-            $items[$menu->parentId]->children[] = $menu;
+            $items[$menu->parentId]->children[$menu->id] = $menu;
         }
-        $root->buildFullUrl();
+        $root->buildFullUrlAndPath();
         $urls = array();
+        $reverse = array();
         foreach ($items as $id => $menu) {
             $urls[$menu->fullUrl] = $id;
+            $reverse[$menu->id] = $menu->fullPath;
         }
-        return new Tool\Menu\Root($items[0], $urls);
+        return new Tool\Menu\Root($items[0], $urls, $reverse);
     }
 
     /**
@@ -176,7 +209,7 @@ class Page extends \Core\Model
             $form->useValues(array('date' => date('Y-m-d')));
         }
         $currentItemId = $entity ? $entity->id : -1;
-        $selectValues = self::getEntityList(null, $currentItemId);
+        $selectValues = self::getEntityList($currentItemId);
         $form
             ->add(new \Core\Form\Field\Input('title', array('label' => 'Title')))
             ->add(new \Core\Form\Field\Input('url', array('label' => 'Url')))
@@ -188,24 +221,40 @@ class Page extends \Core\Model
 
     /**
      * Get basic list with id and title.
+     * @param int $excludeId
+     * @return array();
+     */
+    public static function getEntityList($excludeId = 0, $collapsable = false, $parentId = 0)
+    {
+        $menu = self::getMenu();
+        $entity = empty($parentId) ? $menu->root : $menu->getItem($parentId);
+        return self::_getEntityList($entity, $excludeId, 0, $collapsable, $parentId);
+    }
+
+    /**
+     * Get recursive list with ID and title, or in the case of many children, a link to refine the list.
      * @param Tool\Menu\Item $entity
      * @param int $excludeId
      * @param type $level
+     * @param boolean $collapsable
+     * @param int $parentId
      * @return array();
      */
-    public static function getEntityList($entity = null, $excludeId = 0, $level = 0)
+    protected static function _getEntityList($entity, $excludeId, $level, $collapsable, $parentId)
     {
-        if (!$entity instanceof Tool\Menu\Item) {
-            $entity = self::getMenu()->root;
-        }
         $result = array();
         $title = str_repeat('. . ', $level) . $entity->title;
         $result[$entity->id] = $title;
-        foreach ($entity->children as $child) {
-            if ($child->id == $excludeId) {
-                continue;
+        $childCount = count($entity->children);
+        if ($childCount < 20 || $entity->id == $parentId) {
+            foreach ($entity->children as $child) {
+                if ($child->id == $excludeId) {
+                    continue;
+                }
+                $result = $result + self::_getEntityList($child, $excludeId, $level + 1, $collapsable, $parentId);
             }
-            $result = $result + self::getEntityList($child, $excludeId, $level + 1);
+        } else if ($collapsable) {
+            $result['?parentId=' . $entity->id] = str_repeat('. . ', $level + 1) . "&rArr; (children: {$childCount})";
         }
         return $result;
     }
@@ -258,4 +307,5 @@ class Page extends \Core\Model
         }
         return $count;
     }
+
 }

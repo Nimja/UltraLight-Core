@@ -1,42 +1,57 @@
-<?php namespace Core\Model\Tool\Menu;
+<?php
+
+namespace Core\Model\Tool\Menu;
+
 /**
  * Menu item entity for the page model.
  *
  * @author Nimja
  */
-class Item
-{
+class Item {
+
     public static $_class = '\Core\Model\Page';
+
     /**
      * Page id.
      * @var int
      */
     public $id;
+
     /**
      * Page title.
      * @var string
      */
     public $title;
+
     /**
      * Partial URL.
      * @var string
      */
     public $url;
+
     /**
      * Full URL.
      * @var string
      */
     public $fullUrl = '';
+
+    /**
+     * Full list of Ids, from parent to here.
+     * @var array
+     */
+    public $fullPath = array();
     /**
      * ParentId
      * @var int
      */
     public $parentId;
+
     /**
      * Children of this item.
      * @var array
      */
     public $children = array();
+
     /**
      * Create the menu item.
      * @param type $values
@@ -63,7 +78,8 @@ class Item
      * @param string $url
      * @return Item|null
      */
-    public function getChildByUrl($url) {
+    public function getChildByUrl($url)
+    {
         $result = null;
         foreach ($this->children as $child) {
             if ($child->url == $url) {
@@ -77,11 +93,15 @@ class Item
     /**
      * Build full URLS.
      */
-    public function buildFullUrl()
+    public function buildFullUrlAndPath()
     {
         foreach ($this->children as $child) {
             $child->fullUrl = $this->fullUrl . '/' . $child->url;
-            $child->buildFullUrl();
+            if ($this->id > 0) {
+                $child->fullPath = array_merge($this->fullPath, array($this->id));
+            }
+            $child->buildFullUrlAndPath();
         }
     }
+
 }
