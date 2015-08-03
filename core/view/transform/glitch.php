@@ -3,9 +3,9 @@ namespace Core\View\Transform;
 /**
  * Class to make text look glitched (randomly switches the character's case).
  */
-class Glitch extends \Core\View\Transform {
+class Glitch extends Base {
 
-    public function parse()
+    protected function _parse()
     {
         $letters = str_split($this->_value);
         foreach ($letters as $key => $letter) {

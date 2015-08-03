@@ -3,9 +3,9 @@ namespace Core\View\Transform;
 /**
  * Class to take a randomly selected value from a string, split up by the | symbol.
  */
-class Random extends \Core\View\Transform {
+class Random extends Base {
 
-    public function parse()
+    protected function _parse()
     {
         $parts = explode('|', $this->_value);
         $value = $parts[array_rand($parts)];

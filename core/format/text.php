@@ -1,11 +1,23 @@
-<?php
-namespace Core\Format;
+<?php namespace Core\Format;
 /**
  * Basic String to HTML formatting class.
  *
  */
 class Text
 {
+    /**
+     * Registered blockparsers.
+     * @var array
+     */
+    private static $_blockClasses = array(
+        'link' => '\Core\Format\Text\Link',
+        'tooltip' => '\Core\Format\Text\Tooltip',
+    );
+    /**
+     * Instantiated blockparsers.
+     * @var array
+     */
+    private static $_blockParsers = array();
 
     /**
      * This strips HTML and parses basic characters
@@ -13,12 +25,13 @@ class Text
      * * - bullet list<br /># - numbered list<br />= - title<br />
      * ! - Forced line (to avoid bold as the first word)<br />
      * In-sentence options: ^bold^, _italic_, -striked-<br />
-     * Links: "Text for the link"=>/the/link (url you desire, without spaces)
+     * [type|data|separated|by|pipes]
      *
      * @param string $str In the format described above.
+     * @param boolean $parseBlocks Parse blocks styled like.
      * @return string HTML in a nice format.
      */
-    static function parse($str, $makeLinks = true)
+    public static function parse($str, $parseBlocks = true)
     {
         // Decode HTML entities
         $str = html_entity_decode($str);
@@ -72,21 +85,17 @@ class Text
             }
             // If our open tag changed, apply it.
             if ($open != $prevopen) {
-                if (!empty($prevopen))
-                    $result .= '</' . $prevopen . '>';
+                if (!empty($prevopen)) $result .= '</' . $prevopen . '>';
 
-                if (!empty($open))
-                    $result .= '<' . $open . '>';
+                if (!empty($open)) $result .= '<' . $open . '>';
             }
             // Remember the previous tag.
             $prevopen = $open;
 
-            if (!empty($line))
-                $result .= $line . "\n";
+            if (!empty($line)) $result .= $line . "\n";
         }
         // Close any open tag.
-        if (!empty($open))
-            $result .= '</' . $open . '>';
+        if (!empty($open)) $result .= '</' . $open . '>';
 
         #// o bold/italic
         if (!empty($result)) {
@@ -97,23 +106,10 @@ class Text
             );
             $result = preg_replace(array_keys($translate), $translate, $result);
             // Add links.
-            if ($makeLinks) {
-                $result = preg_replace(
-                    '/&quot;(.+?)&quot;=&gt;([^\s\<]+)/',
-                    '<a href="$2" title="$1">$1</a>',
-                    $result
-                );
-                $result = preg_replace(
-                    "/([^\"])(http|https|ftp|ftps)(\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3})(\/\S*)?/",
-                    '$1<a href="$2$3$4" target="_blank">$2$3$4</a>',
-                    $result
-                );
-            } else {
-                $result = preg_replace('/&quot;(.+)&quot;=&gt;([^\s\<]+)/', '$1', $result);
+            if ($parseBlocks) {
+                $result = self::_parseBlocks($result);
             }
         }
-
-
         return $result;
     }
 
@@ -135,13 +131,38 @@ class Text
     }
 
     /**
-     * Make link.
+     * Parse all the blocks.
+     * @param string $string
+     * @return string
      */
-    public static function makeLink($args)
+    private static function _parseBlocks($string)
     {
-        $text = $args[1];
-        $link = $args[2];
-        return "<a href=\"{$link}\" title=\"{$text}\">{$text}</a>";
+        return preg_replace_callback(
+            '/\[([]a-z]+)\|([^\]]+)\]/',
+            function ($matches)
+            {
+                $parser = self::_getBlockParser($matches[1]);
+                return $parser->parse($matches[2]);
+            }, $string
+        );
+    }
+
+    /**
+     * Get block parser, will only instantiate once.
+     * @param string $type
+     * @return \Core\Format\Text\Link
+     * @throws \Exception
+     */
+    private static function _getBlockParser($type)
+    {
+        if (empty(self::$_blockParsers[$type])) {
+            if (!isset(self::$_blockClasses[$type])) {
+                throw new \Exception("No parser registered for type: $type");
+            }
+            $class = self::$_blockClasses[$type];
+            self::$_blockParsers[$type] = new $class();
+        }
+        return self::$_blockParsers[$type];
     }
 
     /**

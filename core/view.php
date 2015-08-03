@@ -26,6 +26,22 @@ class View
     private static $_instance;
 
     /**
+     * The current transformers, instantiated when needed.
+     *
+     * @var array
+     */
+    private static $_transformers = array(
+        'glitch' => '\Core\View\Transform\Glitch',
+        'math' => '\Core\View\Transform\Math',
+        'number' => '\Core\View\Transform\Number',
+        'random' => '\Core\View\Transform\Random',
+    );
+    /**
+     * Instantiated transformers.
+     * @var array
+     */
+    private static $_transformerInstances = array();
+    /**
      * Get the current instance.
      * @return \Core\View
      */
@@ -184,16 +200,8 @@ class View
                 $result = strtolower($string);
                 break;
             default:
-                $class = '\\View\\Transform\\' . ucfirst($function);
-                if (\Core::loadClass(\Core::NAMESPACE_CORE . $class, true)) {
-                    $class = \Core::NAMESPACE_CORE . $class;
-                } else if (\Core::loadClass(\Core::NAMESPACE_APP . $class, true)) {
-                    $class = \Core::NAMESPACE_APP . $class;
-                } else {
-                    throw new \Exception("Unable to find transformer for $class");
-                }
-                $transformer = new $class($commands, $string);
-                $result = $transformer->parse();
+                $transformer = self::_getTransformer($function);
+                $result = $transformer->parse($commands, $string);
                 $commands = $transformer->getCommands();
                 break;
         }
@@ -202,6 +210,35 @@ class View
             $result = $this->_transform($nextCommand, $result, $commands);
         }
         return $result;
+    }
+
+    /**
+     * Get transformer instance.
+     * @param string $type
+     * @return \Core\View\Transform\Base
+     * @throws \Exception
+     */
+    private static function _getTransformer($type)
+    {
+        if (empty(self::$_transformerInstances[$type])) {
+            if (!isset(self::$_transformers[$type])) {
+                throw new \Exception("No transformer registered for type: $type");
+            }
+            $class = self::$_transformers[$type];
+            self::$_transformerInstances[$type] = new $class();
+        }
+        return self::$_transformerInstances[$type];
+    }
+
+    /**
+     * Register transformer.
+     * @param string $type
+     * @param string $class
+     */
+    public static function registerTransformer($type, $class)
+    {
+        self::$_transformers[$type] = $class;
+        unset(self::$_transformerInstances[$type]);
     }
 
     /**

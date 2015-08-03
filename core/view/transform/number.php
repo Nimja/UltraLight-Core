@@ -5,7 +5,7 @@ namespace Core\View\Transform;
  *
  * @author Nimja
  */
-class Number extends \Core\View\Transform {
+class Number extends Base {
 
     private $_hyphen = '-';
     private $_space = ' ';
@@ -45,7 +45,7 @@ class Number extends \Core\View\Transform {
         1000000000 => 'billion',
     );
 
-    public function parse()
+    protected function _parse()
     {
         return $this->_translate(intval($this->_value));
     }

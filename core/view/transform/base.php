@@ -1,11 +1,11 @@
 <?php
-namespace Core\View;
+namespace Core\View\Transform;
 /**
  * Abstract class for view transforms.
  *
  * @author Nimja
  */
-abstract class Transform {
+abstract class Base {
 
     /**
      * Array of remaining commands.
@@ -19,19 +19,22 @@ abstract class Transform {
     protected $_value;
 
     /**
-     * @param array $command
+     * Parse commands.
+     * @param array $commands
      * @param string $value
+     * @return string
      */
-    public function __construct($commands, $value)
+    public function parse($commands, $value)
     {
         $this->_commands = $commands;
         $this->_value = $value;
+        return $this->_parse();
     }
 
     /**
      * Abstract function to parse the string for transformation.
      */
-    abstract public function parse();
+    abstract protected function _parse();
 
     /**
      * Get the remaining commands.

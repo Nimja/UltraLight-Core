@@ -55,7 +55,7 @@ class Edit
         }
         if (!empty($values) && \Request::isPost()) {
             $entity = $entity ? : new $class();
-            $entity->setValues($values);
+            $entity->setValues($values, true);
             $this->warnings = $entity->validate();
             if (empty($this->warnings)) {
                 $entity->save();

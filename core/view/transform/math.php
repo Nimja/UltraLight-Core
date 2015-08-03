@@ -2,10 +2,10 @@
 /**
  * Class to do basic math operations with view placeholders.
  */
-class Math extends \Core\View\Transform
+class Math extends Base
 {
 
-    public function parse()
+    protected function _parse()
     {
         $operation = $this->_getCommand();
         $value = is_numeric($this->_peekCommand()) ? intval($this->_getCommand()) : 1;

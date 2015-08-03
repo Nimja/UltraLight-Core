@@ -139,7 +139,7 @@ class Order
         /* @var $re \Core\Model\Reflect */
         $db = $re->db();
         $table = $re->table;
-        $current = 0;
+        $current = 1;
         foreach ($ids as $id) {
             $db->update($table, array('position' => $current), $id);
             $current++;

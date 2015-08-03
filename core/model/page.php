@@ -63,7 +63,7 @@ class Page extends \Core\Model {
     public function save()
     {
         if (blank($this->position)) {
-            $this->position = self::getChildCount($this->parentId);
+            $this->position = self::getChildCount($this->parentId) + 1;
         }
         $result = parent::save();
         self::clearCache();
