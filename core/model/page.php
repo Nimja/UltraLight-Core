@@ -72,20 +72,11 @@ class Page extends \Core\Model {
 
     /**
      * Format/parse content.
-     * @return type
+     * @return string
      */
     public function getString()
     {
         return \Core\Format\Text::parse($this->content);
-    }
-
-    /**
-     * Get the nicely formatted content.
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getString();
     }
 
     /**

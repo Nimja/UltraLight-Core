@@ -242,11 +242,23 @@ abstract class Model {
 
     /**
      * Simple generic to string method.
-     * @return type
+     * @return string
+     */
+    public function getString()
+    {
+        return \Show::info($this, $this->_class, \Show::COLOR_NICE, true);
+    }
+    /**
+     * Magic tostring method.
      */
     public function __toString()
     {
-        return \Show::info($this, $this->_class, \Show::COLOR_NICE, true);
+        try {
+            $result = $this->getString();
+        } catch (\Exception $ex) {
+            $result = \Show::output($ex);
+        }
+        return $result;
     }
 
     /* ------------------------------------------------------------

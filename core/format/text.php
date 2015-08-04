@@ -10,6 +10,7 @@ class Text
      * @var array
      */
     private static $_blockClasses = array(
+        'image' => '\Core\Format\Text\Image',
         'link' => '\Core\Format\Text\Link',
         'tooltip' => '\Core\Format\Text\Tooltip',
     );
