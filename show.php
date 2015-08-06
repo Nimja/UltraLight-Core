@@ -25,22 +25,23 @@ class Show
     public static function info($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false)
     {
         self::$curError++;
-        $info = self::_showVariable($var);
         if ($var instanceof \Exception) {
             $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
         } else {
             $trace = self::_getTraceInfo(self::_getDebug());
         }
-        $title = Sanitize::clean($title);
+        $space = "\n\n";
+        $title = $space. Sanitize::clean($title) . $space;
+        $content = $space . self::_showVariable($var) . $space;
         // Create result.
-        $result = '<div style="z-index: 99999; font-family: arial; font-size: 14px; text-align: left; color: black; background: '
+        $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
             . $color . '; margin: 2px; padding: 2px; border: 1px solid gray; ">'
             // Trace block
             . $trace
             // Title
             . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray; background: #f9f9f9;">'
             // Actual content.
-            . $info . '</div></div>';
+            . $content . '</div></div>';
 
         // Switch between returning or echoing. (echo is default);
         $result = Core::cleanPath($result);
@@ -60,26 +61,31 @@ class Show
      *
      * @return array
      */
-    private static function _getDebug($traces = null)
+    private static function _getDebug($fullTrace = null)
     {
         $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
-        $traces = $traces ? : debug_backtrace($option);
+        $traceArray = $fullTrace ? : debug_backtrace($option);
         $lines = array();
-        foreach ($traces as $trace) {
-            $function = getKey($trace, 'function');
-            $line = getKey($trace, 'line');
-            $file = Core::cleanPath(getKey($trace, 'file'));
-            //Skip closure functions (they give us no info anyway.
-            if ($function == '{closure}') {
-                continue;
+        foreach ($traceArray as $trace) {
+            $isCore = false;
+            $post = '';
+            if (!empty($trace['file'])) {
+                $pre = Core::cleanPath(getKey($trace, 'file'));
+                $isCore = substr($pre, 0, 5) == 'CORE/';
+                //Skip the auto-class loading and the show class itself.
+                if ($pre == 'CORE/show.php') {
+                    continue;
+                }
+                $post = getKey($trace, 'line');
+            } else if (!empty($trace['class'])) {
+                $pre = $trace['class'];
+                $isCore = substr($pre, 0, 6) == '\\Core\\';
+                $post = getKey($trace, 'type', '') . getKey($trace, 'function', '');
+            } else {
+                $pre = implode(', ', $trace);
             }
-            $core = (strpos($file, 'CORE') !== false);
-            //Skip the auto-class loading and the show class itself.
-            if ($file == 'CORE/show.php') {
-                continue;
-            }
-            $dir = $core ? $file : '<span style="color: black">' . $file . '</span>';
-            $lines[] = $dir . ' : ' . $line;
+            $preLine = $isCore ? $pre : '<span style="color: black">' . $pre . '</span>';
+            $lines[] = $preLine . ' : ' . $post;
         }
         return $lines;
     }

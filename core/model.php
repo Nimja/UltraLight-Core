@@ -256,7 +256,7 @@ abstract class Model {
         try {
             $result = $this->getString();
         } catch (\Exception $ex) {
-            $result = \Show::output($ex);
+            $result = \Show::output($ex, "Exception!", \Show::COLOR_ERROR);
         }
         return $result;
     }

@@ -9,7 +9,7 @@ class Text
      * Registered blockparsers.
      * @var array
      */
-    private static $_blockClasses = array(
+    private static $_blockParsers = array(
         'image' => '\Core\Format\Text\Image',
         'link' => '\Core\Format\Text\Link',
         'tooltip' => '\Core\Format\Text\Tooltip',
@@ -18,7 +18,7 @@ class Text
      * Instantiated blockparsers.
      * @var array
      */
-    private static $_blockParsers = array();
+    private static $_blockParserInstances = array();
 
     /**
      * This strips HTML and parses basic characters
@@ -156,14 +156,25 @@ class Text
      */
     private static function _getBlockParser($type)
     {
-        if (empty(self::$_blockParsers[$type])) {
-            if (!isset(self::$_blockClasses[$type])) {
+        if (empty(self::$_blockParserInstances[$type])) {
+            if (!isset(self::$_blockParsers[$type])) {
                 throw new \Exception("No parser registered for type: $type");
             }
-            $class = self::$_blockClasses[$type];
-            self::$_blockParsers[$type] = new $class();
+            $class = self::$_blockParsers[$type];
+            self::$_blockParserInstances[$type] = new $class();
         }
-        return self::$_blockParsers[$type];
+        return self::$_blockParserInstances[$type];
+    }
+
+    /**
+     * Register blockparser.
+     * @param string $type
+     * @param string $class
+     */
+    public static function registerBlockParser($type, $class)
+    {
+        self::$_blockParsers[$type] = $class;
+        unset(self::$_blockParserInstances[$type]);
     }
 
     /**

@@ -11,7 +11,11 @@ namespace Core\Model;
  * @db-database live
  */
 class Page extends \Core\Model {
-
+    /**
+     * When to collapse or hide children.
+     * @var int
+     */
+    public static $childLimit = 10;
     /**
      * Page title.
      * @listfield
@@ -237,7 +241,7 @@ class Page extends \Core\Model {
         $title = str_repeat('. . ', $level) . $entity->title;
         $result[$entity->id] = $title;
         $childCount = count($entity->children);
-        if ($childCount < 20 || $entity->id == $parentId) {
+        if ($childCount < self::$childLimit || $entity->id == $parentId) {
             foreach ($entity->children as $child) {
                 if ($child->id == $excludeId) {
                     continue;
