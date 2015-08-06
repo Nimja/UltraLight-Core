@@ -64,7 +64,7 @@ class Navbar
                 $isActive = $buttonResult['active'];
                 $class =  $isActive ? ' dropdown active' : 'dropdown';
                 $item = "<li class=\"{$class}\">";
-                $item .= "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\">{$label} <span class=\"caret\"></span></a>";
+                $item .= "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">{$label} <span class=\"caret\"></span></a>";
                 $item .= '<ul class="dropdown-menu" role="menu">';
                 $item .= $buttonResult['buttons'];
                 $item .= '</ul>';
