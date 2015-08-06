@@ -103,7 +103,8 @@ class Page extends \Core\Model {
      */
     public static function clearCache()
     {
-        \Core::clearCache('\Core\Model\Page::buildMenu');
+        $class = get_called_class();
+        \Core::clearCache($class . '::buildMenu');
     }
 
     /**

@@ -88,7 +88,7 @@ abstract class Field
      */
     public function setValue($value)
     {
-        if (!empty($value)) {
+        if (!blank($value)) {
             $this->_setValue($value);
         }
         return $this;
