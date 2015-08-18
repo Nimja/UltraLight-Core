@@ -188,12 +188,13 @@ class Request
 
     /**
      * Output file to browser.
-     * @param string $file
+     * @param string $data
      * @param string $mimeType
      * @param string $fileName
+     * @param string $modified
      * @throws \Exception
      */
-    public static function outputData($data, $mimeType = 'application/octet-stream', $fileName = null, $modifiedDate = 0)
+    public static function outputData($data, $mimeType = 'application/octet-stream', $fileName = null, $modified = 0)
     {
         if (ob_get_contents() || headers_sent()) {
             throw new \Exception("Headers already sent.");
@@ -201,7 +202,7 @@ class Request
         if (empty($data)) {
             throw new \Exception("No data to send.");
         }
-        $modifiedDate = $modifiedDate ? : time();
+        $modifiedDate = $modified ? : time();
         self::ifModifiedSince($modifiedDate);
         self::_sendOutputHeaders($mimeType, strlen($data), $fileName, time());
         echo $data;
@@ -209,17 +210,17 @@ class Request
     }
 
     /**
-     * Send output headers,
-     * @param type $mimeType
-     * @param type $length
-     * @param type $fileName
-     * @param type $modifiedDate
-     * @param type $expireDate
+     * Send output headers for inline or attached files.
+     * @param string $mimeType
+     * @param int $length
+     * @param string $fileName
+     * @param string $modifiedDate
+     * @param string $expireString
      * @throws \Exception
      */
-    private static function _sendOutputHeaders($mimeType, $length, $fileName, $modifiedDate, $expireDate = '+2 weeks')
+    private static function _sendOutputHeaders($mimeType, $length, $fileName, $modifiedDate, $expireString = '+2 weeks')
     {
-        $expireDate = strtotime($expireDate);
+        $expireDate = strtotime($expireString);
         $expireSeconds = $expireDate - time();
         header('Content-Type: ' . $mimeType);
         if (!empty($fileName)) {
@@ -238,7 +239,7 @@ class Request
     /**
      * Handle "if-modified-since" requests.
      * @param int $compareTime
-     * @param string $expire
+     * @param string $expires
      * @return void
      */
     public static function ifModifiedSince($compareTime, $expires = '+14 days')
