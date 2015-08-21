@@ -79,6 +79,17 @@ class Request
     }
 
     /**
+     * Check if user has any cookies, should be true as we always set php session.
+     *
+     * @return boolean
+     */
+    public static function hasCookies()
+    {
+        $cookies = self::getCookies();
+        return !empty($cookies);
+    }
+
+    /**
      * Set a cookie with a string timestamp.
      * @param string $name
      * @param mixed $value
@@ -87,6 +98,8 @@ class Request
     public static function setCookie($name, $value, $time = '+2 months')
     {
         setcookie($name, $value, strtotime($time), '/');
+        self::getCookies();
+        self::$_cookies[$name] - $value;
     }
 
     /**
@@ -129,6 +142,16 @@ class Request
             unset(self::$_cookies[$name]);
         }
         return $result;
+    }
+
+    /**
+     * Simply send a 404 to the user, with a basic (funny?) error message.
+     */
+    public static function notFound()
+    {
+        header("HTTP/1.0 404 Not Found", true, 404);
+        echo 'Sorry, this page does not (or never did) exist...';
+        exit;
     }
 
     /**
