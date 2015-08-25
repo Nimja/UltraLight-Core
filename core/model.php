@@ -164,7 +164,6 @@ abstract class Model {
     public function save()
     {
         $re = $this->_re();
-        $db = $re->db();
         $values = $this->_getValuesForSave($re);
         if (empty($values)) {
             throw new \Exception("Attempting to save empty model.");
