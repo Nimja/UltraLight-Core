@@ -99,7 +99,7 @@ class Request
     {
         setcookie($name, $value, strtotime($time), '/');
         self::getCookies();
-        self::$_cookies[$name] - $value;
+        self::$_cookies[$name] = $value;
     }
 
     /**
