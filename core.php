@@ -113,7 +113,7 @@ class Core
      * Output compression enabled or no.
      * @var boolean
      */
-    public static $_allowOutputCompression = false;
+    private static $_allowOutputCompression = false;
 
     /**
      * Server variables.

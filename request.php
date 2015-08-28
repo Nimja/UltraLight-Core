@@ -21,6 +21,12 @@ class Request
     private static $_cookies = null;
 
     /**
+     * Check if we have cookies.
+     * @var boolean
+     */
+    private static $_hasCookies = null;
+
+    /**
      * Return true if current request is a post request.
      * @return boolean
      */
@@ -85,8 +91,10 @@ class Request
      */
     public static function hasCookies()
     {
-        $cookies = self::getCookies();
-        return !empty($cookies);
+        if (self::$_hasCookies === null) {
+            self::getCookies();
+        }
+        return self::$_hasCookies;
     }
 
     /**
@@ -111,6 +119,7 @@ class Request
         if (self::$_cookies === null) {
             $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ? : [];
             self::$_cookies = Sanitize::clean($cookies);
+            self::$_hasCookies = !empty($cookies);
         }
         return self::$_cookies;
     }
