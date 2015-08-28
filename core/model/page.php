@@ -144,8 +144,8 @@ class Page extends \Core\Model {
         $re = self::re();
         $db = $re->db();
         $table = $db->escape($re->table, true);
-        $root = new Tool\Menu\Item(array('id' => 0, 'title' => 'root', 'url' => ''));
-        $items = array(0 => $root);
+        $root = new Tool\Menu\Item(['id' => 0, 'title' => 'root', 'url' => '']);
+        $items = [0 => $root];
         $res = $db->query("SELECT id, title, url, parentId FROM $table ORDER BY `position` ASC");
         while ($row = $res->fetch_assoc()) {
             $items[$row['id']] = new Tool\Menu\Item($row);
@@ -157,8 +157,8 @@ class Page extends \Core\Model {
             $items[$menu->parentId]->children[$menu->id] = $menu;
         }
         $root->buildFullUrlAndPath();
-        $urls = array();
-        $reverse = array();
+        $urls = [];
+        $reverse = [];
         foreach ($items as $id => $menu) {
             $urls[$menu->fullUrl] = $id;
             $reverse[$menu->id] = $menu->fullPath;
@@ -173,7 +173,7 @@ class Page extends \Core\Model {
      */
     public static function getChildren($parentId)
     {
-        return self::find(array('parentId' => $parentId), 'position ASC');
+        return self::find(['parentId' => $parentId], 'position ASC');
     }
 
     /**
@@ -198,27 +198,27 @@ class Page extends \Core\Model {
      */
     public static function getForm($entity)
     {
-        $form = new \Core\Form(null, array('class' => 'admin form-horizontal'));
+        $form = new \Core\Form(null, ['class' => 'admin form-horizontal']);
         if ($entity instanceof \Core\Model) {
             $form->useValues($entity->getValues());
         } else {
-            $form->useValues(array('date' => date('Y-m-d')));
+            $form->useValues(['date' => date('Y-m-d')]);
         }
         $currentItemId = $entity ? $entity->id : -1;
         $selectValues = self::getEntityList($currentItemId);
         $form
-            ->add(new \Core\Form\Field\Input('title', array('label' => 'Title')))
-            ->add(new \Core\Form\Field\Input('url', array('label' => 'Url')))
-            ->add(new \Core\Form\Field\Select('parentId', array('label' => 'Parent', 'values' => $selectValues)))
-            ->add(new \Core\Form\Field\Text('content', array('label' => 'Content', 'rows' => 20)))
-            ->add(new \Core\Form\Field\Submit('submit', array('value' => 'Edit', 'class' => 'btn-primary')));
+            ->add(new \Core\Form\Field\Input('title', ['label' => 'Title']))
+            ->add(new \Core\Form\Field\Input('url', ['label' => 'Url']))
+            ->add(new \Core\Form\Field\Select('parentId', ['label' => 'Parent', 'values' => $selectValues]))
+            ->add(new \Core\Form\Field\Text('content', ['label' => 'Content', 'rows' => 20]))
+            ->add(new \Core\Form\Field\Submit('submit', ['value' => 'Edit', 'class' => 'btn-primary']));
         return $form;
     }
 
     /**
      * Get basic list with id and title.
      * @param int $excludeId
-     * @return array();
+     * @return [];
      */
     public static function getEntityList($excludeId = 0, $collapsable = false, $parentId = 0)
     {
@@ -234,11 +234,11 @@ class Page extends \Core\Model {
      * @param type $level
      * @param boolean $collapsable
      * @param int $parentId
-     * @return array();
+     * @return [];
      */
     protected static function _getEntityList($entity, $excludeId, $level, $collapsable, $parentId)
     {
-        $result = array();
+        $result = [];
         $title = str_repeat('. . ', $level) . $entity->title;
         $result[$entity->id] = $title;
         $childCount = count($entity->children);

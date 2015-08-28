@@ -594,7 +594,7 @@ class Css {
 	 * @param array $config {@link http://code.google.com/p/cssmin/wiki/Configuration Configuration} as array [optional]
 	 * @return string Minified css
 	 */
-	public static function minify($css, $config = array()) {
+	public static function minify($css, $config = []) {
 		$tokens = self::parse($css);
 		// Normalize configuration parameters
 		if (count($config) > 0) {
@@ -607,7 +607,7 @@ class Css {
 		$sRemoveLastSemicolon = $config["remove-last-semicolons"];
 		$sRemoveComments = $config["remove-comments"];
 		$sConvertCss3Properties = $config["convert-css3-properties"];
-		$sCss3Variables = array();
+		$sCss3Variables = [];
 		$sConvertFontWeightValues = $config["convert-font-weight-values"];
 		$rConvertFontWeightValues = "/(^|\s)+(normal|bold)(\s|$)+/ie";
 		$rConvertFontWeightValuesR = "'\\1'.self::\$fontWeightTransformations['\\2'].'\\3'";
@@ -633,7 +633,7 @@ class Css {
 		$sImportEndBlockTokens = array(self::T_AT_MEDIA_END, self::T_AT_FONT_FACE_END, self::T_AT_PAGE_END);
 		$sImportStatementTokens = array(self::T_AT_RULE, self::T_AT_IMPORT);
 		$sImportMediaEndToken = array(self::T_AT_MEDIA_END);
-		$sImportImportedFiles = array();
+		$sImportImportedFiles = [];
 		$sRemoveTokens = array_filter(array(self::T_NULL, ($sRemoveComments ? self::T_COMMENT : false)));
 
 		/*
@@ -657,9 +657,9 @@ class Css {
 		 */
 		if ($sImportImports && is_dir($sImportBasePath)) {
 			$importFile = "";
-			$importTokens = array();
+			$importTokens = [];
 			$importMediaStartToken = array(self::T_NULL);
-			$importBlocks = array();
+			$importBlocks = [];
 			for ($i = 0, $l = count($tokens); $i < $l; $i++) {
 				if ($tokens[$i][0] == self::T_AT_IMPORT && file_exists($sImportBasePath . $tokens[$i][1])) {
 					$importFile = $sImportBasePath . $tokens[$i][1];
@@ -673,7 +673,7 @@ class Css {
 						if (count($tokens[$i][2]) > 0 && !(count($tokens[$i][2]) == 1 && $tokens[$i][2][0] == "all")) {
 							// Create T_AT_MEDIA_START token used for wrapping and array for blocks
 							$importMediaStartToken = array(self::T_AT_MEDIA_START, $tokens[$i][2]);
-							$importBlocks = array();
+							$importBlocks = [];
 							// Filter or set media types of @import at-rule or remove the @import at-rule if no media type is matching the parent @import at-rule
 							for ($ii = 0, $ll = count($importTokens); $ii < $ll; $ii++) {
 								if ($importTokens[$ii][0] == self::T_AT_IMPORT) {
@@ -717,7 +717,7 @@ class Css {
 											}
 										}
 										if ($importTokens[$iii][0] == self::T_AT_MEDIA_END) {
-											array_splice($importTokens, $ii, $iii - $ii + 1, array());
+											array_splice($importTokens, $ii, $iii - $ii + 1, []);
 											$ll = count($importTokens);
 										}
 									}
@@ -742,14 +742,14 @@ class Css {
 							// Extract @import at-rule tokens
 							for ($ii = 0, $ll = count($importTokens); $ii < $ll; $ii++) {
 								if ($importTokens[$ii][0] == self::T_AT_IMPORT) {
-									$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, 1, array()));
+									$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, 1, []));
 									$ll = count($importTokens);
 								}
 							}
 							// Extract T_AT_RULE tokens
 							for ($ii = 0, $ll = count($importTokens); $ii < $ll; $ii++) {
 								if ($importTokens[$ii][0] == self::T_AT_RULE) {
-									$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, 1, array()));
+									$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, 1, []));
 									$ll = count($importTokens);
 								}
 							}
@@ -762,7 +762,7 @@ class Css {
 										}
 									}
 									if (isset($importTokens[$iii][0]) && in_array($importTokens[$iii][0], $sImportEndBlockTokens)) {
-										$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, $iii - $ii + 1, array()));
+										$importBlocks = array_merge($importBlocks, array_splice($importTokens, $ii, $iii - $ii + 1, []));
 										$ll = count($importTokens);
 									}
 								}
@@ -843,7 +843,7 @@ class Css {
 					for ($i2 = 0, $l2 = count($tokens[$i][3]); $i2 < $l2; $i2++) {
 						// Create the scope (all, screen, print, etc.) if not defined
 						if (!isset($sCss3Variables[$tokens[$i][3][$i2]])) {
-							$sCss3Variables[$tokens[$i][3][$i2]] = array();
+							$sCss3Variables[$tokens[$i][3][$i2]] = [];
 						}
 						// Store variable and value
 						$sCss3Variables[$tokens[$i][3][$i2]][$tokens[$i][1]] = $tokens[$i][2];
@@ -1041,17 +1041,17 @@ class Css {
 		$c = null;		// Current char
 		$p = null;		// Previous char
 		$buffer = "";		// Buffer
-		$errors = array();
+		$errors = [];
 		$saveBuffer = "";		// Saved buffer
 		$state = array(self::T_DOCUMENT);   // State stack
 		$currentState = self::T_DOCUMENT;	 // Current state
 		$scope = $sDefaultScope;	 // Current scope
 		$stringChar = null;		// Current string delimiter char
 		$isFilterWs = true;		// Filter double whitespaces? Will get disabled for comments, selectors, etc.
-		$selectors = array();	   // Array with collected selectors
+		$selectors = [];	   // Array with collected selectors
 		$importUrl = "";		// @import Url
 		$line = 1;		// Line
-		$r = array();	   // Return value
+		$r = [];	   // Return value
 		/*
 		 * Prepare: normalize line endings
 		 */
@@ -1398,7 +1398,7 @@ class Css {
 					$r[] = array(self::T_SELECTORS, $selectors);
 					$r[] = array(self::T_DECLARATIONS_START);
 					$buffer = "";
-					$selectors = array();
+					$selectors = [];
 					array_push($state, self::T_DECLARATIONS);
 				}
 				/*

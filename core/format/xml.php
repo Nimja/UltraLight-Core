@@ -97,7 +97,7 @@ class Xml
          *
          * @var array formatter options
          */
-        protected $_options = array(
+        protected $_options = [
                 "paddingString" => "\t",
                 "paddingMultiplier" => 1,
                 "formatCData" => TRUE,
@@ -105,7 +105,7 @@ class Xml
                 "wordwrapCData" => 75,
                 "inputEOL" => "\n",
                 "outputEOL" => "\n"
-        );
+        ];
 
         /**
          * Constructor
@@ -114,7 +114,7 @@ class Xml
          * @param resource $output Output stream
          * @return void
          */
-        public function __construct($input, Array $options = array())
+        public function __construct($input, Array $options = [])
         {
                 $this->_input = $input;
                 $this->_output = '';

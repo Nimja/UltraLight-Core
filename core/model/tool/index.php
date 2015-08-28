@@ -58,10 +58,10 @@ class Index {
     {
         try {
             $entities = $this->getEntityList();
-            $result = array(
+            $result = [
                 '<div class="list-group">',
                 $this->_makeLink(),
-            );
+            ];
             if (!empty($this->_values)) {
                 $result[] = $this->_makeLink(-1);
             }
@@ -73,7 +73,7 @@ class Index {
             }
             $result[] = '</div>';
         } catch (\Exception $ex) {
-            $result = array(\Show::output($ex, 'Exception!', \Show::COLOR_ERROR));
+            $result = [\Show::output($ex, 'Exception!', \Show::COLOR_ERROR)];
         }
         return implode(PHP_EOL, $result);
     }

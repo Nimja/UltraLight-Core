@@ -116,7 +116,7 @@ abstract class Controller
      * @param boolean $parseText
      * @return string
      */
-    protected function _show($page, $variables = array(), $parseText = false)
+    protected function _show($page, $variables = [], $parseText = false)
     {
         $result = $this->_view()->show($page, $variables);
         if ($parseText) {

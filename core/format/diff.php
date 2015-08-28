@@ -27,21 +27,21 @@ class Diff
      * Ie. On level 1 we seperate by lines, level 2 by words, level 3 by characters.
      * @var array
      */
-    private static $_splitCharacters = array(
+    private static $_splitCharacters = [
         self::DEPTH_LINES => "\n",
         self::DEPTH_WORDS => ' ',
         self::DEPTH_CHARACTERS => '',
-    );
+    ];
     /**
      * The html objects used for this state.
      * @var array
      */
-    private static $_stateHtml = array(
+    private static $_stateHtml = [
         self::STATE_IDENTICAL => '',
         self::STATE_INSERTED => 'ins',
         self::STATE_DELETED => 'del',
         self::STATE_CHANGED => 'adj',
-    );
+    ];
     /**
      * If this level is the file.
      * @var boolean
@@ -61,7 +61,7 @@ class Diff
      * The current states.
      * @var array
      */
-    private $_states = array();
+    private $_states = [];
     /**
      * Current depth.
      * @var int
@@ -193,7 +193,7 @@ class Diff
     private function _getExplodedString($string)
     {
         if ($string == '') {
-            $result = array();
+            $result = [];
         } else if ($this->_depth == self::DEPTH_LINES) {
             $result = explode(self::$_splitCharacters[self::DEPTH_LINES], $string);
         } else if ($this->_depth == self::DEPTH_WORDS) {
@@ -253,7 +253,7 @@ class Diff
             }
             $result = $this->_getNicestResult($resultLeft, $resultRight, $leftIndex, $rightIndex);
         } else {
-            $result = array('L' => false, 'R' => false);
+            $result = ['L' => false, 'R' => false];
         }
         if ($result['L'] === false) {
             $result['L'] = count($leftParts);
@@ -277,7 +277,7 @@ class Diff
         foreach ($left as $leftIndex => $string) {
             $rightIndex = array_search($string, $right);
             if ($rightIndex !== false) {
-                return array('L' => $leftIndex, 'R' => $rightIndex);
+                return ['L' => $leftIndex, 'R' => $rightIndex];
             }
         }
         return false;
@@ -297,11 +297,11 @@ class Diff
         foreach ($left as $leftIndex => $leftString) {
             foreach ($right as $rightIndex => $rightString) {
                 if ($leftString == $rightString) {
-                    return array('L' => $leftIndex, 'R' => $rightIndex);
+                    return ['L' => $leftIndex, 'R' => $rightIndex];
                 }
                 $diff = new self($leftString, $rightString, 1, $this->_depth + 1);
                 if ($diff->getSimilarity() > 0.5) {
-                    return array('L' => $leftIndex, 'R' => $rightIndex);
+                    return ['L' => $leftIndex, 'R' => $rightIndex];
                 }
             }
         }
@@ -325,7 +325,7 @@ class Diff
         $emptyLeft = empty($resultLeft);
         $emptyRight = empty($resultRight);
         if ($emptyLeft && $emptyRight) {
-            $result = array('L' => false, 'R' => false);
+            $result = ['L' => false, 'R' => false];
         } else if ($emptyLeft || $emptyRight) {
             $result = $emptyRight ? $resultLeft : $this->_resultSwitch($resultRight);
         } else {
@@ -343,7 +343,7 @@ class Diff
      */
     private function _resultSwitch($resultRight)
     {
-        return array('L' => $resultRight['R'], 'R' => $resultRight['L']);
+        return ['L' => $resultRight['R'], 'R' => $resultRight['L']];
     }
 
     /**
@@ -433,7 +433,7 @@ class Diff
      */
     private function _renderLinesFromStates()
     {
-        $result = array();
+        $result = [];
         $showedEmpty = false;
         $result[] = '<div class="diff-output">';
         $result[] = '<ol>';
@@ -461,7 +461,7 @@ class Diff
     private function _renderLinesFromString()
     {
         $domObj = getKey(self::$_stateHtml, $this->_state, '');
-        $result = array();
+        $result = [];
         $result[] = '<div class="diff-output">';
         $result[] = '<ol>';
         $splitChar = getKey(self::$_splitCharacters, $this->_depth, '');
@@ -481,7 +481,7 @@ class Diff
      */
     public function __toString()
     {
-        $result = array();
+        $result = [];
         if ($this->_isRoot) {
             $result = (!empty($this->_states)) ? $this->_renderLinesFromStates() : $this->_renderLinesFromString();
         } else if (!empty($this->_states)) {

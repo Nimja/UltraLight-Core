@@ -39,7 +39,7 @@ class Item {
      * Full list of Ids, from parent to here.
      * @var array
      */
-    public $fullPath = array();
+    public $fullPath = [];
     /**
      * ParentId
      * @var int
@@ -50,7 +50,7 @@ class Item {
      * Children of this item.
      * @var array
      */
-    public $children = array();
+    public $children = [];
 
     /**
      * Create the menu item.
@@ -98,7 +98,7 @@ class Item {
         foreach ($this->children as $child) {
             $child->fullUrl = $this->fullUrl . '/' . $child->url;
             if ($this->id > 0) {
-                $child->fullPath = array_merge($this->fullPath, array($this->id));
+                $child->fullPath = array_merge($this->fullPath, [$this->id]);
             }
             $child->buildFullUrlAndPath();
         }

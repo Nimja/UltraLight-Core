@@ -49,7 +49,7 @@ class Breadcrumbs
      */
     private function _parseUrl($url)
     {
-        $result = array('/');
+        $result = ['/'];
         if (!empty($url)) {
             $parts = explode('/', $url);
             $cur = '';
@@ -68,7 +68,7 @@ class Breadcrumbs
      */
     private function _parseMenuArray($array)
     {
-        $result = array();
+        $result = [];
         foreach ($array as $title => $url) {
             if (is_array($url)) {
                 $subResult = $this->_parseMenuArray($url);
@@ -94,7 +94,7 @@ class Breadcrumbs
     {
         $urls = $this->_curUrls;
         array_pop($urls);
-        $result = array();
+        $result = [];
         foreach ($urls as $url) {
             if (isset($this->_urls[$url])) {
                 $title = $this->_urls[$url];

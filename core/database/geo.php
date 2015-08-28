@@ -7,7 +7,7 @@ namespace Core\Database;
  */
 class Geo
 {
-    public static $codesToCountry = array(
+    public static $codesToCountry = [
         '' => 'Unknown',
         'AP' => 'Asia/Pacific Region',
         'EU' => 'Europe',
@@ -262,7 +262,7 @@ class Geo
         'BL' => 'Saint Barthelemy',
         'MF' => 'Saint Martin',
         'BQ' => 'Bonaire, Saint Eustatius and Saba',
-    );
+    ];
     /**
      * The GeoIp2 DB reader object.
      *

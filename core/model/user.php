@@ -41,11 +41,11 @@ class User extends Sessioned
     const ROLE_NEUTRAL = 1;
     const ROLE_EDITOR = 50;
     const ROLE_ADMIN = 100;
-    protected $roles = array(
+    protected $roles = [
         self::ROLE_NEUTRAL => 'Normal User',
         self::ROLE_EDITOR => 'Editor (can edit, but not delete)',
         self::ROLE_ADMIN => 'Admin (can edit everything)',
-    );
+    ];
     /**
      * The flag if we need to set a cookie.
      * @var boolean
@@ -55,7 +55,7 @@ class User extends Sessioned
      * Prevent hash getting generated multiple times.
      * @var array
      */
-    private static $_hashes = array();
+    private static $_hashes = [];
 
     /**
      * Return true if role is admin or higher.
@@ -170,12 +170,12 @@ class User extends Sessioned
     {
         $re = self::re();
         $db = $re->db();
-        $search = array(
+        $search = [
             'name' => $name,
             'password' => self::encryptPassword($name, $pass),
-        );
+        ];
         $table = $re->table;
-        return $db->search($table, $search, array('fields' => self::ID, 'limit' => 1))->fetchFirstValue();
+        return $db->search($table, $search, ['fields' => self::ID, 'limit' => 1])->fetchFirstValue();
     }
 
     /**
@@ -247,10 +247,10 @@ class User extends Sessioned
             if ($warning) {
                 $form->add("<div class=\"warning\">{$warning}</div>");
             }
-            $form->add(new \Core\Form\Field\Input('user', array('label' => 'Username')))
-                ->add(new \Core\Form\Field\Password('pass', array('label' => 'Password')))
-                ->add(new \Core\Form\Field\CheckBox('remember', array('label' => 'Remember me')))
-                ->add(new \Core\Form\Field\Submit(null, array('value' => 'Login!', 'class' => 'btn-success')));
+            $form->add(new \Core\Form\Field\Input('user', ['label' => 'Username']))
+                ->add(new \Core\Form\Field\Password('pass', ['label' => 'Password']))
+                ->add(new \Core\Form\Field\CheckBox('remember', ['label' => 'Remember me']))
+                ->add(new \Core\Form\Field\Submit(null, ['value' => 'Login!', 'class' => 'btn-success']));
             $result = $form;
         }
         return $result;

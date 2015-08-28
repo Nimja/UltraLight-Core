@@ -82,10 +82,10 @@ class Order
         if ($this->_checkMove($items)) {
             \Request::redirect($this->_getOrderUrl($this->_currentId));
         }
-        $result = array(
+        $result = [
             '<table class="table table-striped table-bordered table-condensed">',
             '<tr><th>Title</th><th>Up &uArr;</th><th>Down &dArr;</th></tr>',
-        );
+        ];
         if ($this->_currentId > 0) {
             $item = $this->getParent();
             $result[] = $this->_makeRow($item ? $item->{$this->_fieldId} : 0, '&uArr; Level up &uArr;');
@@ -141,7 +141,7 @@ class Order
         $table = $re->table;
         $current = 1;
         foreach ($ids as $id) {
-            $db->update($table, array('position' => $current), $id);
+            $db->update($table, ['position' => $current], $id);
             $current++;
         }
         if (method_exists($class, 'clearCache')) {

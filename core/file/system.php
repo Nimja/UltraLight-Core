@@ -20,8 +20,8 @@ class System
      */
     public static function listFiles($path, $options = 0, $include = null, $exclude = null)
     {
-        $files = array();
-        $dirs = array();
+        $files = [];
+        $dirs = [];
         $recursive = ($options & self::RECURSIVE);
         $exclude_files = ($options & self::EXCLUDE_FILES);
         $exclude_dirs = ($options & self::EXCLUDE_DIRS);
@@ -31,7 +31,7 @@ class System
             if (substr($path, -1) == '/') {
                 $path = substr($path, 0, -1);
             }
-            $skip = array('.' => 1, '..' => 1);
+            $skip = ['.' => 1, '..' => 1];
             $objects = scandir($path);
             foreach ($objects as $entry) {
                 if (isset($skip[$entry])
@@ -43,7 +43,7 @@ class System
                 $curfile = $path . '/' . $entry;
                 $file = $entry;
                 if (is_dir($curfile)) {
-                    $dirs[$entry] = (!$recursive) ? array() : self::listFiles($curfile, $options, $include, $exclude);
+                    $dirs[$entry] = (!$recursive) ? [] : self::listFiles($curfile, $options, $include, $exclude);
                 } else {
                     $files[$entry] = $file;
                 }
@@ -52,7 +52,7 @@ class System
             throw new \Exception("Not listing a directory: {$path}");
         }
         #Combine dirs and files in proper order, maintaining keys.
-        $result = array();
+        $result = [];
         if (!$exclude_dirs) {
             $result += $dirs;
         }

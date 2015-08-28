@@ -9,7 +9,7 @@ abstract class Cache
      *
      * @var array
      */
-    protected static $_instances = array();
+    protected static $_instances = [];
     /**
      *
      * @var string
@@ -60,7 +60,7 @@ abstract class Cache
      * @return string
      */
     protected function _cleanKey($key) {
-        $replace = array('/', '\\', ':');
+        $replace = ['/', '\\', ':'];
         return trim(str_replace($replace, '+', \Core::cleanPath($key)), '+');
     }
 

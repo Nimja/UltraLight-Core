@@ -97,7 +97,7 @@ class Core
      * Loaded classes.
      * @var array
      */
-    public static $classes = array();
+    public static $classes = [];
     /**
      * Enable debugging on the fly.
      * @var boolean
@@ -154,7 +154,7 @@ class Core
      */
     private function __construct($options = null)
     {
-        $this->_server = $_SERVER ? : array();
+        $this->_server = filter_input_array(INPUT_SERVER);
         $this->_setOutputCompression();
         $this->_setPathConstants($options);
         spl_autoload_register('Core::loadClass');
@@ -189,7 +189,7 @@ class Core
             throw new Exception('Startup requires base path at least.');
         }
         if (!$isArray) {
-            $options = array('base' => $options);
+            $options = ['base' => $options];
         }
         /**
          * Path to the core library, only used internally.
@@ -298,7 +298,7 @@ class Core
         }
         if (!$error) {
             require $fileName;
-            self::$classes[$class] = array('file' => $fileName, 'time' => self::time());
+            self::$classes[$class] = ['file' => $fileName, 'time' => self::time()];
         }
         if ($error && !$returnSuccess) {
             \Show::fatal($class, $error);
@@ -403,7 +403,7 @@ class Core
         }
         self::$url = $final;
         Config::system()->set('site', 'pageurl', $final);
-        return empty($final) ? array() : explode('/', $final);
+        return empty($final) ? [] : explode('/', $final);
     }
 
     /**
@@ -415,7 +415,7 @@ class Core
     {
         $routes = Config::system()->section('routes');
         $load = '';
-        $rest = array();
+        $rest = [];
         // Route will be checked back to front, so /parent/child/sub is checked first, then /parent/child, etc.
         while (!empty($request) && empty($load)) {
             $cur = implode('/', $request);
@@ -575,12 +575,12 @@ class Core
      */
     public static function cleanPath($string)
     {
-        $paths = array(
+        $paths = [
             PATH_APP => 'APP/',
             PATH_CORE => 'CORE/',
             PATH_BASE => 'BASE/',
             PATH_ASSETS => 'ASSETS/',
-        );
+        ];
         return strtr($string, $paths);
     }
 
@@ -593,7 +593,7 @@ class Core
      * @param int $time
      * @return mixed
      */
-    public static function wrapCache($callable, $args = array(), $time = 0)
+    public static function wrapCache($callable, $args = [], $time = 0)
     {
         if (!is_string($callable)) {
             throw new \Exception("Please use \Class::method for wrapCache.");
@@ -616,7 +616,7 @@ class Core
      * Clear cache, either specifically or completely.
      * @return boolean
      */
-    public static function clearCache($callable = null, $args = array())
+    public static function clearCache($callable = null, $args = [])
     {
         $result = false;
         if (self::$_useCache) {

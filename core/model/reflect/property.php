@@ -31,20 +31,23 @@ class Property
 
     /**
      * Get the field information and set it in the array.
-     * @param \Core\Model\Reflect $class
+     * @param \Core\Model\Reflect $reflect
      */
-    public function fillSettings($class)
+    public function fillSettings($reflect)
     {
         if ($this->_isColumn()) {
             $field = $this->getName();
             $doc = $this->_doc;
             if (!empty($doc['validate'])) {
-                $class->validate[$field] = $doc['validate'];
+                $reflect->validate[$field] = $doc['validate'];
             }
-            $class->columns[$field] = $this->_getDbFields();
-            $class->fields[$field] = $this->_getFieldType();
+            if (!empty($doc['empty'])) {
+                $reflect->blankFields[$field] = true;
+            }
+            $reflect->columns[$field] = $this->_getDbFields();
+            $reflect->fields[$field] = $this->_getFieldType();
             if (isset($doc['listField'])) {
-                $class->listField = $field;
+                $reflect->listField = $field;
             }
         }
     }
@@ -74,7 +77,7 @@ class Property
     private function _getDbFields()
     {
 
-        $result = array();
+        $result = [];
         foreach ($this->_doc as $key => $value) {
             if (substr($key, 0, 3) != 'db-') {
                 continue;

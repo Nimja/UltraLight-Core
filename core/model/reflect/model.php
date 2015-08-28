@@ -114,7 +114,7 @@ class Model {
      */
     public static function parseDocComment($docComment)
     {
-        $result = array();
+        $result = [];
         if (!empty($docComment)) {
             $matches = null;
             if (preg_match_all(self::DOCCOMMENT_REGEX, $docComment, $matches)) {

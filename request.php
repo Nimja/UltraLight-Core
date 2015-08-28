@@ -47,7 +47,7 @@ class Request
     public static function server($name, $default = null)
     {
         if (self::$_server === null) {
-            self::$_server = $_SERVER;
+            self::$_server = filter_input_array(INPUT_SERVER);
         }
         return getKey(self::$_server, $name, $default);
     }
@@ -71,8 +71,8 @@ class Request
     public static function getValues()
     {
         if (self::$_values === null) {
-            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ? : array();
-            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ? : array();
+            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ? : [];
+            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ? : [];
             self::$_values = Sanitize::clean(array_merge($get, $post));
         }
         return self::$_values;
@@ -109,7 +109,7 @@ class Request
     public static function getCookies()
     {
         if (self::$_cookies === null) {
-            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ? : array();
+            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ? : [];
             self::$_cookies = Sanitize::clean($cookies);
         }
         return self::$_cookies;
@@ -168,11 +168,11 @@ class Request
             $site_url = Config::system()->get('site', 'url');
             $url = $site_url . $url;
         }
-        $codes = array(
+        $codes = [
             301 => 'HTTP/1.1 301 Moved Permanently',
             302 => 'HTTP/1.1 302 Found',
             303 => 'HTTP/1.1 303 See Other',
-        );
+        ];
         if (empty($codes[$code])) {
             $code = 302;
         }

@@ -9,7 +9,7 @@ abstract class Ajax extends \Core\Controller
      * Extra data allowed on rootlevel.
      * @var array
      */
-    private $_resultData = array();
+    private $_resultData = [];
     /**
      * JSON mime-type as we send it back always.
      *
@@ -41,14 +41,14 @@ abstract class Ajax extends \Core\Controller
         $result = json_encode($data);
         $error = json_last_error();
         if ($error) {
-            $errors = array(
+            $errors = [
                 JSON_ERROR_NONE => null,
                 JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
                 JSON_ERROR_STATE_MISMATCH => 'Underflow or the modes mismatch',
                 JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
                 JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
                 JSON_ERROR_UTF8 => 'Malformed UTF-8 characters, possibly incorrectly encoded'
-            );
+            ];
             $message = getKey($errors, $error, "Unknown error: $error");
             throw new \Exception($message);
         }

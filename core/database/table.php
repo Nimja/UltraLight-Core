@@ -60,7 +60,7 @@ class Table {
     public function columns()
     {
         $columns = $this->_db->fetchRows("SHOW COLUMNS FROM {$this->_tableEscaped}");
-        $result = array();
+        $result = [];
         foreach ($columns as $column) {
             $result[$column['Field']] = new Table\Column($this->_db, $column, true);
         }
@@ -137,7 +137,7 @@ class Table {
             unset($columns['id']);
         }
         // Get the desired situation.
-        $desired = array();
+        $desired = [];
         foreach ($fields as $field => $type) {
             $desired[$field] = new Table\Column($db, $type);
         }
@@ -164,7 +164,7 @@ class Table {
     private function _getDifference($columns, $desired)
     {
         // Do the compare.
-        $changes = array();
+        $changes = [];
         $prevField = $this->_db->escape('id', true);
         // Add/modify columns by comparison.
         foreach ($desired as $field => $column) {

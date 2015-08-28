@@ -19,7 +19,7 @@ class Sanitize
         } if (is_numeric($value)) {
             $result = $value;
         } else if (is_array($value)) {
-            $result = array();
+            $result = [];
             foreach ($value as $key => $val) {
                 $result[self::clean($key)] = self::clean($val);
             }
@@ -34,7 +34,7 @@ class Sanitize
             //$string = utf8_decode($string);
             $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
             //Normalize linebreaks to LINUX format.
-            $string = strtr($string, array("\r\n" => "\n", "\r" => "\n"));
+            $string = strtr($string, ["\r\n" => "\n", "\r" => "\n"]);
             if ($stripHtml) {
                 $allowedTags = is_array($keepTags) ? $keepTags : null;
                 $string = strip_tags($string, $allowedTags);

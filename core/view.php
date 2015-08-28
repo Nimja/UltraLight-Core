@@ -18,7 +18,7 @@ class View
      * List of included files
      * @var array
      */
-    private static $_included = array();
+    private static $_included = [];
     /**
      * The current instance.
      * @var \Core\View
@@ -30,17 +30,17 @@ class View
      *
      * @var array
      */
-    private static $_transformers = array(
+    private static $_transformers = [
         'glitch' => '\Core\View\Transform\Glitch',
         'math' => '\Core\View\Transform\Math',
         'number' => '\Core\View\Transform\Number',
         'random' => '\Core\View\Transform\Random',
-    );
+    ];
     /**
      * Instantiated transformers.
      * @var array
      */
-    private static $_transformerInstances = array();
+    private static $_transformerInstances = [];
     /**
      * Get the current instance.
      * @return \Core\View
@@ -100,7 +100,7 @@ class View
      */
     public function getTranslateArray($variables, $values, $originVarName = '')
     {
-        $translate = array();
+        $translate = [];
         foreach ($variables as $name) {
             // First translate the name of the variable, if need be.
             if (strpos($name, self::TRANSFORM) !== false) {
@@ -140,7 +140,7 @@ class View
             return false;
         }
         //Make sure data is an array and filled with default values.
-        $data = $data ? : array();
+        $data = $data ? : [];
         $site_vars = \Config::system()->section('site');
         foreach ($site_vars as $key => $value) {
             $data['site.' . $key] = $value;

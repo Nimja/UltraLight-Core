@@ -10,7 +10,7 @@ class CheckBoxes extends \Core\Form\Field
     protected function _getHtml()
     {
         $values = $this->_getValues();
-        $result = array();
+        $result = [];
         foreach ($values as $name => $label) {
             $checked = $this->_isSelected($name) ? 'checked="checked"' : '';
             $result[] = "<label><l>$label</l><input type=\"checkbox\" name=\"{$this->name}[$name]\" {$checked}/></label>";

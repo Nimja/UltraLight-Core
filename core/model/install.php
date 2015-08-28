@@ -7,7 +7,7 @@ namespace Core\Model;
  */
 class Install
 {
-    protected $_installed = array();
+    protected $_installed = [];
 
     /**
      * Install constructor.
@@ -77,7 +77,7 @@ class Install
     {
         $user = null;
         if (!empty($this->_installed["$class"])) {
-            $user = new $class(array('name' => $name, 'role' => $role));
+            $user = new $class(['name' => $name, 'role' => $role]);
             $user->password = $class::encryptPassword($name, $password);
             $user->save();
             $user->logout();

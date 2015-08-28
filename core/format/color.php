@@ -357,12 +357,12 @@ class Color
      */
     public function getRgba($alpha = 1)
     {
-        $values = array(
+        $values = [
             intval($this->_red),
             intval($this->_green),
             intval($this->_blue),
             $alpha
-        );
+        ];
         return 'rgba(' . implode(', ', $values) . ')';
     }
 
@@ -376,12 +376,12 @@ class Color
      */
     public function getAsArray($alpha = 1, $multiplier = 1)
     {
-        return array(
+        return [
             $this->_red * $multiplier,
             $this->_green * $multiplier,
             $this->_blue * $multiplier,
             $alpha,
-        );
+        ];
     }
 
     /**

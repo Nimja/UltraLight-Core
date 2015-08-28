@@ -10,7 +10,7 @@ class Radio extends \Core\Form\Field
     protected function _getHtml()
     {
         $values = $this->_getValues();
-        $result = array();
+        $result = [];
         foreach ($values as $name => $label) {
             $checked = $this->_isSelected($name) ? 'checked="checked"' : '';
             $radioInput = "<input type=\"radio\" name=\"{$this->name}\" value=\"$name\" {$checked}/>";

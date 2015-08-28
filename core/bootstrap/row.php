@@ -25,7 +25,7 @@ class Row
      *
      * @var array
      */
-    private $_rows = array();
+    private $_rows = [];
 
     /**
      * Current row.
@@ -53,7 +53,7 @@ class Row
     {
         if ($this->_curSize == 0) {
             $this->_curRow++;
-            $this->_rows[$this->_curRow] = array();
+            $this->_rows[$this->_curRow] = [];
         }
         $intSize = intval($size);
         if ($intSize <= 0) {
@@ -62,7 +62,7 @@ class Row
         } else {
             $this->_curSize += $intSize;
         }
-        $this->_rows[$this->_curRow][] = array('size' => $intSize, 'content' => $content);
+        $this->_rows[$this->_curRow][] = ['size' => $intSize, 'content' => $content];
         return $this;
     }
     /**
@@ -103,7 +103,7 @@ class Row
      */
     private function _renderRow($row)
     {
-        $result = array();
+        $result = [];
         foreach ($row as $item) {
             $class = "col-{$this->_type}-{$item['size']}";
             $result[] = "<div class=\"{$class}\">{$item['content']}</div>";
@@ -117,7 +117,7 @@ class Row
     public function __toString()
     {
         $this->endRow();
-        $rows = array();
+        $rows = [];
         foreach ($this->_rows as $row) {
             $rows[] = sprintf($this->wrapRow, $this->_renderRow($row));
         }

@@ -9,16 +9,16 @@ class Text
      * Registered blockparsers.
      * @var array
      */
-    private static $_blockParsers = array(
+    private static $_blockParsers = [
         'image' => '\Core\Format\Text\Image',
         'link' => '\Core\Format\Text\Link',
         'tooltip' => '\Core\Format\Text\Tooltip',
-    );
+    ];
     /**
      * Instantiated blockparsers.
      * @var array
      */
-    private static $_blockParserInstances = array();
+    private static $_blockParserInstances = [];
 
     /**
      * This strips HTML and parses basic characters
@@ -100,11 +100,11 @@ class Text
 
         #// o bold/italic
         if (!empty($result)) {
-            $translate = array(
+            $translate = [
                 '/\^(.+)\^/U' => '<b>$1</b>',
                 '/\_(.+)\_/U' => '<i>$1</i>',
                 '/\-\-(.+)\-\-/U' => '<s>$1</s>',
-            );
+            ];
             $result = preg_replace(array_keys($translate), $translate, $result);
             // Add links.
             if ($parseBlocks) {
@@ -185,17 +185,17 @@ class Text
     public static function timeToHuman($time, $returnArray = false)
     {
         $parts = explode(':', gmdate('z:H:i:s', $time));
-        $result = array(
+        $result = [
             'd' => $parts[0],
             'h' => $parts[1],
             'm' => $parts[2],
             's' => $parts[3],
-        );
+        ];
 
         if ($returnArray) {
             return $result;
         }
-        $hrt = array();
+        $hrt = [];
         foreach ($result as $key => $value) {
             $value = intval($value);
             if (!empty($value)) {
@@ -213,7 +213,7 @@ class Text
      */
     public static function bytesToHuman($size)
     {
-        $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
+        $unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
         return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
     }
 }

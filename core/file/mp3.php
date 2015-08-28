@@ -77,7 +77,7 @@ class Mp3
         while ($currentStrPos < $maxStrLen) {
             $str = substr($this->_str, $currentStrPos, 4);
             $strlen = strlen($str);
-            $parts = array();
+            $parts = [];
             for ($i = 0; $i < $strlen; $i++) {
                 $parts[] = $this->decbinFill(ord($str[$i]), 8);
             }
@@ -125,7 +125,7 @@ class Mp3
             $doFrame = true;
             $str = substr($this->_str, $currentStrPos, 4);
             $strlen = strlen($str);
-            $parts = array();
+            $parts = [];
             for ($i = 0; $i < $strlen; $i++) {
                 $parts[] = $this->decbinFill(ord($str[$i]), 8);
             }
@@ -173,7 +173,7 @@ class Mp3
     function doFrameStuff($parts)
     {
         //Get Audio Version
-        $errors = array();
+        $errors = [];
         switch (substr($parts[1], 3, 2)) {
             case '01':
                 $errors[] = 'Reserved audio version';
@@ -257,8 +257,8 @@ class Mp3
                 '01' => 48000,
                 '10' => 32000,
                 '11' => 'reserved'),
-            2 => array(),
-            2.5 => array());
+            2 => [],
+            2.5 => []);
         $freq = $frequencies[$audio][substr($parts[2], 4, 2)];
         //IsPadded?
         $padding = substr($parts[2], 6, 1);

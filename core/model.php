@@ -19,21 +19,21 @@ abstract class Model {
      * Reflection for each class, used for fields and columns.
      * @var array
      */
-    private static $_reflections = array();
+    private static $_reflections = [];
 
     /**
      * Cache per execution cycle, to prevent double queries.
      *
      * @var array
      */
-    private static $_cache = array();
+    private static $_cache = [];
 
     /**
      * Static memory caching.
      *
      * @var array
      */
-    protected static $cache = array();
+    protected static $cache = [];
 
     /**
      * The current class.
@@ -61,7 +61,7 @@ abstract class Model {
      *
      * @var array
      */
-    protected $_related = array();
+    protected $_related = [];
 
     /**
      * Basic constructor, with error messages.
@@ -73,6 +73,10 @@ abstract class Model {
         $this->_class = get_class($this);
         if (is_array($values)) {
             $this->setValues($values);
+            if (!empty($values[self::ID])) {
+                $this->id = intval($values[self::ID]);
+                self::_saveCache($this->_class, $this);
+            }
         }
     }
 
@@ -82,22 +86,16 @@ abstract class Model {
      * Properties in the entity that are not set in the array, become blank unless $add is true.
      *
      * @var array $values
-     * @var array $add If true, we add values and leave alone missing values from the array.
      * @return array All the values of this object.
      */
-    public function setValues($values, $add = false)
+    public function setValues($values)
     {
         if (empty($values) || !is_array($values)) {
             return false;
         }
-        $class = $this->_class;
         foreach ($this->_re()->fields as $field => $type) {
-            $value = getKey($values, $field, $add ? $this->$field : '');
+            $value = isset($values[$field]) ? getKey($values, $field, '') : $this->{$field};
             $this->_setValue($field, $type, $value);
-        }
-        if (!empty($values[self::ID]) && !$add) {
-            $this->id = intval($values[self::ID]);
-            self::_saveCache($class, $this);
         }
     }
 
@@ -124,10 +122,11 @@ abstract class Model {
      */
     public function getValues()
     {
-        $result = array();
-        foreach ($this->_re()->fieldNames as $field) {
+        $result = [];
+        $re = $this->_re();
+        foreach ($re->fieldNames as $field) {
             $value = getAttr($this, $field);
-            if (!blank($value)) {
+            if (!blank($value) || isset($re->blankFields[$field])) {
                 $result[$field] = $this->$field;
             }
         }
@@ -222,9 +221,9 @@ abstract class Model {
      *
      * @return array Returns empty array on success, or array with warnings on failure.
      */
-    public function validate($exclude = array())
+    public function validate($exclude = [])
     {
-        $result = array();
+        $result = [];
         $validateRules = $this->_re()->validate;
         if (!empty($validateRules)) {
             if (!empty($exclude)) {
@@ -275,7 +274,7 @@ abstract class Model {
         $class = $class ? : get_called_class();
         if (empty(self::$_reflections[$class])) {
             $time = filemtime(\Core::$classes[$class]['file']);
-            self::$_reflections[$class] = \Core::wrapCache('\Core\Model\Reflect::get', array($class), $time);
+            self::$_reflections[$class] = \Core::wrapCache('\Core\Model\Reflect::get', [$class], $time);
         }
         return self::$_reflections[$class];
     }
@@ -339,12 +338,12 @@ abstract class Model {
         $db = $re->db();
         $listField = $re->listField;
         $order = $order ? : "{$listField} ASC";
-        $settings = array(
+        $settings = [
             'order' => $order,
             'limit' => $limit,
-        );
+        ];
         $res = $db->search($re->table, $search, $settings)->getRes();
-        $result = array();
+        $result = [];
         while ($row = $res->fetch_assoc()) {
             $model = new $class($row);
             $result[$model->id] = $model;

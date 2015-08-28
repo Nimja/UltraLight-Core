@@ -52,7 +52,7 @@ class Ini
         if ($ini === false) {
             throw new \Exception('Unable to parse ini file.');
         }
-        $result = array();
+        $result = [];
         foreach ($ini as $section => $values) {
             if (!is_array($values)) {
                 continue;
@@ -86,7 +86,7 @@ class Ini
      */
     private static function _processSection($values, $depth = 99)
     {
-        $result = array();
+        $result = [];
         foreach ($values as $key => $value) {
             $keys = explode('.', $key, $depth);
             $result = self::_recurseValue($result, $keys, $value);
@@ -106,7 +106,7 @@ class Ini
         $key = array_shift($keys);
         if (count($keys) > 0) {
             if (!isset($array[$key])) {
-                $array[$key] = array();
+                $array[$key] = [];
             }
             $array[$key] = self::_recurseValue($array[$key], $keys, $value);
         } else {

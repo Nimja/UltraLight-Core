@@ -10,7 +10,7 @@ class Number extends Base {
     private $_hyphen = '-';
     private $_space = ' ';
     private $_negative = 'minus ';
-    private $_dictionary = array(
+    private $_dictionary = [
         0 => 'zero',
         1 => 'one',
         2 => 'two',
@@ -43,7 +43,7 @@ class Number extends Base {
         1000 => 'thousand',
         1000000 => 'million',
         1000000000 => 'billion',
-    );
+    ];
 
     protected function _parse()
     {

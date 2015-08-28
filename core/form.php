@@ -16,7 +16,7 @@ class Form
      * Data, one for every "add".
      * @var array
      */
-    private $_data = array();
+    private $_data = [];
     /**
      * The basic settings.
      * @var string
@@ -156,7 +156,7 @@ class Form
         if ($index < 0 || $index >= count($this->_data)) {
             $this->_data[] = $fieldData;
         } else {
-            array_splice($this->_data, $index, 0, array($fieldData));
+            array_splice($this->_data, $index, 0, [$fieldData]);
         }
         return $this;
     }
@@ -188,7 +188,7 @@ class Form
      */
     public function setWarnings($warnings)
     {
-        $result = array();
+        $result = [];
         if (!empty($warnings)) {
             $result[] = '<div class="alert alert-danger">';
             foreach ($warnings as $field => $message) {
@@ -215,8 +215,8 @@ class Form
             if (!is_array($data)) {
                 $result = ' ' . trim($data) . ' ';
             } else {
-                $parts = array();
-                $fields = array('class', 'style', 'id', 'onchange', 'alt', 'title', 'for', 'ref');
+                $parts = [];
+                $fields = ['class', 'style', 'id', 'onchange', 'alt', 'title', 'for', 'ref'];
                 foreach ($fields as $field) {
                     if (!empty($data[$field])) {
                         $parts[] = $field . '="' . trim($data[$field]) . '"';
@@ -270,8 +270,7 @@ class Form
         if ($this->_containsUpload) {
             $tag = trim(substr($tag, 0, -1)) . ' enctype="multipart/form-data">';
         }
-        $result = array($tag);
-        $result = array_merge(array($tag), $this->_data);
+        $result = array_merge([$tag], $this->_data);
         $result[] = '</form>';
         return implode(PHP_EOL, $result);
     }

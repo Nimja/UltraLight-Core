@@ -104,7 +104,7 @@ class Image
 
     public function setType($type)
     {
-        $types = array(self::TYPE_PNG, self::TYPE_JPEG);
+        $types = [self::TYPE_PNG, self::TYPE_JPEG];
         if (!in_array($type, $types)) {
             throw new \Exception("Wrong type given: $type");
         }

@@ -36,7 +36,7 @@ class Session {
         $this->_cache = \Core\Cache\Session::getInstance(self::CACHE_GROUP);
         $this->_variables = $this->_cache->load($key);
         if (!is_array($this->_variables)) {
-            $this->_variables = array();
+            $this->_variables = [];
         }
     }
 
@@ -92,10 +92,10 @@ class Session {
     /**
      * Empty the memory.
      */
-    public function clear($exclude = array())
+    public function clear($exclude = [])
     {
         if (empty($exclude)) {
-            $this->_variables = array();
+            $this->_variables = [];
         } else {
             $lookup = array_flip($exclude);
             $keys = array_keys($this->_variables);

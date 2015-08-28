@@ -23,7 +23,7 @@ class Session extends \Core\Cache
         }
         $this->_variables = getKey($_SESSION, $this->_group);
         if (!is_array($this->_variables)) {
-            $this->_variables = array();
+            $this->_variables = [];
         }
     }
 
@@ -93,6 +93,6 @@ class Session extends \Core\Cache
      */
     public static function deleteAll()
     {
-        $_SESSION = array();
+        $_SESSION = [];
     }
 }

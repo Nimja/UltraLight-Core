@@ -11,7 +11,7 @@ class Export
     public static function html($res)
     {
         self::_checkResult($res);
-        $result = array('<table>');
+        $result = ['<table>'];
         $header = false;
         while ($row = $res->fetch_assoc()) {
             if (!$header) {
@@ -33,7 +33,7 @@ class Export
     public static function csv($res)
     {
         self::_checkResult($res);
-        $result = array();
+        $result = [];
         $header = false;
         while ($row = $res->fetch_assoc()) {
             if (!$header) {
@@ -55,9 +55,9 @@ class Export
     public static function sql($db, $table, $res)
     {
         self::_checkResult($res);
-        $result = array();
+        $result = [];
         $count = 0;
-        $valueBuffer = array();
+        $valueBuffer = [];
         while ($row = $res->fetch_assoc()) {
             if ($count == 0) {
                 $names = implode('`,`', array_keys($row));
@@ -67,7 +67,7 @@ class Export
             $count++;
             if ($count > 100) {
                 $result [] = implode(",\n", $valueBuffer) . ';';
-                $valueBuffer = array();
+                $valueBuffer = [];
                 $result [] = "\n";
                 $count = 0;
             }

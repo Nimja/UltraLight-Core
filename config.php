@@ -33,7 +33,7 @@ class Config
      */
     public function section($section)
     {
-        return getKey($this->_values, $section, array());
+        return getKey($this->_values, $section, []);
     }
 
     /**
@@ -161,6 +161,6 @@ class Config
             default:
                 throw new \Exception("No parser for: $extension");
         }
-        return \Core::wrapCache($parser, array($file), filemtime($file));
+        return \Core::wrapCache($parser, [$file], filemtime($file));
     }
 }

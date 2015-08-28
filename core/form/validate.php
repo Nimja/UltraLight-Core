@@ -9,7 +9,7 @@ class Validate
      * Warnings as a result of the validation.
      * @var array
      */
-    public $warnings = array();
+    public $warnings = [];
     /**
      * The country-code for certain validations.
      * @var type
@@ -46,7 +46,7 @@ class Validate
     {
         $this->_countryCode = $countryCode;
         $this->_values = $values;
-        $this->warnings = array();
+        $this->warnings = [];
         if (empty($values) || empty($rules)) {
             return true;
         }

@@ -60,10 +60,10 @@ abstract class Field
     {
         $this->name = $name;
         if (empty($extra)) {
-            $this->_extra = array();
+            $this->_extra = [];
         } else {
             $this->_extra = is_array($extra) ? $extra : array('extra' => $extra);
-            $this->_sanitizeExtra(array('value', 'values', 'default'));
+            $this->_sanitizeExtra(['value', 'values', 'default']);
             $this->_isMultiple = $this->_isMultiple || !empty($this->_extra['multiple']);
         }
         $this->_setValue(getKey($this->_extra, 'value'));
@@ -136,7 +136,7 @@ abstract class Field
             $data = $this->_addClass($data, 'error');
         }
         if (!empty($data)) {
-            $ignore = array(
+            $ignore = [
                 'type' => true,
                 'multiple' => true,
                 'default' => true,
@@ -144,8 +144,8 @@ abstract class Field
                 'extra' => true,
                 'value' => true,
                 'values' => true,
-            );
-            $parts = array();
+            ];
+            $parts = [];
             foreach ($data as $field => $value) {
                 if (isset($ignore[$field])) {
                     continue;
@@ -172,7 +172,7 @@ abstract class Field
     protected function _addClass($extra, $class)
     {
         if (!is_array($extra)) {
-            $extra = array('extra' => $extra);
+            $extra = ['extra' => $extra];
         }
         $extra['class'] = !empty($extra['class']) ? $extra['class'] . ' ' . $class : $class;
         return $extra;
@@ -188,7 +188,7 @@ abstract class Field
     {
         $values = getKey($this->_extra, 'values');
         if (empty($values)) {
-            $values = array();
+            $values = [];
         }
         $default = getKey($this->_extra, 'default');
         if (!empty($default)) {
@@ -219,7 +219,7 @@ abstract class Field
      */
     public function __toString()
     {
-        $result = array();
+        $result = [];
         if ($this->wrapDiv) {
             $classParts = explode("\\", get_class($this));
             $type = strtolower(array_pop($classParts));

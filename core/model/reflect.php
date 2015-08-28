@@ -45,25 +45,31 @@ class Reflect {
      * Names of all the fields.
      * @var array
      */
-    public $fieldNames = array();
+    public $fieldNames = [];
 
     /**
      * The fields + types.
      * @var array
      */
-    public $fields = array();
+    public $fields = [];
+
+    /**
+     * Fields allowed to be blank.
+     * @var array
+     */
+    public $blankFields = [];
 
     /**
      * The validation array.
      * @var array
      */
-    public $validate = array();
+    public $validate = [];
 
     /**
      * Database column information.
      * @var array
      */
-    public $columns = array();
+    public $columns = [];
 
     /**
      * Always get the DB instance dynamically.

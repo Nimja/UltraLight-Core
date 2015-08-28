@@ -36,7 +36,7 @@ class Arrays
             $parts = $this->_split($realKey);
             $key = array_shift($parts);
             if (!isset($array[$key])) {
-                $array[$key] = array();
+                $array[$key] = [];
             }
             $array[$key] = self::mergeRecursive($array[$key], $this->_toRecursiveArray($parts, $value));
         }
@@ -53,7 +53,7 @@ class Arrays
     {
         $key = array_shift($parts);
         $value = empty($parts) ? $value : $this->_toRecursiveArray($parts, $value);
-        return array($key => $value);
+        return [$key => $value];
     }
 
     /**

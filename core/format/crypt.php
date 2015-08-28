@@ -81,7 +81,7 @@ class Crypt
         }
 
         #Encrypt the numbers.
-        $result = array();
+        $result = [];
         foreach ($numbers as $number) {
             $number = intval($number);
             $cur = '';
@@ -130,7 +130,7 @@ class Crypt
             self::makeLookupArrays();
 
         $parts = str_split($string, $digits);
-        $result = array();
+        $result = [];
         foreach ($parts as $part) {
             $cur = 0;
             if ($digits > 1) {

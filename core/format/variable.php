@@ -6,7 +6,7 @@ namespace Core\Format;
  */
 class Variable
 {
-    private $_lines = array();
+    private $_lines = [];
     private $_pad;
 
     public function __construct($variable, $pad = '  ')

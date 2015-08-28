@@ -56,7 +56,7 @@ class Navbar
      */
     private function _renderButtons($buttons)
     {
-        $result = array();
+        $result = [];
         $hasActive = false;
         foreach ($buttons as $label => $link) {
             if (is_array($link)) {

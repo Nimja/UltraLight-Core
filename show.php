@@ -65,7 +65,7 @@ class Show
     {
         $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
         $traceArray = $fullTrace ? : debug_backtrace($option);
-        $lines = array();
+        $lines = [];
         foreach ($traceArray as $trace) {
             $isCore = false;
             $post = '';
@@ -115,7 +115,7 @@ class Show
     private static function _showVariable($var)
     {
         $lines = \Core\Format\Variable::parse($var);
-        $result = array();
+        $result = [];
         foreach ($lines as $index => $line) {
             $line = htmlentities($line);
             $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
@@ -124,10 +124,10 @@ class Show
         $resultString = implode(PHP_EOL, $result);
         return strtr(
             $resultString,
-            array(
+            [
             '  ' => '&nbsp;&nbsp;',
             "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
-            )
+            ]
         );
     }
 

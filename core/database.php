@@ -16,7 +16,7 @@ class Database
      *
      * @var array
      */
-    private static $_instances = array();
+    private static $_instances = [];
     /**
      * The mysqli connection object.
      * @var \mysqli
@@ -97,7 +97,7 @@ class Database
     public function fetchRows($sql = null)
     {
         $res = $sql ? $this->query($sql): $this->_result;
-        $result = array();
+        $result = [];
         while ($row = $res->fetch_assoc()) {
             $result[] = $row;
         }
@@ -131,7 +131,7 @@ class Database
         if (empty($res)) {
             $res = $this->_result;
         }
-        $result = array();
+        $result = [];
         while ($row = $res->fetch_assoc()) {
             $result[$row[$keyField]] = $row[$valueField];
         }
@@ -179,7 +179,7 @@ class Database
     public function fetchColumn($sql = null)
     {
         $res = $sql ? $this->query($sql): $this->_result;
-        $result = array();
+        $result = [];
         if ($res !== true) {
             while ($row = $res->fetch_assoc()) {
                 $result[] = array_shift($row);
@@ -216,7 +216,7 @@ class Database
                 }
             }
         } else { //If it's an array.
-            $result = array();
+            $result = [];
             foreach ($value as $key => $val) {
                 $result[$key] = $this->escape($val, $backticks, $forceQuotes);
             }
@@ -283,7 +283,7 @@ class Database
         #Escape the values.
         $values = $this->escape($values);
 
-        $parts = array();
+        $parts = [];
         foreach ($values as $column => $value) {
             $parts[] = $this->escape($column, true) . '=' . $value . '';
         }
@@ -315,7 +315,7 @@ class Database
             $tables = is_array($tables) ? $tables : explode(',', $tables);
         }
         //Go over each table for backukp.
-        $result = array();
+        $result = [];
         foreach ($tables as $table) {
             $table = $this->escape($table, true);
             //Add the 'drop if exists'
@@ -350,7 +350,7 @@ class Database
     {
         $table = $this->escape($table, true);
         $where = empty($search) ? '1' : $this->searchToSql($search);
-        $settings = is_array($settings) ? $settings : array();
+        $settings = is_array($settings) ? $settings : [];
         $order = getKey($settings, 'order', 'id ASC');
         $limit = getKey($settings, 'limit');
         $limitString = $limit ?  "LIMIT {$limit}" : '';
@@ -392,7 +392,7 @@ class Database
      */
     public function searchToSql($search)
     {
-        $where = array();
+        $where = [];
         if (empty($search)) {
             $where = null;
         } else if (is_int($search)) {
@@ -412,7 +412,7 @@ class Database
      */
     protected function _parseSearch($search)
     {
-        $result = array();
+        $result = [];
         $search = html_entity_decode($search);
         $searches = explode(';', $search);
         foreach ($searches as $search) {
@@ -421,11 +421,11 @@ class Database
             if (!$found || count($matches) != 4) {
                 continue;
             }
-            $result[] = array(
+            $result[] = [
                 self::SEARCH_FIELD => trim($matches[1]),
                 self::SEARCH_VALUE => trim($matches[3]),
                 self::SEARCH_OPERATION => $matches[2],
-            );
+            ];
         }
         return $result;
     }
@@ -437,10 +437,10 @@ class Database
      */
     private function _parseSearches($searches)
     {
-        $where = array();
+        $where = [];
         foreach ($searches as $field => $details) {
             if (!is_array($details)) {
-                $details = array('field' => $field, 'value' => $details);
+                $details = ['field' => $field, 'value' => $details];
             }
             $field= $this->escape(getKey($details, self::SEARCH_FIELD), true);
             $originalValue = getKey($details, self::SEARCH_VALUE);
@@ -510,7 +510,7 @@ class Database
         if (!is_array($settings)) {
             throw new \Exception("Connection for $database not an array.");
         }
-        $requiredKeys = array('server' => true, 'username' => true, 'password' => true, 'database' => true);
+        $requiredKeys = ['server' => true, 'username' => true, 'password' => true, 'database' => true];
         $diff = array_diff_key($requiredKeys, $settings);
         if (!empty($diff)) {
             throw new \Exception("Connection for $database missing fields: " . implode(', ', array_keys($diff)));
