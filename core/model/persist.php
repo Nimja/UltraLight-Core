@@ -38,6 +38,12 @@ class Persist extends Sessioned
     public $data = [];
 
     /**
+     * Objects we're storing in the session.
+     * @var array
+     */
+    public $objects = [];
+
+    /**
      * Attempt to save in DB, but only if we have cookies enabled.
      * @return void
      */
@@ -123,6 +129,8 @@ class Persist extends Sessioned
                 unset($this->data[$name]);
             }
             $this->_attemptSave();
+        } else {
+            $this->saveSession();
         }
     }
 
@@ -137,6 +145,56 @@ class Persist extends Sessioned
             $this->data = [];
         }
         return getKey($this->data, $name);
+    }
+
+    /**
+     * Set model by class and object.
+     * @param type $class
+     * @param \Core\Model $entity
+     * @param boolean $sessionOnly If set to true, we do not store it in the database.
+     * @return \Core\Model\Persist
+     */
+    public function setModel($class, $entity, $sessionOnly = false)
+    {
+        if (empty($class) || !is_subclass_of($class, '\Core\Model')) {
+            return $this;
+        }
+        if ($entity instanceof \Core\Model) {
+            $this->objects[$class] = $entity;
+            if ($sessionOnly) {
+                $this->saveSession();
+            } else {
+                $this->set($class, $entity->id);
+            }
+        } else {
+            unset($this->objects[$class]);
+            $this->set($class, null);
+        }
+        return $this;
+    }
+
+    /**
+     * Retrieve model from session or DB, if we get from database, we add this information to the session.
+     * @param string $class
+     * @return \Core\Model|null
+     */
+    public function getModel($class)
+    {
+        if (empty($class) || !is_subclass_of($class, '\Core\Model')) {
+            return null;
+        }
+        $result = null;
+        $entity = getKey($this->objects, $class, null);
+        $savedId = $this->get($class);
+        if ($entity instanceof \Core\Model && $entity->id == $savedId) {
+            $result = $entity;
+        } else if (!empty($savedId)) {
+            $result = $class::load($savedId);
+            if ($result) {
+                $this->setModel($class, $result);
+            }
+        }
+        return $result;
     }
 
     /**
