@@ -72,12 +72,28 @@ class Navbar
                 $isActive = (strpos($this->_curPage, $link) === 0) && $link != $this->_homeLink;
                 $active = $isActive ? ' class="active"' : '';
                 $item = "<li{$active}><a href=\"$link\">{$label}</a>";
+                if ($isActive && $hasActive) {
+                    $result = $this->_clearActive($result);
+                }
             }
             $hasActive = $hasActive || $isActive;
             $item .= '</li>';
             $result[] = $item;
         }
         return array('buttons' => implode("\n", $result), 'active' => $hasActive);
+    }
+
+    /**
+     * Clear active flag on same-level items.
+     * @param array $result
+     * @return array
+     */
+    private function _clearActive($result)
+    {
+        foreach ($result as $index => $item) {
+            $result[$index] = str_replace(' class="active"', '', $item);
+        }
+        return $result;
     }
 
     /**
