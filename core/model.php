@@ -282,7 +282,7 @@ abstract class Model {
     /**
      * Load an object, with ID. This will return a cached object if present.
      * @param int $id
-     * @return /self|null
+     * @return \Core\Model|null
      */
     public static function load($id)
     {
@@ -329,7 +329,7 @@ abstract class Model {
      * @param string $search
      * @param string $order
      * @param string $limit
-     * @return /Collection_Abstract
+     * @return array
      */
     public static function find($search = null, $order = null, $limit = null)
     {

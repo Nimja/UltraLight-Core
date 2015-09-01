@@ -85,6 +85,38 @@ class Request
     }
 
     /**
+     * Move upload file to destination, return full path of the moved file.
+     * @param string $name
+     * @param string $destination
+     * @param string $overrideFileName
+     * @return string
+     * @throws \Exception
+     */
+    public static function moveUploadFile($name, $destination, $overrideFileName = '')
+    {
+        $file = getKey($_FILES, $name);
+        if (empty($file)) {
+            throw new \Exception("No file found for {$name}?");
+        }
+        $originalName = getKey($file, 'name', 'unknown');
+        $tmpName = getKey($file, 'tmp_name');
+        $size = getKey($file, 'size', 0);
+        if (!$tmpName || $size == 0) {
+            throw new \Exception("File upload not successful?");
+        }
+        $destinationFile = $overrideFileName ? $destination . $overrideFileName : $destination . $originalName;
+        if (file_exists($destinationFile)) {
+            if (!unlink($destinationFile)) {
+                throw new \Exception("Unable to remove old file {$overrideFileName}!");
+            }
+        }
+        if (!move_uploaded_file($tmpName, $destinationFile)) {
+            throw new \Exception("Unable to move new file to {$destinationFile}!");
+        }
+        return $destinationFile;
+    }
+
+    /**
      * Check if user has any cookies, should be true as we always set php session.
      *
      * @return boolean
