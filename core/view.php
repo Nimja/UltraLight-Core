@@ -32,6 +32,7 @@ class View
      */
     private static $_transformers = [
         'glitch' => '\Core\View\Transform\Glitch',
+        'limit' => '\Core\View\Transform\Limit',
         'math' => '\Core\View\Transform\Math',
         'number' => '\Core\View\Transform\Number',
         'random' => '\Core\View\Transform\Random',
