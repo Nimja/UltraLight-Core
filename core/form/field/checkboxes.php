@@ -12,8 +12,10 @@ class CheckBoxes extends \Core\Form\Field
         $values = $this->_getValues();
         $result = [];
         foreach ($values as $name => $label) {
-            $checked = $this->_isSelected($name) ? 'checked="checked"' : '';
-            $result[] = "<label><l>$label</l><input type=\"checkbox\" name=\"{$this->name}[$name]\" {$checked}/></label>";
+            $checkBox = new CheckBox($this->name, [CheckBox::EXTRA_BOXVALUE => $name, 'label' => $label]);
+            $checkBox->wrapDiv = false;
+            $checkBox->setValue($this->value);
+            $result[] = $checkBox;
         }
         return implode(PHP_EOL, $result);
     }

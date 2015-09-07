@@ -206,7 +206,7 @@ abstract class Field
     {
         $result = false;
         if ($this->_isMultiple && is_array($this->value)) {
-            $result = blank($value) ? in_array($value, $this->value) || isset($this->value[$value]) : false;
+            $result = in_array($value, $this->value);
         } else {
             $result = $value == $this->value;
         }

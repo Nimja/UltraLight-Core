@@ -5,7 +5,6 @@ namespace Core\Form\Field;
  */
 class Radio extends \Core\Form\Field
 {
-    protected $_isMultiple = true;
     protected $_labelClass = 'div';
     protected function _getHtml()
     {
