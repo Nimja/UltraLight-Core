@@ -41,7 +41,7 @@ class Persist extends Sessioned
      * Objects we're storing in the session.
      * @var array
      */
-    public $objects = [];
+    public $sessionData = [];
 
     /**
      * Attempt to save in DB, but only if we have cookies enabled.
@@ -69,6 +69,16 @@ class Persist extends Sessioned
         $result = parent::save();
         $this->_setCookie();
         return $result;
+    }
+
+    /**
+     * Save session, setting the time.
+     * @return \Core\Model\Persist
+     */
+    public function saveSession()
+    {
+        $this->sessionData['time'] = time();
+        return parent::saveSession();
     }
 
     /**
@@ -160,14 +170,14 @@ class Persist extends Sessioned
             return $this;
         }
         if ($entity instanceof \Core\Model) {
-            $this->objects[$class] = $entity;
+            $this->sessionData[$class] = $entity;
             if ($sessionOnly) {
                 $this->saveSession();
             } else {
                 $this->set($class, $entity->id);
             }
         } else {
-            unset($this->objects[$class]);
+            unset($this->sessionData[$class]);
             $this->set($class, null);
         }
         return $this;
@@ -184,7 +194,7 @@ class Persist extends Sessioned
             return null;
         }
         $result = null;
-        $entity = getKey($this->objects, $class, null);
+        $entity = getKey($this->sessionData, $class, null);
         $savedId = $this->get($class);
         if ($entity instanceof \Core\Model && $entity->id == $savedId) {
             $result = $entity;
@@ -198,18 +208,41 @@ class Persist extends Sessioned
     }
 
     /**
+     * Check if persistance works, by extension checks if cookies are enabled and if sessions are functional.
+     * @return boolean
+     */
+    public static function isEnabled()
+    {
+        $result = false;
+        $persist = self::_getCurrentWithoutNew();
+        if ($persist && $persist->sessionData['time']) {
+            $result = true;
+        }
+        return $result;
+    }
+
+
+    /**
      * @return \Core\Model\Persist
      */
     public static function getCurrent()
+    {
+        $result = self::_getCurrentWithoutNew();
+        if (!$result) {
+            $result = new self();
+        }
+        return $result->validateCookie()->saveSession();
+    }
+    /**
+     * @return \Core\Model\Persist
+     */
+    private static function _getCurrentWithoutNew()
     {
         $result = self::loadSession();
         if (!$result && \Request::hasCookies()) {
             $result = self::_loadFromCookie();
         }
-        if (!$result) {
-            $result = new self();
-        }
-        return $result->validateCookie();
+        return $result;
     }
 
     /**
