@@ -122,12 +122,10 @@ class Show
             $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
         }
         $resultString = implode(PHP_EOL, $result);
-        return strtr(
-            $resultString,
-            [
-            '  ' => '&nbsp;&nbsp;',
-            "\t" => '&nbsp;&nbsp;&nbsp;&nbsp;',
-            ]
+        return str_replace(
+            ['  ', "\t"],
+            ['&nbsp;&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;'],
+            $resultString
         );
     }
 

@@ -7,7 +7,7 @@ class Tooltip extends Base
 {
     /**
      * Minimum parameter count.
-     * @var type
+     * @var int
      */
     protected $_minParameterCount = 2;
 
@@ -19,7 +19,7 @@ class Tooltip extends Base
     protected function _parse($parts)
     {
         $text = $parts[0];
-        $detail = htmlentities($parts[1]);
+        $detail = htmlentities($this->_reverseParse($parts[1]));
         return "<span class=\"hasTooltip\" data-toggle=\"tooltip\" title=\"{$detail}\">{$text}</span>";
     }
 }

@@ -7,7 +7,7 @@ class Link extends Base
 {
     /**
      * Minimum parameter count.
-     * @var type
+     * @var int
      */
     protected $_minParameterCount = 1;
 
@@ -18,9 +18,9 @@ class Link extends Base
      */
     protected function _parse($parts)
     {
-        $url = $parts[0];
+        $url = $this->_reverseParse($parts[0]);
         $title = getKey($parts, 1, $url);
-        $class = getKey($parts, 2);
+        $class = isset($parts[2]) ? $this->_reverseParse($parts[2]) : false;
         $extra = $class ? "class= \"{$class}\"" : '';
         return "<a href=\"{$url}\" {$extra}>{$title}</a>";
     }

@@ -7,7 +7,7 @@ class Image extends Base
 {
     /**
      * Minimum parameter count.
-     * @var type
+     * @var int
      */
     protected $_minParameterCount = 1;
 
@@ -18,9 +18,9 @@ class Image extends Base
      */
     protected function _parse($parts)
     {
-        $url = $parts[0];
+        $url = $this->_reverseParse($parts[0]);
         $title = isset($parts[1]) ? ' title="'. $parts[1] . '"' : '';
-        $class = getKey($parts, 2);
+        $class = isset($parts[2]) ? $this->_reverseParse($parts[2]) : false;
         $extra = $class ? " class= \"{$class}\"" : '';
         return "<img src=\"/assets/{$url}\" {$title}{$extra}/>";
     }

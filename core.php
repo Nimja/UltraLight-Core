@@ -569,19 +569,17 @@ class Core
     }
 
     /**
-     * Clean the paths from the filename.
-     * @param type $fileName
-     * @return type
+     * Clean full paths from a string, improving readability.
+     * @param string $string
+     * @return string
      */
     public static function cleanPath($string)
     {
-        $paths = [
-            PATH_APP => 'APP/',
-            PATH_CORE => 'CORE/',
-            PATH_BASE => 'BASE/',
-            PATH_ASSETS => 'ASSETS/',
-        ];
-        return strtr($string, $paths);
+        return str_replace(
+            [PATH_APP, PATH_CORE, PATH_ASSETS, PATH_BASE],
+            ['APP/', 'CORE/', 'ASSETS/', 'BASE/'],
+            $string
+        );
     }
 
     /**

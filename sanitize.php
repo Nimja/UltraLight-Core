@@ -34,7 +34,7 @@ class Sanitize
             //$string = utf8_decode($string);
             $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
             //Normalize linebreaks to LINUX format.
-            $string = strtr($string, ["\r\n" => "\n", "\r" => "\n"]);
+            $string = str_replace(["\r\n", "\r"], "\n", $string);
             if ($stripHtml) {
                 $allowedTags = is_array($keepTags) ? $keepTags : null;
                 $string = strip_tags($string, $allowedTags);

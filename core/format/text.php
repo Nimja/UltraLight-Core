@@ -101,9 +101,9 @@ class Text
         #// o bold/italic
         if (!empty($result)) {
             $translate = [
-                '/\^(.+)\^/U' => '<b>$1</b>',
-                '/\_(.+)\_/U' => '<i>$1</i>',
-                '/\-\-(.+)\-\-/U' => '<s>$1</s>',
+                '/\^([^|]+)\^/U' => '<b>$1</b>',
+                '/\_([^|]+)\_/U' => '<i>$1</i>',
+                '/\-\-([^|]+)\-\-/U' => '<s>$1</s>',
             ];
             $result = preg_replace(array_keys($translate), $translate, $result);
             // Add links.
