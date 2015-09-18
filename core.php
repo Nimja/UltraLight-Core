@@ -483,22 +483,8 @@ class Core
         if (is_numeric($request[0])) {
             array_shift($request);
         }
-        $url = implode('/', $request);
-        $original = PATH_ASSETS . $url;
-        if (!file_exists($original)) {
-            header('HTTP/1.0 404 Not Found', null, 404);
-            throw new \Exception("Unable to find file: $url");
-        }
-        $extension = pathinfo($url, PATHINFO_EXTENSION);
-        switch ($extension) {
-            case 'css': $mimeType = 'text/css';
-                break;
-            case 'js': $mimeType = 'text/javascript';
-                break;
-            default: $mimeType = 'text/plain';
-        }
-        //Add minify/output_same here in the future.
-        Request::outputFile($original, $mimeType);
+        $load = new \Core\File\Load(implode('/', $request));
+        $load->output();
     }
 
     /**
