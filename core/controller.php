@@ -13,7 +13,7 @@ abstract class Controller
      * The returned content type.
      * @var string
      */
-    protected $_contentType = 'text/html';
+    protected $_contentType = 'text/html; charset=UTF-8';
     /**
      * The required role, if any.
      * @var int
