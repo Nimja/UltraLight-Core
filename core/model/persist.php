@@ -215,7 +215,7 @@ class Persist extends Sessioned
     {
         $result = false;
         $persist = self::_getCurrentWithoutNew();
-        if ($persist && $persist->sessionData['time']) {
+        if ($persist && !empty($persist->sessionData['time'])) {
             $result = true;
         }
         return $result;
