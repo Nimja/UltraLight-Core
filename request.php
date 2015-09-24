@@ -4,6 +4,14 @@
  */
 class Request
 {
+    const STATUS_REDIRECT_PERMANENT = 301;
+    const STATUS_REDIRECT_FOUND = 302;
+    const STATUS_REDIRECT_SEE_OTHER = 303;
+    const STATUS_NOT_MODIFIED = 304;
+    const STATUS_ERROR_FORBIDDEN = 403;
+    const STATUS_ERROR_NOT_FOUND = 404;
+    const STATUS_SERVER_ERROR = 500;
+
     /**
      * Contains the sanitized POST/GET variables.
      * @var array
@@ -201,21 +209,19 @@ class Request
      * @param type $url The absolute or relative url you wish to redirect to.
      * @param int $code One of 301, 302 or 303
      */
-    public static function redirect($url = '', $code = 302, $includeRequest = false)
+    public static function redirect($url = '', $code = self::STATUS_REDIRECT_FOUND, $includeRequest = false)
     {
-        $url = empty($url) ? '' : trim($url);
-        if (substr($url, 0, 4) != 'http') {
-            $url = ltrim($url, '/');
-            $site_url = Config::system()->get('site', 'url');
-            $url = $site_url . $url;
+        $targetUrl = empty($url) ? '' : trim($url);
+        if (substr($targetUrl, 0, 4) != 'http') {
+            $targetUrl = Config::system()->get('site', 'url') . ltrim($targetUrl, '/');
         }
-        $codes = [
-            301 => 'HTTP/1.1 301 Moved Permanently',
-            302 => 'HTTP/1.1 302 Found',
-            303 => 'HTTP/1.1 303 See Other',
+        $validCodes = [
+            self::STATUS_REDIRECT_PERMANENT,
+            self::STATUS_REDIRECT_FOUND,
+            self::STATUS_REDIRECT_SEE_OTHER,
         ];
-        if (empty($codes[$code])) {
-            $code = 302;
+        if (!in_array($code, $validCodes)) {
+            $code = self::STATUS_REDIRECT_FOUND;
         }
         if ($includeRequest) {
             $query = self::server('QUERY_STRING');
@@ -223,8 +229,8 @@ class Request
                 $url .= '?' . $query;
             }
         }
-        header($codes[$code]);
-        header('Location: ' . $url, true, $code);
+        http_response_code($code);
+        header('Location: ' . $targetUrl, true);
         exit;
     }
 
@@ -312,7 +318,7 @@ class Request
         if (empty($compareTime) || empty($modified) || $compareTime > strtotime($modified)) {
             return;
         }
-        header('HTTP/1.1 304 Not Modified', null, 304);
+        http_response_code(self::STATUS_NOT_MODIFIED);
         header('Expires: ' . gmdate('D, d M Y H:i:s', strtotime($expires)) . ' GMT');
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $compareTime) . ' GMT');
         $maxAge = strtotime($expires, 0);

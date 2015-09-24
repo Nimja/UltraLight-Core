@@ -34,11 +34,6 @@ abstract class Controller
      * @var string
      */
     protected $_loginRedirect = 'admin/login';
-    /**
-     * Login redirect http status code.
-     * @var int
-     */
-    protected $_loginRedirectCode = 303;
 
     /**
      * Basic constructor, switch between several display types.
@@ -50,7 +45,7 @@ abstract class Controller
             $user = $class::login();
             $role = !empty($user) ? $user->role : 0;
             if ($role < $this->_requiredRole) {
-                \Request::redirect($this->_loginRedirect, $this->_loginRedirectCode);
+                \Request::redirect($this->_loginRedirect, \Request::STATUS_REDIRECT_SEE_OTHER);
             } else {
                 $this->_user = $user;
             }
@@ -123,6 +118,42 @@ abstract class Controller
             $result = \Core\Format\Text::parse($result);
         }
         return $result;
+    }
+
+    /**
+     * Show error page.
+     * @param int $code
+     * @param string $view
+     * @return array|string
+     */
+    protected function _showError($code = 0, $view = '')
+    {
+        $message = getKey($this->_getErrorMessages(), $code);
+        if (empty($message)) {
+            $message = 'Unknown - An unknown error occured.';
+            $code = \Request::STATUS_SERVER_ERROR;
+        }
+        list($title, $content) = explode(' - ', $message);
+        $result = [
+            'title' => $title,
+            'content' => $content,
+        ];
+        if ($view) {
+            $result = $this->_show($view, $result);
+        }
+        http_response_code($code);
+        return $result;
+    }
+    /**
+     * Get array of error messages, they are split on the space dash space for title and content.
+     * @return array
+     */
+    protected function _getErrorMessages()
+    {
+        return [
+            \Request::STATUS_ERROR_FORBIDDEN => 'Forbidden - You are not allowed to view this page.',
+            \Request::STATUS_ERROR_NOT_FOUND => 'Not found - The page you requested cannot be found.',
+        ];
     }
 
     /**
