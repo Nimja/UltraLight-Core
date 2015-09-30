@@ -214,35 +214,27 @@ class Persist extends Sessioned
     public static function isEnabled()
     {
         $result = false;
-        $persist = self::_getCurrentWithoutNew();
+        $persist = self::loadSession();
         if ($persist && !empty($persist->sessionData['time'])) {
             $result = true;
         }
         return $result;
     }
 
-
     /**
+     * Get the current persist, based on session or cookie.
      * @return \Core\Model\Persist
      */
     public static function getCurrent()
-    {
-        $result = self::_getCurrentWithoutNew();
-        if (!$result) {
-            $result = new self();
-        }
-        return $result->validateCookie()->saveSession();
-    }
-    /**
-     * @return \Core\Model\Persist
-     */
-    private static function _getCurrentWithoutNew()
     {
         $result = self::loadSession();
         if (!$result && \Request::hasCookies()) {
             $result = self::_loadFromCookie();
         }
-        return $result;
+        if (!$result) {
+            $result = new self();
+        }
+        return $result->validateCookie()->saveSession();
     }
 
     /**
