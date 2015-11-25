@@ -28,6 +28,7 @@ class CheckBox extends \Core\Form\Field
         $name = $this->name;
         if ($this->_isMultiple) {
             $value = $this->_extra[self::EXTRA_BOXVALUE];
+            unset($this->_extra[self::EXTRA_BOXVALUE]);
             $checked = $this->_isSelected($value) ? 'checked="checked"' : '';
             $checked .= " value=\"{$value}\"";
             $name .= '[]';

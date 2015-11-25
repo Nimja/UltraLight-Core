@@ -14,6 +14,7 @@ abstract class Model {
     const ID = 'id';
     const TYPE_BOOL = 'bool';
     const TYPE_SERIALIZE = 'serialize';
+    const TYPE_ARRAY = 'array';
 
     /**
      * Reflection for each class, used for fields and columns.
@@ -110,6 +111,12 @@ abstract class Model {
             $this->$field = $value ? true : false;
         } else if ($type == self::TYPE_SERIALIZE) {
             $this->$field = is_string($value) ? unserialize($value) : $value;
+        } else if ($type == self::TYPE_ARRAY) {
+            if (empty($value)) {
+                $this->$field = [];
+            } else {
+                $this->$field = is_string($value) ? explode(',', $value) : $value;
+            }
         } else {
             $this->$field = $value;
         }
@@ -151,6 +158,8 @@ abstract class Model {
                 $values[$field] = $values[$field] ? true : false;
             } else if ($type == self::TYPE_SERIALIZE) {
                 $values[$field] = serialize($values[$field]);
+            } else if ($type == self::TYPE_ARRAY) {
+                $values[$field] = implode(',', $values[$field]);
             }
         }
         return $values;

@@ -47,7 +47,9 @@ class Table {
      */
     public function exists()
     {
-        $check = $this->_db->fetchFirstRow("SHOW TABLES LIKE {$this->_db->escape($this->_table)}");
+        $parts = explode('.', $this->_table, 2);
+        $tableName = end($parts);
+        $check = $this->_db->fetchFirstRow("SHOW TABLES LIKE {$this->_db->escape($tableName)}");
         return !empty($check);
     }
 

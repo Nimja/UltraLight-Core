@@ -96,6 +96,8 @@ class Property
         $result = getKey($this->_doc, 'db-type', 'int');
         if (isset($this->_doc[\Core\Model::TYPE_SERIALIZE])) {
             $result = \Core\Model::TYPE_SERIALIZE;
+        } else if (isset($this->_doc[\Core\Model::TYPE_ARRAY])) {
+            $result = \Core\Model::TYPE_ARRAY;
         }
         return $result;
     }
