@@ -17,6 +17,11 @@ class Edit
      */
     protected $_editLink;
     /**
+     * The current id, is allowed to be empty.
+     * @var int
+     */
+    protected $_id;
+    /**
      * The form we will use.
      * @var \Core\Form
      */
@@ -31,12 +36,25 @@ class Edit
      *
      * @param string $class
      * @param string $editLink
-     * @param \Core\Form $form
+     * @param int $id
      */
-    public function __construct($class, $editLink, $form = null)
+    public function __construct($class, $editLink, $id = null)
     {
         $this->_entityClass = $class;
         $this->_editLink = $editLink;
+        $this->_id = $id;
+    }
+
+    /**
+     * Set form explicitly for a custom form.
+     * @param \Core\Form $form
+     * @throws \Exception
+     */
+    public function setForm($form)
+    {
+        if (!$form instanceof \Core\Form && $form !== null) {
+            throw new \Exception("Not setting form correctly.");
+        }
         $this->_form = $form;
     }
 
@@ -48,9 +66,9 @@ class Edit
     {
         $class = $this->_entityClass;
         $values = \Request::getValues();
-        $entity = $class::load(\Core::$rest);
+        $entity = $class::load($this->_id);
         /* @var $entity \Core\Model */
-        if (!empty(\Core::$rest) && empty($entity)) {
+        if (!empty($this->_id) && empty($entity)) {
             \Request::redirect($this->_editLink);
         }
         if (!empty($values) && \Request::isPost()) {

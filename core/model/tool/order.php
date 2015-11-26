@@ -36,16 +36,17 @@ class Order
      * Basic constructor.
      * @param string $class
      * @param string $orderLink
+     * @param int $currentId
      * @param string $fieldId
      * @param string $fieldTitle
      */
-    public function __construct($class, $orderLink, $fieldId = 'parentId', $fieldTitle = 'title')
+    public function __construct($class, $orderLink, $currentId = null, $fieldId = 'parentId', $fieldTitle = 'title')
     {
         $this->_entityClass = $class;
         $this->_orderLink = $orderLink;
+        $this->_currentId = $currentId;
         $this->_fieldId = $fieldId;
         $this->_fieldTitle = $fieldTitle;
-        $this->_currentId = intval(\Core::$rest);
     }
 
     /**
