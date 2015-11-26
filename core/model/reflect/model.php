@@ -10,6 +10,7 @@ namespace Core\Model\Reflect;
 class Model {
 
     const DOCCOMMENT_REGEX = '/@([a-zA-Z-]+)(.*)/';
+    const PROPERTY_REGEX = '/([^\s]+)\s+\$([^\s]+)/';
 
     /**
      * The current class.
@@ -34,7 +35,7 @@ class Model {
         $this->_reflect = new \Core\Model\Reflect();
         $this->_class = new \ReflectionClass($class);
         $short = str_replace('\\', '_', $class);
-        $this->_setTableName($short, $this->_setDbName());
+        $this->_setTableName($short, $this->_parseClassDoc());
         $this->_reflect->type = strtolower($short);
         $this->_getSettings();
         unset($this->_class);
@@ -55,9 +56,17 @@ class Model {
      * Set DB name and return prefix, if any.
      * @return string
      */
-    private function _setDbName()
+    private function _parseClassDoc()
     {
         $doc = self::parseDocComment($this->_class->getDocComment());
+        if (!empty($doc['property-read'])) {
+            foreach ($doc['property-read'] as $property) {
+                $matches = null;
+                if (preg_match(self::PROPERTY_REGEX, $property, $matches)) {
+                    $this->_reflect->lazy[$matches[2]] = $matches[1];
+                }
+            }
+        }
         $dbName = null;
         $prefix = '';
         if (!empty($doc)) {
@@ -120,9 +129,17 @@ class Model {
             if (preg_match_all(self::DOCCOMMENT_REGEX, $docComment, $matches)) {
                 $fields = $matches[1];
                 $values = $matches[2];
-                foreach ($fields as $key => $value) {
-                    $var = trim(getKey($values, $key, ''));
-                    $result[$value] = $var == '' ? true : $var;
+                foreach ($fields as $key => $docName) {
+                    $docValue = trim(getKey($values, $key, ''));
+                    $value = $docValue == '' ? true : $docValue;
+                    if (isset($result[$docName])) {
+                        if (!is_array($result[$docName])) {
+                            $result[$docName] = [$result[$docName]];
+                        }
+                        $result[$docName][] = $value;
+                    } else {
+                        $result[$docName] = $value;
+                    }
                 }
             }
         }

@@ -58,13 +58,6 @@ abstract class Model {
     protected $_saved = false;
 
     /**
-     * Maintain relationships.
-     *
-     * @var array
-     */
-    protected $_related = [];
-
-    /**
      * Basic constructor, with error messages.
      *
      * @param array $values
@@ -265,6 +258,24 @@ abstract class Model {
         } catch (\Exception $ex) {
             $result = \Show::output($ex, "Exception!", \Show::COLOR_ERROR);
         }
+        return $result;
+    }
+
+    /**
+     * Getter for lazy loaded properties. Will throw exception if not set.
+     *
+     * Set lazy loaded property with @property-read \Class $property
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        $class = getKey($this->re()->lazy, $name);
+        if (!$class) {
+            throw new \Exception("Attempting to lazy load unconfigured property {$name}");
+        }
+        $result = $class::load($this->{$name . 'Id'});
+        $this->{$name} = $result;
         return $result;
     }
 

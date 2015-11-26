@@ -7,6 +7,9 @@ namespace Core\Model;
  *
  * This object is light and simple. To avoid accidentally going through reflection. And allows for better caching.
  *
+ * Functionality is in the owner object.
+ * @see \Core\Model\Reflect\Model
+ *
  * @author Nimja
  */
 class Reflect {
@@ -70,6 +73,12 @@ class Reflect {
      * @var array
      */
     public $columns = [];
+
+    /**
+     * Lazy/late loaded properties.
+     * @var array
+     */
+    public $lazy = [];
 
     /**
      * Always get the DB instance dynamically.
