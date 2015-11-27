@@ -30,7 +30,7 @@ class Order
 
     /**
      * Reverse lookup by positions for sortable items.
-     * @var array
+     * @var Order\Item[]
      */
     protected $_sortableItems;
 
@@ -78,7 +78,7 @@ class Order
     public function getOutput()
     {
         $items = $this->getItems();
-        if ($this->_checkMove($items)) {
+        if ($this->_isMoveNeeded()) {
             \Request::redirect($this->_getOrderUrl($this->_currentId));
         }
         $result = [
@@ -100,10 +100,9 @@ class Order
 
     /**
      * Check if we are moving an item.
-     * @param Order\Item[] $items
      * @return true If moved.
      */
-    private function _checkMove($items)
+    private function _isMoveNeeded()
     {
         $move = \Request::value('move');
         if (empty($move) || strpos($move, '-') === false) {
