@@ -17,59 +17,57 @@ class Order
      */
     protected $_orderLink;
     /**
-     * Which ID field we are using, defaults to parentId.
-     * @var string
-     */
-    protected $_fieldId;
-    /**
-     * Which title field we are using, defaults to title.
-     * @var string
-     */
-    protected $_fieldTitle;
-    /**
      * The item we're currently viewing children of.
      * @var int
      */
     protected $_currentId;
 
     /**
+     * Max position for the items.
+     * @var int
+     */
+    protected $_max;
+
+    /**
+     * Reverse lookup by positions for sortable items.
+     * @var array
+     */
+    protected $_sortableItems;
+
+    /**
      * Basic constructor.
      * @param string $class
      * @param string $orderLink
      * @param int $currentId
-     * @param string $fieldId
-     * @param string $fieldTitle
      */
-    public function __construct($class, $orderLink, $currentId = null, $fieldId = 'parentId', $fieldTitle = 'title')
+    public function __construct($class, $orderLink, $currentId = null)
     {
         $this->_entityClass = $class;
         $this->_orderLink = $orderLink;
         $this->_currentId = $currentId;
-        $this->_fieldId = $fieldId;
-        $this->_fieldTitle = $fieldTitle;
-    }
-
-    /**
-     * Get current parent item.
-     * @return \Core\Model
-     */
-    public function getParent()
-    {
-        $class = $this->_entityClass;
-        return $class::load($this->_currentId);
     }
 
     /**
      * Get items of current page.
-     * @return type
+     * @return Order\Item[]
      */
     public function getItems()
     {
         $class = $this->_entityClass;
-        $items = $class::getChildren($this->_currentId);
+        $items = $class::getOrdered($this->_currentId);
         if (empty($items) && $this->_currentId > 0) {
             \Request::redirect($this->_orderLink);
         }
+        $index = 0;
+        $this->_idPositions = [];
+        foreach ($items as $item) {
+            if ($item->sortable) {
+                $item->position = $index;
+                $this->_sortableItems[$item->id] = $item;
+                $index++;
+            }
+        }
+        $this->_max = $index - 1;
         return $items;
     }
 
@@ -87,19 +85,14 @@ class Order
             '<table class="table table-striped table-bordered table-condensed">',
             '<tr><th>Title</th><th>Up &uArr;</th><th>Down &dArr;</th></tr>',
         ];
-        if ($this->_currentId > 0) {
-            $item = $this->getParent();
-            $result[] = $this->_makeRow($item ? $item->{$this->_fieldId} : 0, '&uArr; Level up &uArr;');
-        }
-        $max = count($items) - 1;
-        $order = 0;
-        $class = $this->_entityClass;
+        $position = 0;
         foreach ($items as $item) {
-            $up = ($order > 0);
-            $down = ($order < $max);
-            $hasChildren = $class::getChildCount($item->id) > 0;
-            $result[] = $this->_makeRow($item->id, $item->{$this->_fieldTitle}, $up, $down, $hasChildren);
-            $order++;
+            $up = $item->sortable && ($position > 0);
+            $down = $item->sortable && ($position < $this->_max);
+            $result[] = $this->_makeRow($position, $item->id, $item->name, $up, $down, $item->linkable);
+            if ($item->sortable) {
+                $position++;
+            }
         }
         $result[] = '</table>';
         return implode(PHP_EOL, $result);
@@ -107,62 +100,63 @@ class Order
 
     /**
      * Check if we are moving an item.
-     * @param type $items
+     * @param Order\Item[] $items
+     * @return true If moved.
      */
     private function _checkMove($items)
     {
         $move = \Request::value('move');
-        if (empty($move)) {
+        if (empty($move) || strpos($move, '-') === false) {
             return false;
         }
-        $ids = array_keys($items);
-        $moveId = abs($move);
-        $currentIndex = array_search($moveId, $ids);
-        if ($currentIndex === false) {
-            return true;
+        list($id, $position) = explode('-', $move);
+        $item = getKey($this->_sortableItems, $id);
+        // Move we cannot do.
+        if (empty($item) || $item->position == $position || $position > $this->_max || $position < 0) {
+            return false;
         }
-        $newIndex = ($move < 0) ? $currentIndex - 1 : $currentIndex + 1;
-        $newIndexLimited = min(count($ids) - 1, max($newIndex, 0));
-        $keep = array_splice($ids, $currentIndex, 1);
-        array_splice($ids, $newIndexLimited, 0, $keep);
-        return $this->_updatePositions($ids);
+        $sortables = array_values($this->_sortableItems);
+        array_splice($sortables, $item->position, 1);
+        array_splice($sortables, $position, 0, [$item]);
+        return $this->_updatePositions($sortables);
     }
 
     /**
      * Update positions for ids, in the order they are supplied.
-     * @param array $ids
+     * @param Order\Item[] $items
      * @return boolean
      */
-    private function _updatePositions($ids)
+    private function _updatePositions($items)
     {
         $class = $this->_entityClass;
-        $re = $class::re();
-        /* @var $re \Core\Model\Reflect */
-        $db = $re->db();
-        $table = $re->table;
-        $current = 1;
-        foreach ($ids as $id) {
-            $db->update($table, ['position' => $current], $id);
-            $current++;
+        $position = 1;
+        $isUpdated = false;
+        foreach ($items as $item) {
+            $model = $class::load($item->id);
+            $updated = $model->setPosition($position);
+            $isUpdated = $isUpdated || $updated;
+            $position++;
         }
-        if (method_exists($class, 'clearCache')) {
+        if ($isUpdated && method_exists($class, 'clearCache')) {
             $class::clearCache();
         }
-        return true;
+        return $isUpdated;
     }
 
     /**
      * Make row.
-     * @param type $id
+     * @param int $position
+     * @param int $id
      * @param string $title
      * @param boolean $up
      * @param boolean $down
+     * @param boolean $hasLink
      */
-    private function _makeRow($id, $title, $up = false, $down = false, $hasChildren = true)
+    private function _makeRow($position, $id, $title, $up = false, $down = false, $hasLink = true)
     {
-        $mainLink = $hasChildren ? $this->_makeLink($id, $title) : $this->_fakeLink($title);
-        $upLink = !$up ? '' : $this->_makeLink($this->_currentId, '&uArr;', -$id);
-        $downLink = !$down ? '' : $this->_makeLink($this->_currentId, '&dArr;', $id);
+        $mainLink = $hasLink ? $this->_makeLink($id, $title) : $this->_fakeLink($title);
+        $upLink = !$up ? '' : $this->_makeLink($this->_currentId, '&uArr;', $id . '-' . ($position - 1));
+        $downLink = !$down ? '' : $this->_makeLink($this->_currentId, '&dArr;', $id . '-' . ($position + 1));
         return "<tr><td>{$mainLink}</td><td>{$upLink}</td><td>{$downLink}</td></tr>";
     }
 
@@ -173,12 +167,12 @@ class Order
      * @param int $move
      * @return string
      */
-    private function _makeLink($id, $title, $move = 0)
+    private function _makeLink($id, $title, $moveData = null)
     {
         $url = $this->_getOrderUrl($id);
-        $class = 'btn';
-        if ($move != 0) {
-            $url .= '?move=' . intval($move);
+        $class = 'btn btn-clean';
+        if ($moveData) {
+            $url .= '?move=' . urlencode($moveData);
             $class .= ' btn-block';
         }
         return "<a href=\"{$url}\" class=\"{$class}\">{$title}</a>";
@@ -191,7 +185,7 @@ class Order
      */
     private function _fakeLink($title)
     {
-        return "<span class=\"btn text-muted\">{$title}</span>";
+        return "<span class=\"btn btn-clean text-muted\">{$title}</span>";
     }
 
     /**

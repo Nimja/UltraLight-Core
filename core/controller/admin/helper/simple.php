@@ -73,7 +73,7 @@ class Simple
         $this->_linkBase = $base ? : '/' . \Core::$route;
         $this->_linkEdit = $edit;
         $this->_linkOrder = $order;
-        $this->_useOrder = isset($class::re()->fields['position']);
+        $this->_useOrder = is_subclass_of($class, '\Core\Model\Ordered');
         $this->_selectMode();
     }
 
