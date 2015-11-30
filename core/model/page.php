@@ -10,7 +10,7 @@ namespace Core\Model;
  * @author Nimja
  * @db-database live
  */
-class Page extends \Core\Model {
+class Page extends \Core\Model\Ordered {
     /**
      * When to collapse or hide children.
      * @var int
@@ -44,13 +44,6 @@ class Page extends \Core\Model {
     public $parentId;
 
     /**
-     * Position, lower means higher.
-     * @db-type tinyint
-     * @var int
-     */
-    public $position;
-
-    /**
      * Page content.
      * @db-type text
      * @validate empty|10
@@ -67,7 +60,7 @@ class Page extends \Core\Model {
     public function save()
     {
         if (blank($this->position)) {
-            $this->position = self::getChildCount($this->parentId) + 1;
+            $this->position = $this->getChildCount() + 1;
         }
         $result = parent::save();
         self::clearCache();
@@ -91,6 +84,19 @@ class Page extends \Core\Model {
     public function children()
     {
         return self::getChildren($this->id);
+    }
+
+    /**
+     * Get child count.
+     */
+    public function getChildCount()
+    {
+        $re = $this->re();
+        $db = $re->db();
+        $table = $db->escape($re->table, true);
+        $parentInt = intval($this->id);
+        $sql = "SELECT COUNT(id) FROM {$table} WHERE parentId = {$parentInt};";
+        return intval($db->fetchFirstValue($sql));
     }
 
     /* ------------------------------------------------------------
@@ -177,21 +183,6 @@ class Page extends \Core\Model {
     }
 
     /**
-     * Get child count, as efficiently as possible.
-     * @param int $parentId
-     * @return int
-     */
-    public static function getChildCount($parentId)
-    {
-        $re = self::re();
-        $db = $re->db();
-        $table = $db->escape($re->table, true);
-        $parentInt = intval($parentId);
-        $sql = "SELECT COUNT(id) FROM {$table} WHERE parentId = {$parentInt};";
-        return intval($db->fetchFirstValue($sql));
-    }
-
-    /**
      * Get form for editing this entity.
      * @param \Core\Model $entity
      * @return \Core\Form
@@ -251,6 +242,36 @@ class Page extends \Core\Model {
             }
         } else if ($collapsable) {
             $result['?parentId=' . $entity->id] = str_repeat('. . ', $level + 1) . "&rArr; (children: {$childCount})";
+        }
+        return $result;
+    }
+
+    /**
+     * Get list for ordering, optionally by a search id like parentId.
+     * @param int $searchId
+     * @return Tool\Order\Item[]
+     */
+    public static function getOrdered($searchId = null)
+    {
+        $parentId = intval($searchId);
+        $pages = self::find(['parentId' => $parentId], self::POSITION . ' ASC, id ASC');
+        $result = [];
+        if ($parentId) {
+            $parent = self::load($parentId);
+            $result[] = new \Core\Model\Tool\Order\Item(
+                $parent->parentId,
+                "&lArr; Back",
+                true,
+                false
+            );
+        }
+        foreach ($pages as $page) {
+            $result[] = new \Core\Model\Tool\Order\Item(
+                $page->id,
+                $page->title,
+                $page->getChildCount() > 0,
+                true
+            );
         }
         return $result;
     }
