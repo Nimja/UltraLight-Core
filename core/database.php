@@ -337,6 +337,22 @@ class Database
     }
 
     /**
+     * Simple, high performance count query, without having to load everything.
+     *
+     * @param string $table
+     * @param string|array $search
+     * @return int
+     */
+    public function getCount($table, $search = null, $field = \Core\Model::ID)
+    {
+        $escapedTable = $this->escape($table, true);
+        $where = empty($search) ? '1' : $this->searchToSql($search);
+        $countField = $this->escape($field, true);
+        $sql = "SELECT COUNT({$countField}) FROM {$escapedTable} WHERE {$where}";
+        return $this->fetchFirstValue($sql);
+    }
+
+    /**
      * Search a table with simple searching mechanism.
      *
      * Can then call fetchX afterwards.
@@ -348,21 +364,21 @@ class Database
      */
     public function search($table, $search = null, $settings = null)
     {
-        $table = $this->escape($table, true);
+        $escapedTable = $this->escape($table, true);
         $where = empty($search) ? '1' : $this->searchToSql($search);
-        $settings = is_array($settings) ? $settings : [];
-        $order = getKey($settings, 'order', 'id ASC');
-        $limit = getKey($settings, 'limit');
+        $settingsArray = is_array($settings) ? $settings : [];
+        $order = getKey($settingsArray, 'order', 'id ASC');
+        $limit = getKey($settingsArray, 'limit');
         $limitString = $limit ?  "LIMIT {$limit}" : '';
-        $fields = $this->_getFields(getKey($settings, 'fields'));
-        $sql = "SELECT {$fields} FROM {$table} WHERE {$where} ORDER BY {$order} {$limitString}";
+        $fields = $this->_getFields(getKey($settingsArray, 'fields'));
+        $sql = "SELECT {$fields} FROM {$escapedTable} WHERE {$where} ORDER BY {$order} {$limitString}";
         $this->query($sql);
         return $this;
     }
     /**
      * Get fields formatted for query..
-     * @param type $settings
-     * @return type
+     * @param array|string $fields
+     * @return string
      */
     private function _getFields($fields)
     {
@@ -371,7 +387,7 @@ class Database
             if (!is_array($fields)) {
                 $fields = explode(',', $fields);
             }
-            $result = implode(', ', $fields);
+            $result = implode(', ', $this->escape($fields, true));
         }
         return $result;
     }

@@ -28,7 +28,7 @@ abstract class Ordered extends \Core\Model {
     public function save()
     {
         if (blank($this->position)) {
-            $this->position = $this->_getCurrentCount() + 1;
+            $this->position = $this->getCount() + 1;
         }
         return parent::save();
     }
@@ -38,13 +38,10 @@ abstract class Ordered extends \Core\Model {
      *
      * @return int
      */
-    protected function _getCurrentCount()
+    public function getCount()
     {
         $re = $this->re();
-        $db = $re->db();
-        $table = $db->escape($re->table, true);
-        $sql = "SELECT COUNT(id) FROM {$table};";
-        return intval($db->fetchFirstValue($sql));
+        return $re->db()->getCount($re->table);
     }
 
     /**

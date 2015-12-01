@@ -54,14 +54,10 @@ class Page extends \Core\Model\Ordered {
     /**
      * Override save to clear cache after.
      *
-     * Also, if position is blank, we add it to the end.
      * @return self
      */
     public function save()
     {
-        if (blank($this->position)) {
-            $this->position = $this->getChildCount() + 1;
-        }
         $result = parent::save();
         self::clearCache();
         return $result;
@@ -87,16 +83,14 @@ class Page extends \Core\Model\Ordered {
     }
 
     /**
-     * Get child count.
+     * Counter per type.
+     *
+     * @return int
      */
-    public function getChildCount()
+    public function getCount()
     {
         $re = $this->re();
-        $db = $re->db();
-        $table = $db->escape($re->table, true);
-        $parentInt = intval($this->id);
-        $sql = "SELECT COUNT(id) FROM {$table} WHERE parentId = {$parentInt};";
-        return intval($db->fetchFirstValue($sql));
+        return $re->db()->getCount($re->table, ['parentId' => $this->id]);
     }
 
     /* ------------------------------------------------------------
@@ -269,7 +263,7 @@ class Page extends \Core\Model\Ordered {
             $result[] = new \Core\Model\Tool\Order\Item(
                 $page->id,
                 $page->title,
-                $page->getChildCount() > 0,
+                $page->getCount() > 0,
                 true
             );
         }
