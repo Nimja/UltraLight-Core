@@ -52,18 +52,6 @@ class Page extends \Core\Model\Ordered {
     public $content;
 
     /**
-     * Override save to clear cache after.
-     *
-     * @return self
-     */
-    public function save()
-    {
-        $result = parent::save();
-        self::clearCache();
-        return $result;
-    }
-
-    /**
      * Format/parse content.
      * @return string
      */

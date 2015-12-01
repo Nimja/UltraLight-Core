@@ -20,15 +20,18 @@ abstract class Ordered extends \Core\Model {
     public $position;
 
     /**
-     * Override save to clear cache after.
+     * Add position if not set and, optionally, clear cache.
      *
-     * Also, if position is blank, we add it to the end.
-     * @return self
+     * @return \self
      */
     public function save()
     {
         if (blank($this->position)) {
             $this->position = $this->getCount() + 1;
+        }
+        if (method_exists($this->_class, 'clearCache')) {
+            $class = $this->_class;
+            $class::clearCache();
         }
         return parent::save();
     }
