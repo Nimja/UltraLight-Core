@@ -20,4 +20,13 @@ class Hidden extends \Core\Form\Field
             $this->_extra($this->_extra)
         );
     }
+
+    /**
+     * For hidden fields, we can only set value directly in constructor.
+     * @param mixed $value
+     */
+    public function setValue($value)
+    {
+        return $this;
+    }
 }
