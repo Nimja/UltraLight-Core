@@ -1,7 +1,7 @@
 <?php
 namespace Core\Form\Field;
 /**
- * Hidden form field.
+ * Hidden form field, with a value that can only be set in constructor.
  */
 class Hidden extends \Core\Form\Field
 {
@@ -16,17 +16,8 @@ class Hidden extends \Core\Form\Field
         return sprintf(
             '<input type="hidden" name="%s" value="%s" %s />',
             $this->name,
-            $this->value,
+            getKey($this->_extra, 'value'),
             $this->_extra($this->_extra)
         );
-    }
-
-    /**
-     * For hidden fields, we can only set value directly in constructor.
-     * @param mixed $value
-     */
-    public function setValue($value)
-    {
-        return $this;
     }
 }
