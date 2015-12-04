@@ -79,6 +79,16 @@ class Session extends \Core\Cache
         return true;
     }
     /**
+     * Delete all for this group.
+     * @return boolean
+     */
+    public function deleteAll()
+    {
+        $this->_variables = [];
+        $_SESSION[$this->_group] = &$this->_variables;
+        return true;
+    }
+    /**
      * To store time, setting a timekey.
      * @param string $key
      * @return string
@@ -86,13 +96,5 @@ class Session extends \Core\Cache
     private function _timeKey($key)
     {
         return ".time.{$key}";
-    }
-
-    /**
-     * Destroy the session.
-     */
-    public static function deleteAll()
-    {
-        $_SESSION = [];
     }
 }

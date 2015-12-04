@@ -47,12 +47,19 @@ abstract class Cache
     abstract public function save($key, $value);
 
     /**
-     * Delete abstract
+     * Delete abstract.
      *
      * @param string $key
      * @return boolean
      */
     abstract public function delete($key);
+
+    /**
+     * Delete all for this group abstract.
+     *
+     * @return boolean
+     */
+    abstract public function deleteAll();
 
     /**
      * Clean a string for cache key usage.

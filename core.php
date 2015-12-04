@@ -598,6 +598,9 @@ class Core
 
     /**
      * Clear cache, either specifically or completely.
+     *
+     * @param string $callable The callable as a string.
+     * @param array|boolean Arguments, or false for deleting all for this callable.
      * @return boolean
      */
     public static function clearCache($callable = null, $args = [])
@@ -606,8 +609,12 @@ class Core
         if (self::$_useCache) {
             if (!empty($callable)) {
                 $cache = \Core\Cache\File::getInstance($callable);
-                $key = !empty($args) ? strval(implode('_', $args)) : 'call';
-                $result = $cache->delete($key);
+                if ($args === false) {
+                    $result = $cache->deleteAll();
+                } else {
+                    $key = !empty($args) ? strval(implode('_', $args)) : 'call';
+                    $result = $cache->delete($key);
+                }
             } else {
                 $result = \Core\File\System::rrmdir(PATH_CACHE, false);
             }

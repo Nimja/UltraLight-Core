@@ -60,6 +60,24 @@ class File extends \Core\Cache
     }
 
     /**
+     * Clear all files for this group.
+     * @return boolean
+     */
+    public function deleteAll()
+    {
+        \Core\File\System::rrmdir($this->_getPath(), false);
+    }
+
+    /**
+     * Get path for this method.
+     * @return string
+     */
+    private function _getPath()
+    {
+        return PATH_CACHE . $this->_group . '/';
+    }
+
+    /**
      * Make the filename.
      * @param type $name
      * @return type
@@ -71,7 +89,6 @@ class File extends \Core\Cache
         } else {
             $file = $this->_cleanKey($key) . self::EXTENSION;
         }
-        $folder = $this->_group . '/';
-        return PATH_CACHE . $folder . $file;
+        return $this->_getPath() . $file;
     }
 }
