@@ -97,4 +97,14 @@ class Session extends \Core\Cache
     {
         return ".time.{$key}";
     }
+
+    /**
+     * Clear current session completely.
+     */
+    public static function clearCurrentSession()
+    {
+        foreach (array_keys($_SESSION) as $key) {
+            unset($_SESSION[$key]);
+        }
+    }
 }

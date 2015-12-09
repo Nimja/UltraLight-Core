@@ -19,7 +19,7 @@ class Install
     public function __construct()
     {
         \Core::clearCache();
-        \Core\Cache\Session::deleteAll();
+        \Core\Cache\Session::clearCurrentSession();
         \Request::clearCookie('PHPSESSID');
     }
 
