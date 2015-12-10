@@ -77,7 +77,7 @@ abstract class Model {
     /**
      * Fill the object with values.
      *
-     * Properties in the entity that are not set in the array, become blank unless $add is true.
+     * Unset properties in the array are only used if the property is allowed to be empty (for example boolean values).
      *
      * @var array $values
      * @return array All the values of this object.
@@ -87,8 +87,13 @@ abstract class Model {
         if (empty($values) || !is_array($values)) {
             return false;
         }
-        foreach ($this->_re()->fields as $field => $type) {
-            $value = isset($values[$field]) ? getKey($values, $field, '') : $this->{$field};
+        $re = $this->_re();
+        foreach ($re->fields as $field => $type) {
+            if (!isset($values[$field])) {
+                $value = !isset($re->blankFields[$field]) ? $this->{$field} : '';
+            } else {
+                $value = getKey($values, $field, '');
+            }
             $this->_setValue($field, $type, $value);
         }
     }

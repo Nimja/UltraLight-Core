@@ -207,6 +207,8 @@ class Database
             if ($backticks && strpos($value, '.') !== false) {
                 $parts = explode('.', $value);
                 $result = implode('.', $this->escape($parts, true, $forceQuotes));
+            } else if ($value === false || $value === true) {
+                $result = $value ? 1 : 0;
             } else if (blank($value)) {
                 $result = 'NULL';
             } else {

@@ -41,11 +41,11 @@ class Property
             if (!empty($doc['validate'])) {
                 $reflect->validate[$field] = $doc['validate'];
             }
-            if (!empty($doc['empty'])) {
-                $reflect->blankFields[$field] = true;
-            }
             $reflect->columns[$field] = $this->_getDbFields();
             $reflect->fields[$field] = $this->_getFieldType();
+            if (!empty($doc['empty']) || $reflect->fields[$field] == \Core\Model::TYPE_BOOL) {
+                $reflect->blankFields[$field] = true;
+            }
             if (isset($doc['listField'])) {
                 $reflect->listField = $field;
             }
@@ -98,6 +98,8 @@ class Property
             $result = \Core\Model::TYPE_SERIALIZE;
         } else if (isset($this->_doc[\Core\Model::TYPE_ARRAY])) {
             $result = \Core\Model::TYPE_ARRAY;
+        } else if ($result == 'boolean' || $result == 'bool') {
+            $result = \Core\Model::TYPE_BOOL;
         }
         return $result;
     }
