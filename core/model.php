@@ -298,6 +298,17 @@ abstract class Model {
     {
         $class = $class ? : get_called_class();
         if (empty(self::$_reflections[$class])) {
+            if (!isset(\Core::$classes[$class])) {
+                $lowerClass = strtolower($class);
+                foreach (array_keys(\Core::$classes) as $className) {
+                    if (strtolower($className) == $lowerClass) {
+                        \Show::fatal(
+                            ['called ' => $className, 'defined' => $class], "Capitalisation error, check spelling!"
+                        );
+                    }
+                }
+                \Show::fatal("$class not found. Not even in other capitalisation.");
+            }
             $time = filemtime(\Core::$classes[$class]['file']);
             self::$_reflections[$class] = \Core::wrapCache('\Core\Model\Reflect::get', [$class], $time);
         }
