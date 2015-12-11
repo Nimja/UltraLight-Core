@@ -87,7 +87,7 @@ class System
                 } else {
                     $success = unlink($file);
                     if (!$success) {
-                        throw new \Exception($file, 'Could not remove directory.');
+                        throw new \Exception("Could not remove file: {$file}");
                     }
                 }
             }
@@ -96,7 +96,7 @@ class System
             }
         }
         if (!$result) {
-            throw new \Exception($dir, 'Could not remove directory.');
+            throw new \Exception("Could not remove directory: {$dir}");
         }
         return $result;
     }

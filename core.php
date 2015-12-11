@@ -583,7 +583,7 @@ class Core
             throw new \Exception("Please use \Class::method for wrapCache.");
         }
         if (self::$_useCache) {
-            $key = !empty($args) ? strval(implode('_', $args)) : 'call';
+            $key = \Core\Cache\File::createKey($args);
             $cache = \Core\Cache\File::getInstance($callable);
             $result = $cache->load($key, $time);
             if (empty($result)) {
@@ -612,8 +612,7 @@ class Core
                 if ($args === false) {
                     $result = $cache->deleteAll();
                 } else {
-                    $key = !empty($args) ? strval(implode('_', $args)) : 'call';
-                    $result = $cache->delete($key);
+                    $result = $cache->delete(\Core\Cache\File::createKey($args));
                 }
             } else {
                 $result = \Core\File\System::rrmdir(PATH_CACHE, false);

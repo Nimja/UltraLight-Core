@@ -1,5 +1,4 @@
-<?php
-namespace Core\Cache;
+<?php namespace Core\Cache;
 /**
  * Basic caching function, using the file system and cache folder.
  */
@@ -44,6 +43,7 @@ class File extends \Core\Cache
         }
         return true;
     }
+
     /**
      * Delete from cache.
      * @param string $key
@@ -79,16 +79,27 @@ class File extends \Core\Cache
 
     /**
      * Make the filename.
-     * @param type $name
-     * @return type
+     * @param string $key
+     * @return string
      */
     private function _makeFileName($key)
     {
-        if (empty($key) || !is_string($key)) {
+        if (!is_string($key)) {
             throw new \Exception("Must give name for cache.");
         } else {
             $file = $this->_cleanKey($key) . self::EXTENSION;
         }
         return $this->_getPath() . $file;
+    }
+
+    /**
+     * Create cache key.
+     * @param array $args
+     * @return string
+     */
+    public static function createKey($args)
+    {
+        $key = !empty($args) ? implode('_', $args) : 'call';
+        return empty($key) ? 'empty' : $key;
     }
 }
