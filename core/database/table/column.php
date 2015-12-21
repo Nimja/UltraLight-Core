@@ -105,7 +105,7 @@ class Column
             $length = 0;
             $null = true;
             $default = '';
-        } else if ($type == 'bool') {
+        } else if ($type == 'bool' || $type == 'boolean') {
             $length = 1;
             $type = 'tinyint';
             $default = intval($default);
