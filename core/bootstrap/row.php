@@ -1,14 +1,31 @@
-<?php namespace Core\Bootstrap;
+<?php
+
+namespace Core\Bootstrap;
+
 /**
  * Bootstrap row, with .
  */
 class Row
 {
+
     const MAX_SIZE = 12;
     const RESIZE_LARGE = 'lg';
     const RESIZE_MEDIUM = 'md';
     const RESIZE_SMALL = 'sm';
     const RESIZE_XSMALL = 'xs';
+
+    /**
+     * Main header for rows.
+     * @var string
+     */
+    public $mainHeader = '<div class="row">';
+
+    /**
+     * Main footer for rows.
+     * 
+     * @var string
+     */
+    public $mainFooter = '</div>';
 
     /**
      * The wrapper around the panel.
@@ -20,9 +37,10 @@ class Row
      * The bootstrap type we use for each column.
      * @var string
      */
-    private $_type = '';
+    private $_type = self::RESIZE_MEDIUM;
+
     /**
-     *
+     * The rows we are rendering.
      * @var array
      */
     private $_rows = [];
@@ -32,6 +50,7 @@ class Row
      * @var int
      */
     private $_curRow = -1;
+
     /**
      * Current row size.
      * @var int
@@ -65,6 +84,7 @@ class Row
         $this->_rows[$this->_curRow][] = ['size' => $intSize, 'content' => $content];
         return $this;
     }
+
     /**
      * End the current row, resizing the parts as needed.
      * @return \Core\Bootstrap\Row
@@ -96,6 +116,7 @@ class Row
         $this->_curSize = 0;
         return $this;
     }
+
     /**
      * Render row.
      * @param array $row
@@ -105,10 +126,31 @@ class Row
     {
         $result = [];
         foreach ($row as $item) {
-            $class = "col-{$this->_type}-{$item['size']}";
-            $result[] = "<div class=\"{$class}\">{$item['content']}</div>";
+            $result[] = $this->getRowStart($item['size'])
+                    . $item['content']
+                    . $this->getRowEnd();
         }
         return implode(PHP_EOL, $result);
+    }
+
+    /**
+     * Get row start.
+     * @param int $width
+     * @return string
+     */
+    public function getRowStart($width)
+    {
+        $class = "col-{$this->_type}-{$width}";
+        return "<div class=\"{$class}\">";
+    }
+
+    /**
+     * Get end of row.
+     * @return string
+     */
+    public function getRowEnd()
+    {
+        return "</div>";
     }
 
     /**
@@ -119,8 +161,9 @@ class Row
         $this->endRow();
         $rows = [];
         foreach ($this->_rows as $row) {
-            $rows[] = sprintf($this->wrapRow, $this->_renderRow($row));
+            $rows[] = $this->mainHeader . $this->_renderRow($row) . $this->mainFooter;
         }
         return implode(PHP_EOL, $rows);
     }
+
 }
