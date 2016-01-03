@@ -71,14 +71,25 @@ class Page extends \Core\Model\Ordered {
     }
 
     /**
-     * Counter per type.
+     * More performant child counter.
+     *
+     * @return int
+     */
+    public function getChildCount()
+    {
+        $re = $this->re();
+        return $re->db()->getCount($re->table, ['parentId' => $this->id]);
+    }
+
+    /**
+     * How many siblings this page has..
      *
      * @return int
      */
     public function getCount()
     {
         $re = $this->re();
-        return $re->db()->getCount($re->table, ['parentId' => $this->id]);
+        return $re->db()->getCount($re->table, ['parentId' => $this->parentId]);
     }
 
     /* ------------------------------------------------------------
@@ -251,7 +262,7 @@ class Page extends \Core\Model\Ordered {
             $result[] = new \Core\Model\Tool\Order\Item(
                 $page->id,
                 $page->title,
-                $page->getCount() > 0,
+                $page->getChildCount() > 0,
                 true
             );
         }
