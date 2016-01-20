@@ -30,7 +30,7 @@ class Page extends \Core\Model\Ordered {
      * Partial URL.
      * @db-type varchar
      * @db-length 64
-     * @validate url|3
+     * @validate url|1
      * @var string
      */
     public $url;
