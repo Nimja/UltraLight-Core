@@ -52,9 +52,9 @@ abstract class Field
     protected $_isHorizontal = false;
 
     /**
-     *
-     * @param type $fieldName
-     * @param type $extra
+     * Construct with name and additional values.
+     * @param string $name
+     * @param array $extra
      */
     public function __construct($name, $extra = null)
     {
