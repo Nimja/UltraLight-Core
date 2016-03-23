@@ -7,6 +7,7 @@ namespace Core\View\Transform;
  */
 class Number extends Base {
 
+    private $_hasOutput = false;
     private $_hyphen = '-';
     private $_space = ' ';
     private $_negative = 'minus ';
@@ -50,11 +51,22 @@ class Number extends Base {
         return $this->_translate(intval($this->_value));
     }
 
+    /**
+     * Translate one block of a number into a value.
+     *
+     * We set output to true, because we only say 'zero' if it's the only number.
+     *
+     * This method works recursive for high numbers and negative numbers.
+     *
+     * @param int $number
+     * @return string
+     */
     private function _translate($number)
     {
         if ($number < 0) {
-            $number = -$number;
-            $result = $this->_negative . $this->_translate($number);
+            $result = $this->_negative . $this->_translate(-$number);
+        } else if ($number == 0) {
+            $result = $this->_hasOutput ? '' : $this->_dictionary[0];
         } else if ($number < 21) {
             $result = $this->_dictionary[$number];
         } else if ($number < 100) {
@@ -72,26 +84,31 @@ class Number extends Base {
             $result = $this->_highNumbers($number, 1000000);
         } else if ($number < 1000000000000) {
             $result = $this->_highNumbers($number, 1000000000);
+        } else {
+            $result = 'A lot';
         }
+        $this->_hasOutput = true;
         return $result;
     }
 
     /**
-     * A repeated function for very high numbers.
+     * Recursive partial method for high numbers (everything above 99).
+     *
+     * From 100 and above, we add the multiplier (ie. hundred, thousand or million) after the block.
+     *
      * @param int $number
      * @param int $divider
      * @return string
      */
     private function _highNumbers($number, $divider)
     {
-        $parts = floor($number / $divider);
-        $number -= $parts * $divider;
-        $result = $this->_translate($parts) .
-                $this->_space .
-                $this->_dictionary[$divider] .
-                $this->_space .
-                $this->_translate($number);
-        return $result;
+        $integer = floor($number / $divider);
+        $number -= $integer * $divider;
+        $result = [$this->_translate($integer), $this->_dictionary[$divider]];
+        if ($number != 0) {
+            $result[] = $this->_translate($number);
+        }
+        return implode($this->_space, $result);
     }
 
 }
