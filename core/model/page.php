@@ -44,6 +44,13 @@ class Page extends \Core\Model\Ordered {
     public $parentId;
 
     /**
+     * Description.
+     * @db-type text
+     * @var string
+     */
+    public $description;
+
+    /**
      * Page content.
      * @db-type text
      * @validate empty|10
@@ -194,6 +201,7 @@ class Page extends \Core\Model\Ordered {
             ->add(new \Core\Form\Field\Input('title', ['label' => 'Title']))
             ->add(new \Core\Form\Field\Input('url', ['label' => 'Url']))
             ->add(new \Core\Form\Field\Select('parentId', ['label' => 'Parent', 'values' => $selectValues]))
+            ->add(new \Core\Form\Field\Input('description', ['label' => 'Description']))
             ->add(new \Core\Form\Field\Text('content', ['label' => 'Content', 'rows' => 20]))
             ->add(new \Core\Form\Field\Submit('submit', ['value' => 'Edit', 'class' => 'btn-primary']));
         return $form;
