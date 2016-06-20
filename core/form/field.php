@@ -221,9 +221,7 @@ abstract class Field
     {
         $result = [];
         if ($this->wrapDiv) {
-            $classParts = explode("\\", get_class($this));
-            $type = strtolower(array_pop($classParts));
-            $result[] = "<div class=\"form-group {$type}\">";
+            $result[] = "<div class=\"form-group\">";
         }
         if (!empty($this->_extra['label'])) {
             $result[] = $this->_isHorizontal ? $this->_getHorizontalLabel() : $this->_getNormalLabel();
