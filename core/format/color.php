@@ -330,6 +330,11 @@ class Color
     public function fadeTo($color, $amount)
     {
         $fadeAmount = $this->_limit($amount, 0, 1);
+        if ($amount == 0) {
+            return $this->copy();
+        } else if ($amount == 1) {
+            return $color->copy();
+        }
         $result = $this->copy();
         $result->setRgb(
             $this->_fadeValue($this->_red, $color->red, $fadeAmount),
