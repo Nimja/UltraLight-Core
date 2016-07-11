@@ -14,12 +14,12 @@ class Pager
      * Link/button for the first page.
      * @var string
      */
-    public $firstPage = '<li class="previous"><a href="%s"><span aria-hidden="true">&laquo;</span></a></li>';
+    public $firstPage = '<li class="previous"><a href="%s" class="page_first"><span aria-hidden="true">&laquo;</span></a></li>';
     /**
      * Link/button for the previous page.
      * @var string
      */
-    public $previousPage = '<li class="previous"><a href="%s"><span aria-hidden="true">&lsaquo;</span></a></li>';
+    public $previousPage = '<li class="previous"><a href="%s" class="page_previous"><span aria-hidden="true">&lsaquo;</span></a></li>';
     /**
      * Link/button for the center "title".
      * @var string
@@ -29,12 +29,12 @@ class Pager
      * Link/button for the next page.
      * @var string
      */
-    public $nextPage = '<li class="next"><a href="%s"><span aria-hidden="true">&rsaquo;</span></a></li>';
+    public $nextPage = '<li class="next"><a href="%s" class="page_next"><span aria-hidden="true">&rsaquo;</span></a></li>';
     /**
      * Link/button for the last page.
      * @var string
      */
-    public $lastPage = '<li class="next"><a href="%s"><span aria-hidden="true">&raquo;</span></a></li>';
+    public $lastPage = '<li class="next"><a href="%s" class="page_last"><span aria-hidden="true">&raquo;</span></a></li>';
     /**
      * Total for this page.
      * @var int
