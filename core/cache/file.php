@@ -65,7 +65,7 @@ class File extends \Core\Cache
      */
     public function deleteAll()
     {
-        \Core\File\System::rrmdir($this->_getPath(), false);
+        \Core\File\System::rrmdir($this->_getPath(), false, true);
     }
 
     /**
