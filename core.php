@@ -301,7 +301,7 @@ class Core
             self::$classes[$class] = ['file' => $fileName, 'time' => self::time()];
         }
         if ($error && !$returnSuccess) {
-            \Show::fatal($class, $error);
+            error_log($class . PHP_EOL . $error);
         }
         return !$error;
     }

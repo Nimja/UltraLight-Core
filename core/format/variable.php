@@ -70,17 +70,20 @@ class Variable
     private function _addString($variable, $depth, $parent, $array)
     {
         $lines = explode(PHP_EOL, $variable);
-        $lastIndex = count($lines) - 1;
-        foreach ($lines as $index => $line) {
-            $isLastIndex = ($lastIndex == $index);
-            $isArray = $isLastIndex ? $array : false;
-            $eol = $isLastIndex ? '' : '.';
-            $this->_addLine("\"{$line}\"$eol", $depth, $parent, $isArray);
-            if ($index == 0) {
-                $depth += 2;
-                $parent = '';
-            }
+        if (count($lines) == 1) {
+            $this->_addLine("\"{$variable}\"", $depth, $parent, $array);
+        } else {
+            $this->_addMultipleLines($lines, $depth, $parent, $array);
         }
+    }
+
+    private function _addMultipleLines($lines, $depth, $parent, $array)
+    {
+        $this->_addLine("\"", $depth, $parent, $array);
+        foreach ($lines as $line) {
+            $this->_addLine($line, 0, $parent, $array);
+        }
+        $this->_addLine("\"", $depth, $parent, $array);
     }
 
     /**

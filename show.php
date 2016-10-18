@@ -119,7 +119,7 @@ class Show
         foreach ($lines as $index => $line) {
             $line = htmlentities($line);
             $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
-            $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px;\" >$line</div>";
+            $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px; min-height: 15px;\" >$line</div>";
         }
         $resultString = implode(PHP_EOL, $result);
         return str_replace(
