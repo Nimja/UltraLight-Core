@@ -269,10 +269,9 @@ class Core
     /**
      * Load the file for this class.
      * @param string $class
-     * @param boolean $returnSuccess Normally the class throws fatals, with this enabled you can scan for classes.
-     * @return boolean if $returnSuccess is set to true, this will return the success.
+     * @return boolean True if class was loaded successfully.
      */
-    public static function loadClass($class, $returnSuccess = false)
+    public static function loadClass($class)
     {
         if (isset(self::$classes[$class])) {
             return true;
@@ -299,9 +298,8 @@ class Core
         if (!$error) {
             require $fileName;
             self::$classes[$class] = ['file' => $fileName, 'time' => self::time()];
-        }
-        if ($error && !$returnSuccess) {
-            error_log($class . PHP_EOL . $error);
+        } else {
+            self::debug($error);
         }
         return !$error;
     }

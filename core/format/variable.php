@@ -79,11 +79,13 @@ class Variable
 
     private function _addMultipleLines($lines, $depth, $parent, $array)
     {
-        $this->_addLine("\"", $depth, $parent, $array);
-        foreach ($lines as $line) {
-            $this->_addLine($line, 0, $parent, $array);
+        $lastIndex = count($lines) - 1;
+        $quote = '"';
+        foreach ($lines as $index => $line) {
+            $pre = $index === 0 ? $quote : '';
+            $post = $index === $lastIndex ? $quote : '';
+            $this->_addLine($pre . $line . $post, 0, $parent, $array);
         }
-        $this->_addLine("\"", $depth, $parent, $array);
     }
 
     /**
