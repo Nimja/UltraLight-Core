@@ -6,6 +6,7 @@
  */
 class Navbar
 {
+    const DIVIDER = '---';
     /**
      * Title of the current site.
      * @var string
@@ -69,11 +70,16 @@ class Navbar
                 $item .= $buttonResult['buttons'];
                 $item .= '</ul>';
             } else {
-                $isActive = (strpos($this->_curPage, $link) === 0) && $link != $this->_homeLink;
-                $active = $isActive ? ' class="active"' : '';
-                $item = "<li{$active}><a href=\"$link\">{$label}</a>";
-                if ($isActive && $hasActive) {
-                    $result = $this->_clearActive($result);
+                if ($link == self::DIVIDER) {
+                    $item = '<li role="separator" class="divider"></li>';
+                    $isActive = false;
+                } else {
+                    $isActive = (strpos($this->_curPage, $link) === 0) && $link != $this->_homeLink;
+                    $active = $isActive ? ' class="active"' : '';
+                    $item = "<li{$active}><a href=\"$link\">{$label}</a>";
+                    if ($isActive && $hasActive) {
+                        $result = $this->_clearActive($result);
+                    }
                 }
             }
             $hasActive = $hasActive || $isActive;

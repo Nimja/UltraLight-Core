@@ -40,6 +40,8 @@ class Variable
                 break;
             case 'resource': $this->_addLine($variable, $depth, $parent, $parentIsArray);
                 break;
+            case 'NULL': $this->_addLine('NULL', $depth, $parent, $parentIsArray);
+                break;
             default:
                 $string = 'UNKNOWN: ' . PHP_EOL . var_export($variable, true);
                 $this->_addString($string, $depth, $parent, $parentIsArray);

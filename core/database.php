@@ -402,6 +402,7 @@ class Database
      * |> -> > <br />
      * |< -> < <br />
      * |! -> <> <br />
+     * |n -> IN <br />
      *
      * Combine searches with ;
      *
@@ -460,7 +461,7 @@ class Database
             if (!is_array($details)) {
                 $details = ['field' => $field, 'value' => $details];
             }
-            $field= $this->escape(getKey($details, self::SEARCH_FIELD), true);
+            $field = $this->escape(getKey($details, self::SEARCH_FIELD, $field), true);
             $originalValue = getKey($details, self::SEARCH_VALUE);
             $value = $this->escape($originalValue);
             $operation = getKey($details, self::SEARCH_OPERATION, '|=');
@@ -485,7 +486,12 @@ class Database
                     case '|:':
                         $operand = 'LIKE';
                         trim($value, "'");
-                        $value = "'%$value%'";
+                        $value = "'%{$value}%'";
+                        break;
+                    case '|n':
+                        $operand = 'IN';
+                        $stringValue = is_array($value) ? implode(', ', $value) : $value;
+                        $value = "({$stringValue})";
                         break;
                 }
                 $condition = "{$field} {$operand} {$value}";
