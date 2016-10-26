@@ -71,7 +71,7 @@ class Navbar
                 $item .= '</ul>';
             } else {
                 if ($link == self::DIVIDER) {
-                    $item = '<li role="separator" class="divider"></li>';
+                    $item = '<li role="separator" class="divider">';
                     $isActive = false;
                 } else {
                     $isActive = (strpos($this->_curPage, $link) === 0) && $link != $this->_homeLink;
