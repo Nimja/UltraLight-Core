@@ -358,7 +358,8 @@ class Core
          * this is the client closest to our upstream proxy.
          */
         if (( $remote_addr == '127.0.0.1' || $remote_addr == $server_addr ) && $forwarded_for) {
-            $remote_addr = substr($forwarded_for, 0, strpos($forwarded_for, ','));
+            $ips = explode(',', $forwarded_for);
+            $remote_addr = end($ips);
         }
         /**
          * Remote IP address.
