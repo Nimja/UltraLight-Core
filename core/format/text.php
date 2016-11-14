@@ -37,7 +37,7 @@ class Text
         // Decode HTML entities
         $str = html_entity_decode($str);
         // Remove tags.
-        $str = strip_tags($str);
+        $str = \Sanitize::stripHtml($str);
         // Encode HTML entities, like <, &, >, etc.
         $str = htmlentities($str);
         // Remove multiple spaces.

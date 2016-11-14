@@ -62,4 +62,19 @@ class Sanitize
         //Return cleaned string.
         return $string;
     }
+
+    /**
+     * Basic HTML stripper, that leaves unclosed tags intact.
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function stripHtml($string)
+    {
+        $strippedCss = preg_replace('/<style.*<\/style>/s', '', $string);
+        $strippedJs = preg_replace('/<script.*<\/script>/s', '', $strippedCss);
+        $removedOneLineTags = preg_replace("/<[^>\n]*>/mu", '', $strippedJs);
+        $removedMultiLineTags = preg_replace("/<a [^>]*?>/s", '', $removedOneLineTags);
+        return $removedMultiLineTags;
+    }
 }
