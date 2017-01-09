@@ -99,6 +99,12 @@ class Core
      */
     public static $classes = [];
     /**
+     * If we are currently on HTTPS.
+     *
+     * @var boolean
+     */
+    public static $isHttps = false;
+    /**
      * Enable debugging on the fly.
      * @var boolean
      */
@@ -330,14 +336,29 @@ class Core
     private function _setSiteUrl()
     {
         $host = getKey($this->_server, 'HTTP_HOST');
+        self::$isHttps = $this->_requestIsSsl();
         if (!Config::system()->exists('site', 'url')) {
-            $https = getKey($this->_server, 'HTTPS');
-            $site_url = !empty($https) ? 'https://' : 'http://';
+            $site_url = self::$isHttps ? 'https://' : 'http://';
             $site_url .= $host . '/';
             Config::system()->set('site', 'url', $site_url);
         }
         Config::system()->set('site', 'host', $host);
         return $this;
+    }
+
+    /**
+     * Return true if on https.
+     *
+     * @return boolean
+     */
+    private function _requestIsSsl()
+    {
+        return getKey($this->_server, 'HTTPS') === 'on'
+            || getKey($this->_server, 'HTTP_X_FORWARDED_PROTO') === 'https'
+            || getKey($this->_server, 'HTTP_X_PROTO') === 'SSL'
+            || getKey($this->_server, 'HTTP_X_PORT') === '443'
+            || getKey($this->_server, 'HTTP_FRONT_END_HTTPS') === 'on'
+            || getKey($this->_server, 'HTTPS', false) !== false;
     }
 
     /**
