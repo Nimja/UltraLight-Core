@@ -192,9 +192,14 @@ abstract class Field
         }
         $default = getKey($this->_extra, 'default');
         if (!empty($default)) {
-            array_unshift($values, $default);
+            $result = ['' => $default];
+            foreach ($values as $key => $value) {
+                $result[$key] = $value;
+            }
+        } else {
+            $result = $values;
         }
-        return $values;
+        return $result;
     }
 
     /**
