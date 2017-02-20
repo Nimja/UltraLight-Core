@@ -44,7 +44,9 @@ abstract class Controller
             $class = $this->_userClass;
             $user = $class::login();
             $role = !empty($user) ? $user->role : 0;
-            if ($role < $this->_requiredRole) {
+            if ($role < $this->_requiredRole && \Core::$url != $this->_loginRedirect) {
+                $session = new Session();
+                $session->set('login.url', \Core::$url);
                 \Request::redirect($this->_loginRedirect, \Request::STATUS_REDIRECT_SEE_OTHER);
             } else {
                 $this->_user = $user;

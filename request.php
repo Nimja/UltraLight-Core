@@ -215,19 +215,19 @@ class Request
         if (substr($targetUrl, 0, 4) != 'http') {
             $targetUrl = Config::system()->get('site', 'url') . ltrim($targetUrl, '/');
         }
-        $validCodes = [
-            self::STATUS_REDIRECT_PERMANENT,
-            self::STATUS_REDIRECT_FOUND,
-            self::STATUS_REDIRECT_SEE_OTHER,
-        ];
-        if (!in_array($code, $validCodes)) {
-            $code = self::STATUS_REDIRECT_FOUND;
-        }
+        $validCodes = [self::STATUS_REDIRECT_PERMANENT, self::STATUS_REDIRECT_FOUND, self::STATUS_REDIRECT_SEE_OTHER];
+        $code = in_array($code, $validCodes) ? $code : self::STATUS_REDIRECT_FOUND;
+        $sameRequest = $targetUrl == \Core::$url && self::isPost();
+        $query = self::server('QUERY_STRING');
         if ($includeRequest) {
-            $query = self::server('QUERY_STRING');
             if ($query) {
                 $url .= '?' . $query;
             }
+        } else if ($query) {
+            $sameRequest = false;
+        }
+        if ($sameRequest) {
+            \Show::fatal($targetUrl, "Redirect to itself.");
         }
         http_response_code($code);
         header('Location: ' . $targetUrl, true);
