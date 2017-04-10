@@ -43,13 +43,12 @@ class Resize
      * @param \Core\File\Image|string $source
      * @param int $width
      * @param int $height
+     * @param string $type File type.
      * @return \Core\File\Image
      */
-    public function thumbnail($source, $width, $height)
+    public function thumbnail($source, $width, $height, $type = \Core\File\Image::TYPE_PNG)
     {
-        $sourceImage = $this->_getImage($source);
-        $destImage = new \Core\File\Image($width, $height);
-        return $this->resize($sourceImage, $destImage, $width, $height);
+        return $this->getResized($source, $width, $height, $type);
     }
 
     /**
@@ -118,6 +117,32 @@ class Resize
 
         $scale = $this->_calculateScale($sourceSize, $desiredSize);
         $destSize = $this->_calculateSizes($sourceSize, $desiredSize, $scale);
+
+        self::imageCopyResampled(
+            $destImage->img, $sourceImage->img, $destSize->x + $desiredSize->x, $destSize->y + $desiredSize->y,
+            $sourceSize->x, $sourceSize->y, $destSize->w, $destSize->h, $sourceSize->w, $sourceSize->h, 2
+        );
+        return $destImage;
+    }
+
+    /**
+     * Get resized image, like thumbnail but a different resized result is possible, keeping aspect ratio.
+     *
+     * @param \Core\File\Image|string $source
+     * @param int $width
+     * @param int $height
+     * @return \Core\File\Image
+     */
+    public function getResized($source, $width, $height, $type = \Core\File\Image::TYPE_JPEG)
+    {
+        $sourceImage = $this->_getImage($source);
+
+        $sourceSize = new ResizeData(0, 0, $sourceImage->width, $sourceImage->height);
+        $desiredSize = new ResizeData(0, 0, $width, $height);
+
+        $scale = $this->_calculateScale($sourceSize, $desiredSize);
+        $destSize = $this->_calculateSizes($sourceSize, $desiredSize, $scale);
+        $destImage = new \Core\File\Image($destSize->w, $destSize->h, $type);
 
         self::imageCopyResampled(
             $destImage->img, $sourceImage->img, $destSize->x + $desiredSize->x, $destSize->y + $desiredSize->y,
