@@ -149,6 +149,7 @@ class View
         $data['site.page.route'] = \Core::$route;
         $data['site.page.rest'] = \Core::$rest;
         $data['site.page.url'] = \Core::$url;
+        $data['site.page.requestUrl'] = \Core::$requestUrl;
         // Load the template.
         $view = $this->loadView($view);
         // Fill in the data if all goes well.

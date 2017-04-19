@@ -69,6 +69,16 @@ class Core
      */
     private static $_included;
     /**
+     * Request url, WITH get parameters.
+     * @var string
+     */
+    public static $requestFull = '';
+    /**
+     * Request url, WITHOUT get parameters.
+     * @var string
+     */
+    public static $requestUrl = '';
+    /**
      * Actual request url.
      * @var string
      */
@@ -405,18 +415,19 @@ class Core
      */
     private function _getParsedUri()
     {
-        $siteUrl = Config::system()->get('site', 'url');
-        $request = rtrim($siteUrl, '/') . getKey($this->_server, 'REQUEST_URI');
-        $uri = parse_url($request, PHP_URL_PATH);
-        //Remove /index.
+        $siteUrl = rtrim(Config::system()->get('site', 'url'), '/');
+        self::$requestFull = $siteUrl . getKey($this->_server, 'REQUEST_URI');
+        $uri = parse_url(self::$requestFull, PHP_URL_PATH);
+        self::$requestUrl = $siteUrl . $uri;
+        // Remove /index and lower case.
         $withoutIndex = str_replace('/index', '/', strtolower($uri));
-        //Remove leading, trailing and double slashes.
+        // Remove leading, trailing and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($withoutIndex), '/ '));
-        //We only allow alphanumeric, underscores, dashes, periods and slashes.
+        // We only allow alphanumeric, underscores, dashes, periods and slashes.
         $clean2 = preg_replace('/[^a-z0-9\_\-\/\.]/', '', strtolower($clean));
-        //We replace multiple periods by a single one.
+        // We replace multiple periods by a single one.
         $clean3 = preg_replace('/\.{2,}/', '.', strtolower($clean2));
-        //We unify the url to use + instead of %20.
+        // We unify the url to use + instead of %20.
         $final = str_replace('%20', '+', $clean3);
         if ($uri != '/' . $final) {
             Request::redirect($final, 302, true);
