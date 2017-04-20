@@ -89,6 +89,14 @@ class Session extends \Core\Cache
         return true;
     }
     /**
+     * List all for this group abstract.
+     * @return boolean
+     */
+    public function listAll()
+    {
+        return array_keys($this->_variables);
+    }
+    /**
      * To store time, setting a timekey.
      * @param string $key
      * @return string

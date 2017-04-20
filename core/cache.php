@@ -62,6 +62,13 @@ abstract class Cache
     abstract public function deleteAll();
 
     /**
+     * List all for this group abstract.
+     *
+     * @return array
+     */
+    abstract public function listAll();
+
+    /**
      * Clean a string for cache key usage.
      * @param string $key
      * @return string

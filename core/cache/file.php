@@ -67,6 +67,19 @@ class File extends \Core\Cache
     {
         \Core\File\System::rrmdir($this->_getPath(), false, true);
     }
+    /**
+     * List all for this group abstract.
+     * @return boolean
+     */
+    public function listAll()
+    {
+        $files = \Core\File\System::listFiles($this->_getPath(), \Core\File\System::EXCLUDE_DIRS);
+        $result = [];
+        foreach (array_keys($files) as $file) {
+            $result[] = pathinfo($file, PATHINFO_FILENAME);
+        }
+        return $result;
+    }
 
     /**
      * Get path for this method.
