@@ -211,6 +211,9 @@ class Request
      */
     public static function redirect($url = '', $code = self::STATUS_REDIRECT_FOUND, $includeRequest = false)
     {
+        if (\Core::$console) {
+            \Show::fatal("Redirect {$code} to: {$url}");
+        }
         $targetUrl = empty($url) ? '' : trim($url);
         if (substr($targetUrl, 0, 4) != 'http') {
             $targetUrl = Config::system()->get('site', 'url') . ltrim($targetUrl, '/');

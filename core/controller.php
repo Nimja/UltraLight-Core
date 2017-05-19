@@ -40,7 +40,7 @@ abstract class Controller
      */
     private function __construct()
     {
-        if ($this->_requiredRole > 0 && !empty($this->_userClass)) {
+        if (!\Core::$console && $this->_requiredRole > 0 && !empty($this->_userClass)) {
             $class = $this->_userClass;
             $user = $class::login();
             $role = !empty($user) ? $user->role : 0;
@@ -58,19 +58,25 @@ abstract class Controller
      * The function actually running the page.
      *
      * If any output has been sent (like echo/print_r, etc.) rather than returned we do NOT send type headers.
+     *
+     * If we're running in console mode, we don't capture output.
      */
     final public function display()
     {
-        ob_start();
-        $result = $this->_executeRun();
-        $output = ob_get_flush();
-        if (!headers_sent() && empty($output)) {
-            header('Content-Type: ' . $this->_contentType);
+        if (\Core::$console) {
+            echo $this->_executeRun();
+        } else {
+            ob_start();
+            $result = $this->_executeRun();
+            $output = ob_get_flush();
+            if (!headers_sent() && empty($output)) {
+                header('Content-Type: ' . $this->_contentType);
+            }
+            if (class_exists('\Core\View', false)) {
+                $result = \Core\View::unescape($result);
+            }
+            echo $result;
         }
-        if (class_exists('\Core\View', false)) {
-            $result = \Core\View::unescape($result);
-        }
-        echo $result;
     }
 
     /**

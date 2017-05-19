@@ -32,17 +32,20 @@ class Show
         }
         $space = "\n\n";
         $title = $space. Sanitize::clean($title) . $space;
-        $content = $space . self::_showVariable($var) . $space;
-        // Create result.
-        $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
-            . $color . '; margin: 2px; padding: 2px; border: 1px solid gray; ">'
-            // Trace block
-            . $trace
-            // Title
-            . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray; background: #f9f9f9;">'
-            // Actual content.
-            . $content . '</div></div>';
-
+        if (\Core::$console) {
+            $result = $title . PHP_EOL . print_r($var, true) . PHP_EOL;
+        } else {
+            $content = $space . self::_showVariable($var) . $space;
+            // Create result.
+            $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
+                . $color . '; margin: 2px; padding: 2px; border: 1px solid gray; ">'
+                // Trace block
+                . $trace
+                // Title
+                . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray; background: #f9f9f9;">'
+                // Actual content.
+                . $content . '</div></div>';
+        }
         // Switch between returning or echoing. (echo is default);
         $result = Core::cleanPath($result);
         if ($return) {

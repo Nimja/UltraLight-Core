@@ -119,20 +119,31 @@ class Core
      * @var boolean
      */
     public static $debug = false;
+
+    /**
+     * If we are running from console.
+     *
+     * @var boolean
+     */
+    public static $console = false;
+
     /**
      * If we use cache or not.
+     *
      * @var boolean
      */
     private static $_useCache = false;
 
     /**
      * Output compression enabled or no.
+     *
      * @var boolean
      */
     private static $_allowOutputCompression = false;
 
     /**
      * Server variables.
+     *
      * @var array
      */
     private $_server;
@@ -147,6 +158,7 @@ class Core
                 throw new \Exception("Core::start() called manually!");
             }
             self::$start = microtime(true);
+            self::$console = PHP_SAPI === 'cli';
             $core = new self($pathOptions);
             header('X-Powered-By: UltraLight');
             header('Server: UltraLight');
@@ -228,7 +240,7 @@ class Core
          */
         define('PATH_ASSETS', $this->_getPathForConstant($options, 'assets', PATH_BASE . 'assets'));
         $cachePath = getKey($options, 'cache', PATH_BASE . 'cache');
-        if (is_writable($cachePath)) {
+        if (is_writable($cachePath) && !self::$console) {
             /**
              * Path to the cache, only available if the cache is present.
              */
@@ -415,10 +427,16 @@ class Core
      */
     private function _getParsedUri()
     {
-        $siteUrl = rtrim(Config::system()->get('site', 'url'), '/');
-        self::$requestFull = $siteUrl . getKey($this->_server, 'REQUEST_URI');
-        $uri = parse_url(self::$requestFull, PHP_URL_PATH);
-        self::$requestUrl = $siteUrl . $uri;
+        if (self::$console) {
+            $siteUrl = 'CONSOLE';
+            $options = getopt('p:');
+            $uri = ltrim(getKey($options, 'p', ''), '/');
+        } else {
+            $siteUrl = rtrim(Config::system()->get('site', 'url'), '/');
+            self::$requestFull = $siteUrl . getKey($this->_server, 'REQUEST_URI');
+            $uri = parse_url(self::$requestFull, PHP_URL_PATH);
+            self::$requestUrl = $siteUrl . $uri;
+        }
         // Remove /index and lower case.
         $withoutIndex = str_replace('/index', '/', strtolower($uri));
         // Remove leading, trailing and double slashes.
@@ -429,7 +447,7 @@ class Core
         $clean3 = preg_replace('/\.{2,}/', '.', strtolower($clean2));
         // We unify the url to use + instead of %20.
         $final = str_replace('%20', '+', $clean3);
-        if ($uri != '/' . $final) {
+        if ($uri != '/' . $final && !self::$console) {
             Request::redirect($final, 302, true);
         }
         self::$url = $final;
