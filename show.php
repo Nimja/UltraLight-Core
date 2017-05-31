@@ -33,7 +33,7 @@ class Show
         $space = "\n\n";
         $title = $space. Sanitize::clean($title) . $space;
         if (\Core::$console) {
-            $result = $title . PHP_EOL . print_r($var, true) . PHP_EOL;
+            $result = html_entity_decode($title) . PHP_EOL . print_r($var, true) . PHP_EOL;
         } else {
             $content = $space . self::_showVariable($var) . $space;
             // Create result.
