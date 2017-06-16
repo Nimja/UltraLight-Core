@@ -8,7 +8,7 @@ class File extends \Core\Cache
 
     /**
      * Load from the cache.
-     * @param string $cacheKey
+     * @param string $key
      * @param int $expireTime
      * @return mixed
      */
@@ -24,7 +24,7 @@ class File extends \Core\Cache
 
     /**
      * Save to the cache.
-     * @param string $cacheKey
+     * @param string $key
      * @param mixed $content
      * @return boolean
      */
@@ -33,7 +33,9 @@ class File extends \Core\Cache
         $fileName = $this->_makeFileName($key);
         $folder = dirname($fileName);
         if (!file_exists($folder)) {
+            $oldUmask = umask(0);
             mkdir($folder, 0777, true);
+            umask($oldUmask);
         }
         if (empty($content) && file_exists($fileName)) {
             unlink($fileName);
@@ -87,7 +89,7 @@ class File extends \Core\Cache
      */
     protected function _getPath()
     {
-        return PATH_CACHE . $this->_group . '/';
+        return PATH_CACHE . $this->_group . DIRECTORY_SEPARATOR;
     }
 
     /**

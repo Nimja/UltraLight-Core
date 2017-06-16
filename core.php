@@ -271,7 +271,7 @@ class Core
      */
     private function _getRealPath($path)
     {
-        return rtrim(realpath($path), '/') . '/';
+        return rtrim(realpath($path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -312,12 +312,12 @@ class Core
         if (empty($parts) && file_exists(PATH_CORE . $first . self::PHP_EXT)) {
             $fileName = PATH_CORE . $first;
         } else if ($nameSpace == self::NAMESPACE_CORE) {
-            $fileName = PATH_CORE . 'core/' . implode('/', $parts);
+            $fileName = PATH_CORE . 'core/' . implode(DIRECTORY_SEPARATOR, $parts);
         } else if ($nameSpace == self::NAMESPACE_APP) {
-            $fileName = PATH_APP . implode('/', $parts);
+            $fileName = PATH_APP . implode(DIRECTORY_SEPARATOR, $parts);
         } else {
             $replace = strpos($class, '\\') !== false ? '\\' : '_';
-            $fileName = PATH_VENDOR . str_replace($replace, '/', trim($class, './\\ '));
+            $fileName = PATH_VENDOR . str_replace($replace, DIRECTORY_SEPARATOR, trim($class, './\\ '));
         }
         $fileName .= self::PHP_EXT;
         if (!$error && !file_exists($fileName)) {
