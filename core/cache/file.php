@@ -85,7 +85,7 @@ class File extends \Core\Cache
      * Get path for this method.
      * @return string
      */
-    private function _getPath()
+    protected function _getPath()
     {
         return PATH_CACHE . $this->_group . '/';
     }
@@ -95,7 +95,7 @@ class File extends \Core\Cache
      * @param string $key
      * @return string
      */
-    private function _makeFileName($key)
+    protected function _makeFileName($key)
     {
         if (!is_string($key)) {
             throw new \Exception("Must give name for cache.");
