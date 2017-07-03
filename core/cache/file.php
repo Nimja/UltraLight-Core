@@ -41,7 +41,9 @@ class File extends \Core\Cache
             unlink($fileName);
         } else {
             file_put_contents($fileName, serialize($content));
-            chmod($fileName, 0666);
+            if (substr(sprintf('%o', fileperms($fileName)), -4) != '0666') {
+                chmod($fileName, 0666);
+            }
         }
         return true;
     }
