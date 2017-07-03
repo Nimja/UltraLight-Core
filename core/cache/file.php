@@ -37,11 +37,12 @@ class File extends \Core\Cache
             mkdir($folder, 0777, true);
             umask($oldUmask);
         }
-        if (empty($content) && file_exists($fileName)) {
+        $isExistingFile = file_exists($fileName);
+        if (empty($content) && $isExistingFile) {
             unlink($fileName);
         } else {
             file_put_contents($fileName, serialize($content));
-            if (substr(sprintf('%o', fileperms($fileName)), -4) != '0666') {
+            if (!$isExistingFile) {
                 chmod($fileName, 0666);
             }
         }
