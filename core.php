@@ -357,14 +357,22 @@ class Core
      */
     private function _setSiteUrl()
     {
-        $host = getKey($this->_server, 'HTTP_HOST');
         self::$isHttps = $this->_requestIsSsl();
         if (!Config::system()->exists('site', 'url')) {
+            $host = getKey($this->_server, 'HTTP_HOST');
             $site_url = self::$isHttps ? 'https://' : 'http://';
             $site_url .= $host . '/';
             Config::system()->set('site', 'url', $site_url);
+            Config::system()->set('site', 'host', $host);
+        } else {
+            $site_url = Config::system()->get('site', 'url');
+            //Make sure we have a trailing slash.
+            if (substr($site_url, -1) !== '/') {
+                $site_url .= '/';
+                Config::system()->set('site', 'url', $site_url);
+            }
+            Config::system()->set('site', 'host', parse_url($site_url, PHP_URL_HOST));
         }
-        Config::system()->set('site', 'host', $host);
         return $this;
     }
 
