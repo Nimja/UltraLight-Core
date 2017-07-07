@@ -345,6 +345,35 @@ class Color
     }
 
     /**
+     * Set brightness from 0 to 1, where 0 is black and 1 is white.
+     *
+     * @param float $brightness
+     * @return \self
+     */
+    public function setBrightness($brightness)
+    {
+        $result = $this->copy();
+        $target = $this->_limit($brightness, 0, 1);
+        $gray = ($this->_red + $this->_green + $this->_blue) / 765;
+        $diff = ($target - $gray);
+        if ($diff === 0) {
+            return $result;
+        } else if ($diff > 0) {
+            $fadeTo = 255;
+            $fadeAmount = $diff * (1 / (1 - $gray));
+        } else {
+            $fadeTo = 0;
+            $fadeAmount = $diff * (-1 / $gray);
+        }
+        $result->setRgb(
+            $this->_fadeValue($this->_red, $fadeTo, $fadeAmount),
+            $this->_fadeValue($this->_green, $fadeTo, $fadeAmount),
+            $this->_fadeValue($this->_blue, $fadeTo, $fadeAmount)
+        );
+        return $result;
+    }
+
+    /**
      * Get CSS color.
      * @return string
      */
@@ -548,13 +577,13 @@ class Color
      */
     private function _calculateGray()
     {
-        $this->_gray = (0.2126 * $this->_red + 0.7152 * $this->_green + 0.0722 * $this->_blue) / 255;
+        $this->_gray = (0.3 * $this->_red + 0.6 * $this->_green + 0.1 * $this->_blue) / 255;
     }
 
     /**
      * Public access to red, green, blue, hue, saturation, lightness
      * @param string $name
-     * @return type
+     * @return mixed
      */
     public function __get($name)
     {
