@@ -345,6 +345,18 @@ class Color
     }
 
     /**
+     * Get gray value, from 0 to 1 from averages.
+     *
+     * For balanced gray, just use $this->gray.
+     *
+     * @return int
+     */
+    public function getLiteralGray()
+    {
+        return ($this->_red + $this->_green + $this->_blue) / 765;
+    }
+
+    /**
      * Set brightness from 0 to 1, where 0 is black and 1 is white.
      *
      * Since we're already fading, you can also adjust how strong you want this effect to be.
@@ -361,7 +373,7 @@ class Color
         if ($fadeAmountLimited == 0) {
             return $result;
         }
-        $gray = ($this->_red + $this->_green + $this->_blue) / 765;
+        $gray = $this->getLiteralGray();
         $diff = ($brightnessTarget - $gray);
         if ($diff === 0) {
             return $result;
