@@ -347,15 +347,22 @@ class Color
     /**
      * Set brightness from 0 to 1, where 0 is black and 1 is white.
      *
+     * Since we're already fading, you can also adjust how strong you want this effect to be.
+     *
      * @param float $brightness
+     * @param float $fadeAmount
      * @return \self
      */
-    public function setBrightness($brightness)
+    public function setBrightness($brightness, $fadeAmount = 1)
     {
         $result = $this->copy();
-        $target = $this->_limit($brightness, 0, 1);
+        $brightnessTarget = $this->_limit($brightness, 0, 1);
+        $fadeAmountLimited = $this->_limit($fadeAmount, 0, 1);
+        if ($fadeAmountLimited == 0) {
+            return $result;
+        }
         $gray = ($this->_red + $this->_green + $this->_blue) / 765;
-        $diff = ($target - $gray);
+        $diff = ($brightnessTarget - $gray);
         if ($diff === 0) {
             return $result;
         } else if ($diff > 0) {
@@ -365,6 +372,7 @@ class Color
             $fadeTo = 0;
             $fadeAmount = $diff * (-1 / $gray);
         }
+        $fadeAmount *= $fadeAmountLimited;
         $result->setRgb(
             $this->_fadeValue($this->_red, $fadeTo, $fadeAmount),
             $this->_fadeValue($this->_green, $fadeTo, $fadeAmount),
