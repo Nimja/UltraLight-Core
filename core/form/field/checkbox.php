@@ -36,7 +36,7 @@ class CheckBox extends \Core\Form\Field
             $checked = !empty($this->value) ? 'checked="checked"' : '';
         }
         return sprintf(
-            '<label><input type="checkbox" name="%s" %s %s/>%s</label>',
+            '<label class="checkbox-inline"><input type="checkbox" name="%s" %s %s/>%s</label>',
             $name,
             $checked,
             $this->_extra($this->_extra),

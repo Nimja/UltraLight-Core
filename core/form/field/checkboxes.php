@@ -11,8 +11,10 @@ class CheckBoxes extends \Core\Form\Field
     {
         $values = $this->_getValues();
         $result = [];
+        $class = getKey($this->_extra, 'class');
         foreach ($values as $name => $label) {
-            $checkBox = new CheckBox($this->name, [CheckBox::EXTRA_BOXVALUE => $name, 'label' => $label]);
+            $extra = [CheckBox::EXTRA_BOXVALUE => $name, 'label' => $label, 'class' => $class];
+            $checkBox = new CheckBox($this->name, $extra);
             $checkBox->wrapDiv = false;
             $checkBox->setValue($this->value);
             $result[] = $checkBox;
