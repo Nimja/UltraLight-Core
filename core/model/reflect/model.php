@@ -29,7 +29,7 @@ class Model {
      */
     public function __construct($class)
     {
-        if (!is_subclass_of($class, '\Core\Model')) {
+        if (!is_subclass_of($class, \Core\Model::class)) {
             throw new \Exception("Reflecting non model class: $class");
         }
         $this->_reflect = new \Core\Model\Reflect();

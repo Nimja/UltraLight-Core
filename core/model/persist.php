@@ -166,7 +166,7 @@ class Persist extends Sessioned
      */
     public function setModel($class, $entity, $sessionOnly = false)
     {
-        if (empty($class) || !is_subclass_of($class, '\Core\Model')) {
+        if (empty($class) || !is_subclass_of($class, \Core\Model::class)) {
             return $this;
         }
         if ($entity instanceof \Core\Model) {
@@ -190,7 +190,7 @@ class Persist extends Sessioned
      */
     public function getModel($class)
     {
-        if (empty($class) || !is_subclass_of($class, '\Core\Model')) {
+        if (empty($class) || !is_subclass_of($class, \Core\Model::class)) {
             return null;
         }
         $result = null;

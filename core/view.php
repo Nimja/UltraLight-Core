@@ -31,11 +31,11 @@ class View
      * @var array
      */
     private static $_transformers = [
-        'glitch' => '\Core\View\Transform\Glitch',
-        'limit' => '\Core\View\Transform\Limit',
-        'math' => '\Core\View\Transform\Math',
-        'number' => '\Core\View\Transform\Number',
-        'random' => '\Core\View\Transform\Random',
+        'glitch' => \Core\View\Transform\Glitch::class,
+        'limit' => \Core\View\Transform\Limit::class,
+        'math' => \Core\View\Transform\Math::class,
+        'number' => \Core\View\Transform\Number::class,
+        'random' => \Core\View\Transform\Random::class,
     ];
     /**
      * Instantiated transformers.

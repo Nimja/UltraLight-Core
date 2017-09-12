@@ -23,7 +23,7 @@ abstract class Controller
      * The user class, is required if setting role.
      * @var int
      */
-    protected $_userClass = '\Core\Model\User';
+    protected $_userClass = \Core\Model\User::class;
     /**
      * Instance of user.
      * @var \Core\Model\User
@@ -72,7 +72,7 @@ abstract class Controller
             if (!headers_sent() && empty($output)) {
                 header('Content-Type: ' . $this->_contentType);
             }
-            if (class_exists('\Core\View', false)) {
+            if (class_exists(\Core\View::class, false)) {
                 $result = \Core\View::unescape($result);
             }
             echo $result;

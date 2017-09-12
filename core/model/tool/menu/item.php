@@ -9,7 +9,7 @@ namespace Core\Model\Tool\Menu;
  */
 class Item {
 
-    public static $_class = '\Core\Model\Page';
+    public static $_class = \Core\Model\Page::class;
 
     /**
      * Page id.

@@ -5,14 +5,15 @@
  */
 class Text
 {
+    const DIVIDER_REGEX = '/^([^[]+)\|(.*)/';
     /**
      * Registered blockparsers.
      * @var array
      */
     private static $_blockParsers = [
-        'image' => '\Core\Format\Text\Image',
-        'link' => '\Core\Format\Text\Link',
-        'tooltip' => '\Core\Format\Text\Tooltip',
+        'image' => \Core\Format\Text\Image::class,
+        'link' => \Core\Format\Text\Link::class,
+        'tooltip' => \Core\Format\Text\Tooltip::class,
     ];
     /**
      * Instantiated blockparsers.
@@ -57,12 +58,7 @@ class Text
             switch ($first) {
                 // Basic H5 title.
                 case '=': $open = '';
-                    $size = 3;
-                    while (substr($rest, 0, 1) == '=') {
-                        $rest = trim(substr($rest, 1));
-                        $size++;
-                    }
-                    $line = '<h' . $size . '>' . $rest . '</h' . $size . '>';
+                    $line = self::_parseTitle($rest);
                     break;
                 // Unordered list.
                 case '*': $open = 'ul';
@@ -129,6 +125,24 @@ class Text
             $string .= '...';
         }
         return self::parse($string, FALSE);
+    }
+
+    private static function _parseTitle($string)
+    {
+        $size = 3;
+        while (substr($string, 0, 1) == '=') {
+            $string = trim(substr($string, 1));
+            $size++;
+        }
+        $extra = '';
+        $tag = 'h' . $size;
+        $matches = null;
+        if (preg_match(self::DIVIDER_REGEX, $string, $matches)) {
+            $class = trim($matches[1]);
+            $string = $matches[2];
+            $extra = " class=\"$class\"";
+        }
+        return "<{$tag}{$extra}>{$string}</{$tag}>";
     }
 
     /**
