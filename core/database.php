@@ -97,11 +97,7 @@ class Database
     public function fetchRows($sql = null)
     {
         $res = $sql ? $this->query($sql): $this->_result;
-        $result = [];
-        while ($row = $res->fetch_assoc()) {
-            $result[] = $row;
-        }
-        return $result;
+        return $res->fetch_all(MYSQLI_ASSOC);
     }
 
     /**
@@ -119,7 +115,7 @@ class Database
     }
 
     /**
-     * Fetch results as a list, using keyField and valueField for example for drowpdowns.
+     * Fetch results as a list, using keyField and valueField for example for dropdown lists.
      *
      * @param string $keyField
      * @param string $valueField
