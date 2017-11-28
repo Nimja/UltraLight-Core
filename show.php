@@ -4,6 +4,25 @@
  */
 class Show
 {
+    /**
+     * We only insert this style once, this allows the actual error to be human readable in pure HTML.
+     *
+     * @var string
+     */
+    private static $_style = '<style>'
+        . 'ul-error {z-index: 1000; border-radius: 7px; display: block; font-family: "Lucida Console", Monaco, monospace; font-size: 14px; text-align: left; color: black; '
+        . 'background: white; margin: 10px; padding: 3px; border: 1px solid gray;}' . PHP_EOL
+        . 'ul-error title {display: block; font-weight: bold; height: 25px; padding-left: 5px; }' . PHP_EOL
+        . 'ul-error trace {display: block; float: right; width: auto; height: 23px; padding: 1px 5px; background: white; border: 1px solid black; opacity: .8; }' . PHP_EOL
+        . 'ul-error trace label {cursor: pointer;}' . PHP_EOL
+        . 'ul-error trace rest {position: absolute; display: none; margin: -5px; white-space: pre; background: white; border: 1px solid black;}' . PHP_EOL
+        . 'ul-error trace input[type=checkbox] {display: none;}' . PHP_EOL
+        . 'ul-error trace input[type=checkbox]:checked ~ rest {display: block;}' . PHP_EOL
+        . 'ul-error msg {display: block; border-radius: 5px; background: #fff; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray;}' . PHP_EOL
+        . 'ul-error msg c {display: block; margin: 0px; padding: 1px 5px; min-height: 15px; white-space: pre-wrap; border-bottom: 1px solid #eee;}' . PHP_EOL
+        . 'ul-error msg c:nth-child(even) { background: #f5f5f5;}' . PHP_EOL
+        . '</style>' . PHP_EOL . PHP_EOL;
+
     CONST STR_PAD = '  ';
     const COLOR_SUCCESS = '#dfd'; // Green.
     const COLOR_NICE = '#def'; // Blue.
@@ -11,6 +30,12 @@ class Show
     const COLOR_ERROR = '#fdd'; // Orange.
     const COLOR_FATAL = '#f99'; // Red.
     const COLOR_DEBUG = '#ff9'; // Yellow.
+
+    /**
+     * Current error counter.
+     *
+     * @var int
+     */
     public static $curError = 0;
 
     /**
@@ -25,34 +50,70 @@ class Show
     public static function info($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false)
     {
         self::$curError++;
+        $result = \Core::$console ? self::_renderForConsole($var, $title) : self::_renderForWeb($var, $title, $color);
+        // Switch between returning or echoing. (echo is default);
+        $resultClean = Core::cleanPath($result);
+        if (self::$curError === 1) {
+            $resultClean = self::$_style . $resultClean;
+        }
+        if ($return) {
+            return $resultClean;
+        } else {
+            echo $resultClean;
+        }
+    }
+
+    /**
+     * Simplified output when running in console.
+     *
+     * @param mixed $var
+     * @param string $title
+     * @return string
+     */
+    private static function _renderForConsole($var, $title)
+    {
+        $output = is_object($var) ? get_class($var) . ': ' : gettype($var) . ': ';
+        if ($var instanceof \Exception) {
+            $output .= $var->getMessage() . PHP_EOL . $var->getTraceAsString();
+        } else {
+            $output .= print_r($var, true);
+        }
+        return html_entity_decode($title) . PHP_EOL . $output . PHP_EOL;
+    }
+
+    /**
+     * Complex HTML output when running in web.
+     *
+     * @param mixed $var
+     * @param string $title
+     * @param string $color
+     * @return string
+     */
+    private static function _renderForWeb($var, $title, $color)
+    {
         if ($var instanceof \Exception) {
             $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
         } else {
             $trace = self::_getTraceInfo(self::_getDebug());
         }
-        $space = "\n\n";
-        $title = $space. Sanitize::clean($title) . $space;
-        if (\Core::$console) {
-            $result = html_entity_decode($title) . PHP_EOL . print_r($var, true) . PHP_EOL;
-        } else {
-            $content = $space . self::_showVariable($var) . $space;
-            // Create result.
-            $result = '<div style="font-family: arial; font-size: 14px; text-align: left; color: black; background: '
-                . $color . '; margin: 2px; padding: 2px; border: 1px solid gray; ">'
-                // Trace block
-                . $trace
-                // Title
-                . '<b>' . $title . '</b><div style="font-family: courier; font-size: 11px; margin:0px; padding: 0px; border: 1px solid gray; background: #f9f9f9;">'
-                // Actual content.
-                . $content . '</div></div>';
-        }
-        // Switch between returning or echoing. (echo is default);
-        $result = Core::cleanPath($result);
-        if ($return) {
-            return $result;
-        } else {
-            echo $result;
-        }
+        $cleanTitle = Sanitize::clean($title);
+        // Render content.
+        $content = self::_showVariable($var);
+        // Create result.
+        $result = "
+            <ul-ERROR style=\"background: $color; \">
+            {$trace}
+
+            <title>{$cleanTitle}</title>
+
+            <msg>
+
+            {$content}
+
+            </msg>
+            </ul-ERROR>
+        ";
+        return $result;
     }
 
     /**
@@ -87,7 +148,7 @@ class Show
             } else {
                 $pre = implode(', ', $trace);
             }
-            $preLine = $isCore ? $pre : '<span style="color: black">' . $pre . '</span>';
+            $preLine = $isCore ? $pre : '<b>' . $pre . '</b>';
             $lines[] = $preLine . ' : ' . $post;
         }
         return $lines;
@@ -99,14 +160,13 @@ class Show
      */
     private static function _getTraceInfo($locations)
     {
-        $curError = self::$curError;
-        $location = $locations[0];
-        $locations = implode("<br />", $locations);
-        $style = 'position: absolute; display: none; width: 350px; padding: 3px; margin: -4px 0px 0px -4px; background: white; border: 1px solid black;';
-        return "<div style=\"float: right; color: #999; width: 350px;\">
-                    <div style=\"$style\" id=\"trace-$curError\" onclick=\"document.getElementById('trace-$curError').style.display='none'\">$locations</div>
-                    <div onclick=\"document.getElementById('trace-$curError').style.display='block'\">$location</div>
-                </div>";
+        $id = 't-' . self::$curError;
+        $location = array_shift($locations);
+        $rest = implode(PHP_EOL, $locations);
+        return "<trace>
+    <label for=\"{$id}\">{$location}</label>
+    <input type=\"checkbox\" id=\"{$id}\"><rest>{$rest}</rest>
+</trace>";
     }
 
     /**
@@ -119,17 +179,11 @@ class Show
     {
         $lines = \Core\Format\Variable::parse($var);
         $result = [];
-        foreach ($lines as $index => $line) {
+        foreach ($lines as $line) {
             $line = htmlentities($line);
-            $bg = ($index % 2) ? 'background: #f0f2f4;' : '';
-            $result[] = "<div style=\"$bg margin: 0px; padding: 1px 5px; min-height: 15px;\" >$line</div>";
+            $result[] = "<c>{$line}</c>";
         }
-        $resultString = implode(PHP_EOL, $result);
-        return str_replace(
-            ['  ', "\t"],
-            ['&nbsp;&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;'],
-            $resultString
-        );
+        return implode(PHP_EOL, $result);
     }
 
     /**
