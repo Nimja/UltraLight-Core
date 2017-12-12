@@ -50,12 +50,11 @@ class Show
     public static function info($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false)
     {
         self::$curError++;
-        $result = \Core::$console ? self::_renderForConsole($var, $title) : self::_renderForWeb($var, $title, $color);
+        $result = \Core::$console ?
+            self::_renderForConsole($var, $title) :
+            self::_renderForWeb($var, $title, $color);
         // Switch between returning or echoing. (echo is default);
         $resultClean = Core::cleanPath($result);
-        if (self::$curError === 1) {
-            $resultClean = self::$_style . $resultClean;
-        }
         if ($return) {
             return $resultClean;
         } else {
@@ -113,6 +112,9 @@ class Show
             </msg>
             </ul-ERROR>
         ";
+        if (self::$curError === 1) {
+            $result = self::getStyle() . $result;
+        }
         return $result;
     }
 
@@ -267,5 +269,15 @@ class Show
     public static function handleError($errNo, $errStr, $errFile, $errLine)
     {
         self::error("Code: $errNo, Line: $errLine, File: $errFile", $errStr);
+    }
+
+    /**
+     * If you manually want to insert it.
+     *
+     * @return string
+     */
+    public static function getStyle()
+    {
+        return self::$_style;
     }
 }
