@@ -57,7 +57,7 @@ class Session {
      */
     public function set($name, $value = null)
     {
-        if ($value == self::DELETE || blank($value)) {
+        if ((is_string($value) && $value === self::DELETE) || blank($value)) {
             unset($this->_variables[$name]);
         } else {
             $this->_variables[$name] = $value;
