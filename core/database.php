@@ -243,11 +243,11 @@ class Database
     }
 
     /**
-     * Update a table with $values and $where
+     * Update a table with $values by where.
      *
      * @param string $table
      * @param array @values
-     * @param string|array $where
+     * @param string|array $search
      * @return int How many rows we updated.
      * @throws \Exception
      */
@@ -263,6 +263,32 @@ class Database
         if (!empty($table) && !empty($values)) {
             $sql = "UPDATE {$this->escape($table, true)}
                 SET {$this->_arrayToSql($values)}
+                WHERE {$this->searchToSql($search)}";
+            $this->query($sql);
+            $result = $this->count();
+        }
+        return $result;
+    }
+
+    /**
+     * Delete entries from table by where.
+     *
+     * @param string $table
+     * @param string|array $search
+     * @return int How many rows we removed.
+     * @throws \Exception
+     */
+    public function delete($table, $search)
+    {
+        if (empty($table)) {
+            throw new \Exception("Table is required to remove.");
+        }
+        if (empty($search)) {
+            throw new \Exception("Attempting to delete without find.");
+        }
+        $result = false;
+        if (!empty($table)) {
+            $sql = "DELETE FROM {$this->escape($table, true)}
                 WHERE {$this->searchToSql($search)}";
             $this->query($sql);
             $result = $this->count();
