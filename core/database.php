@@ -283,13 +283,14 @@ class Database
         if (empty($table)) {
             throw new \Exception("Table is required to remove.");
         }
-        if (empty($search)) {
-            throw new \Exception("Attempting to delete without find.");
+        $where = $this->searchToSql($search);
+        if ($where == '1') {
+            throw new \Exception("Attempting to delete without find: {$search}");
         }
         $result = false;
         if (!empty($table)) {
             $sql = "DELETE FROM {$this->escape($table, true)}
-                WHERE {$this->searchToSql($search)}";
+                WHERE {$where}";
             $this->query($sql);
             $result = $this->count();
         }
