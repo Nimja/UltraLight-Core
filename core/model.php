@@ -23,20 +23,6 @@ abstract class Model {
     private static $_reflections = [];
 
     /**
-     * Cache per execution cycle, to prevent double queries.
-     *
-     * @var array
-     */
-    private static $_cache = [];
-
-    /**
-     * Static memory caching.
-     *
-     * @var array
-     */
-    protected static $cache = [];
-
-    /**
      * The current class.
      *
      * @var string
@@ -51,7 +37,7 @@ abstract class Model {
     public $id = 0;
 
     /**
-     * Is true if a save succeeded succesfully.
+     * Is true if a save succeeded successfully.
      *
      * @var boolean
      */
@@ -69,7 +55,6 @@ abstract class Model {
             $this->setValues($values);
             if (!empty($values[self::ID])) {
                 $this->id = intval($values[self::ID]);
-                self::_saveCache($this->_class, $this);
             }
         }
     }
@@ -175,7 +160,6 @@ abstract class Model {
             throw new \Exception("Attempting to save empty model.");
         }
         $this->_saveValues($values);
-        self::_saveCache($this->_class, $this);
         return $this;
     }
 
@@ -208,7 +192,6 @@ abstract class Model {
         $re = $this->_re();
         $table = $re->table;
         $re->db()->delete($table, $this->id);
-        self::_clearCache($this->_class, $this);
         $this->id = 0;
     }
 
@@ -327,16 +310,13 @@ abstract class Model {
             return null;
         }
         $class = get_called_class();
-        $result = self::_loadCache($class, $id);
-        if (!$result) {
-            $re = self::re($class);
-            $values = $re->db()
-                ->search($re->table, $id)
-                ->fetchFirstRow();
-            if (!empty($values)) {
-                $result = new $class($values);
-                self::_saveCache($class, $result);
-            }
+        $re = self::re($class);
+        $result = null;
+        $values = $re->db()
+            ->search($re->table, $id)
+            ->fetchFirstRow();
+        if (!empty($values)) {
+            $result = new $class($values);
         }
         return $result;
     }
@@ -383,47 +363,8 @@ abstract class Model {
         while ($row = $res->fetch_assoc()) {
             $model = new $class($row);
             $result[$model->id] = $model;
-            self::_saveCache($class, $model);
         }
         return $result;
-    }
-
-    /**
-     * Save object to cache.
-     * @param string $class
-     * @param \Core\Model $object
-     */
-    protected static function _saveCache($class, $object)
-    {
-        if ($object instanceof \Core\Model && $object->id > 0) {
-            $cacheId = $class . '::' . $object->id;
-            self::$_cache[$cacheId] = $object;
-        }
-    }
-
-    /**
-     * Clear object from cache.
-     * @param string $class
-     * @param \Core\Model $object
-     */
-    protected static function _clearCache($class, $object)
-    {
-        if ($object instanceof \Core\Model && $object->id > 0) {
-            $cacheId = $class . '::' . $object->id;
-            unset(self::$_cache[$cacheId]);
-        }
-    }
-
-    /**
-     * Load object from cache.
-     * @param string $class
-     * @param int $id
-     * @return \Core\Model
-     */
-    protected static function _loadCache($class, $id)
-    {
-        $cacheId = $class . '::' . $id;
-        return isset(self::$_cache[$cacheId]) ? self::$_cache[$cacheId] : false;
     }
 
     /**
