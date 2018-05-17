@@ -224,7 +224,7 @@ class Request
         $query = self::server('QUERY_STRING');
         if ($includeRequest) {
             if ($query) {
-                $url .= '?' . $query;
+                $targetUrl .= '?' . $query;
             }
         } else if ($query) {
             $sameRequest = false;
