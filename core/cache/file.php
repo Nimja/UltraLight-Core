@@ -92,6 +92,9 @@ class File extends \Core\Cache
      */
     protected function _getPath()
     {
+        if (!defined('PATH_CACHE')) {
+            throw new \Exception("PATH_CACHE is NOT set!");
+        }
         return PATH_CACHE . $this->_group . DIRECTORY_SEPARATOR;
     }
 

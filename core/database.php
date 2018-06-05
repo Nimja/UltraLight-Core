@@ -209,9 +209,7 @@ class Database
                 $result = 'NULL';
             } else {
                 $result = $this->_mysqli->real_escape_string(trim($value));
-                if (!is_numeric($result) || $forceQuotes) {
-                    $result = $quote . $result . $quote;
-                }
+                $result = $quote . $result . $quote;
             }
         } else { //If it's an array.
             $result = [];

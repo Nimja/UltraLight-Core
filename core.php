@@ -445,16 +445,13 @@ class Core
             $uri = parse_url(self::$requestFull, PHP_URL_PATH);
             self::$requestUrl = $siteUrl . $uri;
         }
-        // Remove /index and lower case.
-        $withoutIndex = str_replace('/index', '/', strtolower($uri));
         // Remove leading, trailing and double slashes.
-        $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($withoutIndex), '/ '));
-        // We only allow alphanumeric, underscores, dashes, periods and slashes.
-        $clean2 = preg_replace('/[^a-z0-9\_\-\/\.]/', '', strtolower($clean));
-        // We replace multiple periods by a single one.
-        $clean3 = preg_replace('/\.{2,}/', '.', strtolower($clean2));
+        $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
         // We unify the url to use + instead of %20.
-        $final = str_replace('%20', '+', $clean3);
+        $clean2 = str_replace('%20', '+', $clean);
+        // Remove /index.
+        $final = str_replace('/index', '/', $clean2);
+
         if ($uri != '/' . $final && !self::$console) {
             Request::redirect($final, 302, true);
         }
