@@ -102,6 +102,33 @@ class System
     }
 
     /**
+     * Chmod that only works if the script runner is the same as the file owner.
+     *
+     * @param string $file
+     * @param int $permissions
+     */
+    public static function chmod($file, $permissions = 0666)
+    {
+        if (getmyuid() === fileowner($file)) {
+            chmod($file, $permissions);
+        }
+    }
+
+    /**
+     * Make sure file exists and attempt to set correct permissions.
+     *
+     * @param string $file
+     * @param int $permissions
+     */
+    public static function ensureFile($file, $permissions = 0666)
+    {
+        if (!file_exists($file)) {
+            touch($file);
+        }
+        self::chmod($file, $permissions);
+    }
+
+    /**
      * Get the extension of a file.
      * @param type $file
      * @return type
@@ -129,13 +156,19 @@ class System
     /**
      * Nice mkdir wrapper, not creating double and enforcing chmod.
      * @param string $path
+     * @param int $permissions
+     * @param bool $recursive
      * @return boolean success
      */
-    public static function mkpath($path)
+    public static function mkpath($path, $permissions = 0777, $recursive = false)
     {
         $result = true;
         if (!file_exists($path)) {
-            $result = mkdir($path, 0777);
+            $oldUmask = umask(0);
+            $result = mkdir($path, $permissions, $recursive);
+            umask($oldUmask);
+        } else {
+            self::chmod($path, $permissions);
         }
         return $result;
     }
