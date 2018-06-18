@@ -81,16 +81,12 @@ abstract class Controller
 
     /**
      * Executing the run function, so it can be overwritten in child classes.
-     * @return type
+     *
+     * @return string
      */
     protected function _executeRun()
     {
-        try {
-            $result = $this->_run();
-        } catch (Exception $e) {
-            $result = \Show::error($e, "Exception!", true);
-        }
-        return $result;
+        return $this->_run();
     }
 
     /**
