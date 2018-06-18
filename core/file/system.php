@@ -109,7 +109,7 @@ class System
      */
     public static function chmod($file, $permissions = 0666)
     {
-        if (getmyuid() === fileowner($file)) {
+        if (posix_getuid() === fileowner($file)) {
             chmod($file, $permissions);
         }
     }
