@@ -170,7 +170,11 @@ class Core
                 $page->display();
             }
         } catch (\Exception $e) {
-            Show::error($e);
+            if (self::$console) {
+                throw $e;
+            } else {
+                Show::error($e);
+            }
         }
         self::debug(self::$classes, 'Loaded classes');
         self::debug('Done.');
