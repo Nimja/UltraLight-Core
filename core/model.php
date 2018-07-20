@@ -62,7 +62,8 @@ abstract class Model {
     /**
      * Fill the object with values.
      *
-     * Unset properties in the array are only used if the property is allowed to be empty (for example boolean values).
+     * We only set values that are present in the array.
+     * If the value is empty/null, this is only allowed for certain fields.
      *
      * @var array $values
      * @return array All the values of this object.
@@ -73,13 +74,14 @@ abstract class Model {
             return false;
         }
         $re = $this->_re();
-        foreach ($re->fields as $field => $type) {
-            if (!isset($values[$field])) {
-                $value = !isset($re->blankFields[$field]) ? $this->{$field} : '';
-            } else {
-                $value = getKey($values, $field, '');
+        foreach ($values as $field => $value) {
+            if (!isset($re->fields[$field])) {
+                continue;
             }
-            $this->_setValue($field, $type, $value);
+            if (empty($value) && !isset($re->blankFields[$field])) {
+                continue;
+            }
+            $this->_setValue($field, $re->fields[$field], $value);
         }
     }
 
