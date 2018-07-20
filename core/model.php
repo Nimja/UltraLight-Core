@@ -64,6 +64,7 @@ abstract class Model {
      *
      * We only set values that are present in the array.
      * If the value is empty/null, this is only allowed for certain fields.
+     * However, int fields are allowed to be zero.
      *
      * @var array $values
      * @return array All the values of this object.
@@ -78,10 +79,11 @@ abstract class Model {
             if (!isset($re->fields[$field])) {
                 continue;
             }
-            if (empty($value) && !isset($re->blankFields[$field])) {
+            $type = $re->fields[$field];
+            if (empty($value) && !isset($re->blankFields[$field]) && substr($type, -3) !== 'int') {
                 continue;
             }
-            $this->_setValue($field, $re->fields[$field], $value);
+            $this->_setValue($field, $type, $value);
         }
     }
 
