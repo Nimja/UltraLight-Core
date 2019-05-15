@@ -46,6 +46,7 @@ class Text
         // Split into lines.
         $lines = explode("\n", $str);
         $open = '';
+        $blockTag = '';
         $prevopen = '';
         $result = '';
         foreach ($lines as $line) {
@@ -64,7 +65,20 @@ class Text
                 case '*': $open = 'ul';
                     $line = '<li>' . $rest . '</li>';
                     break;
-                // Ordered list.
+
+                    // Blockquote.
+                case ';':
+                    if (!empty($rest)) {
+                        $parts = self::_parseBlock($rest);
+                        $line = $parts['line'];
+                        $blockTag = $parts['tag'];
+                    } else {
+                        $line = '</' . $blockTag . '>';
+                        $blockTag = '';
+                    }
+                    break;
+
+                    // Ordered list.
                 case '#': $open = 'ol';
                     $line = '<li>' . $rest . '</li>';
                     break;
@@ -93,6 +107,7 @@ class Text
         }
         // Close any open tag.
         if (!empty($open)) $result .= '</' . $open . '>';
+        if (!empty($blockTag)) $result .= '</' . $blockTag . '>';
 
         #// o bold/italic
         if (!empty($result)) {
@@ -143,6 +158,22 @@ class Text
             $extra = " class=\"$class\"";
         }
         return "<{$tag}{$extra}>{$string}</{$tag}>";
+    }
+
+    private static function _parseBlock($string)
+    {
+        if (preg_match(self::DIVIDER_REGEX, $string, $matches)) {
+            $tag = trim($matches[1]);
+            $class = trim($matches[2]);
+            $extra = " class=\"$class\"";
+        } else {
+            $tag = trim($string);
+            $extra = '';
+        }
+        return [
+            'line' => "<{$tag}{$extra}>",
+            'tag' => $tag,
+        ];
     }
 
     /**

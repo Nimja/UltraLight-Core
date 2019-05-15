@@ -172,8 +172,14 @@ class Core
         } catch (\Exception $e) {
             if (self::$console) {
                 throw $e;
-            } else {
+            } else if (class_exists('\Show', true)) {
                 Show::error($e);
+            } else {
+                echo '<pre>';
+                echo $e->getMessage() . PHP_EOL . PHP_EOL;
+                echo $e->getTraceAsString();
+                echo '</pre>';
+                exit;
             }
         }
         self::debug(self::$classes, 'Loaded classes');
