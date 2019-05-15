@@ -178,11 +178,13 @@ class Page extends \Core\Model\Ordered {
         $root->buildFullUrlAndPath();
         $urls = [];
         $reverse = [];
+        $lookup = [];
         foreach ($items as $id => $menu) {
             $urls[$menu->fullUrl] = $id;
+            $lookup[$id] = ['url' => $menu->fullUrl, 'title' => $menu->title];
             $reverse[$menu->id] = $menu->fullPath;
         }
-        return new Tool\Menu\Root($items[0], $urls, $reverse);
+        return new Tool\Menu\Root($items[0], $urls, $reverse, $lookup);
     }
 
     /**
