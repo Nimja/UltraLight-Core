@@ -28,16 +28,25 @@ class Root {
     public $reverse;
 
     /**
+     * Lookup from id to url + title.
+     *
+     * @var array
+     */
+    public $lookup;
+
+    /**
      * Basic constructor.
      * @param Item $root
      * @param array $urls
      * @param array $reverse
+     * @param array $reverse
      */
-    public function __construct($root, $urls, $reverse)
+    public function __construct($root, array $urls, array $reverse, array $lookup = [])
     {
         $this->root = $root;
         $this->urls = $urls;
         $this->reverse = $reverse;
+        $this->lookup = $lookup;
     }
 
     /**

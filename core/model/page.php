@@ -30,7 +30,6 @@ class Page extends \Core\Model\Ordered {
      * Partial URL.
      * @db-type varchar
      * @db-length 64
-     * @validate url|1
      * @var string
      */
     public $url;
@@ -95,8 +94,22 @@ class Page extends \Core\Model\Ordered {
      */
     public function getCount()
     {
-        $re = $this->re();
-        return $re->db()->getCount($re->table, ['parentId' => $this->parentId]);
+        return $this->getChildCount();
+    }
+
+
+    /**
+     * Get values that are used as saving. Easy to overwrite.
+     * @param Model\Reflect $re
+     * @return array
+     */
+    protected function _getValuesForSave($re)
+    {
+        $values = parent::_getValuesForSave($re);
+        if (empty($values['url'])) {
+            $values['url'] = str_replace(' ', '_', strtolower($values['title']));
+        }
+        return $values;
     }
 
     /* ------------------------------------------------------------
@@ -165,11 +178,13 @@ class Page extends \Core\Model\Ordered {
         $root->buildFullUrlAndPath();
         $urls = [];
         $reverse = [];
+        $lookup = [];
         foreach ($items as $id => $menu) {
             $urls[$menu->fullUrl] = $id;
+            $lookup[$id] = ['url' => $menu->fullUrl, 'title' => $menu->title];
             $reverse[$menu->id] = $menu->fullPath;
         }
-        return new Tool\Menu\Root($items[0], $urls, $reverse);
+        return new Tool\Menu\Root($items[0], $urls, $reverse, $lookup);
     }
 
     /**
