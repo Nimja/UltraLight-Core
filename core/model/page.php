@@ -107,9 +107,23 @@ class Page extends \Core\Model\Ordered {
     {
         $values = parent::_getValuesForSave($re);
         if (empty($values['url'])) {
-            $values['url'] = str_replace(' ', '_', strtolower($values['title']));
+            $values['url'] = $this->makeUrlFromTitle((string) $values['title']);
         }
         return $values;
+    }
+
+    /**
+     * Make url from title.
+     *
+     * @param string $title
+     * @return string
+     */
+    protected function makeUrlFromTitle(string $title): string
+    {
+        $decoded = strtolower(html_entity_decode($title));
+        $replaced = preg_replace("/[^a-z\-]/", ' ', $decoded);
+        $underscored = preg_replace("/\s+/", '_', trim($replaced));
+        return $underscored;
     }
 
     /* ------------------------------------------------------------
