@@ -62,6 +62,13 @@ abstract class Ordered extends \Core\Model {
         return $result;
     }
 
+    /**
+     * Get siblings.
+     */
+    public function getSiblings($order = self::POSITION . ' ASC, id ASC')
+    {
+        return self::find(null, $order);
+    }
 
     /* ------------------------------------------------------------
      * 			STATIC FUNCTIONS
@@ -95,5 +102,16 @@ abstract class Ordered extends \Core\Model {
             );
         }
         return $result;
+    }
+
+    /**
+     * Return the order for sorting, or false if we use positions explicitly, implemented in child.
+     *
+     * @param integer $id
+     * @return string|null
+     */
+    public static function getAutoSortOrder(int $id): ?string
+    {
+       return null;
     }
 }

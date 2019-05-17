@@ -1,4 +1,5 @@
 <?php namespace Core\Model\Tool;
+
 /**
  * Helper entity for page model, but can be used more broad.
  *
@@ -8,19 +9,28 @@ class Order
 {
     /**
      * The class we use.
+     *
      * @var string
      */
     protected $_entityClass;
     /**
      * The order link.
+     *
      * @var string
      */
     protected $_orderLink;
     /**
      * The item we're currently viewing children of.
+     *
      * @var int
      */
     protected $_currentId;
+    /**
+     * Is this id autosorted.
+     *
+     * @var bool
+     */
+    protected $autoSorted;
 
     /**
      * Max position for the items.
@@ -30,6 +40,7 @@ class Order
 
     /**
      * Reverse lookup by positions for sortable items.
+     *
      * @var Order\Item[]
      */
     protected $_sortableItems;
@@ -45,6 +56,7 @@ class Order
         $this->_entityClass = $class;
         $this->_orderLink = $orderLink;
         $this->_currentId = $currentId;
+        $this->autoSorted = (bool)$class::getAutoSortOrder($currentId);
     }
 
     /**
@@ -154,8 +166,8 @@ class Order
     private function _makeRow($position, $id, $title, $up = false, $down = false, $hasLink = true)
     {
         $mainLink = $hasLink ? $this->_makeLink($id, $title) : $this->_fakeLink($title);
-        $upLink = !$up ? '' : $this->_makeLink($this->_currentId, '&uArr;', $id . '-' . ($position - 1));
-        $downLink = !$down ? '' : $this->_makeLink($this->_currentId, '&dArr;', $id . '-' . ($position + 1));
+        $upLink = !$up || $this->autoSorted ? '' : $this->_makeLink($this->_currentId, '&uArr;', $id . '-' . ($position - 1));
+        $downLink = !$down || $this->autoSorted ? '' : $this->_makeLink($this->_currentId, '&dArr;', $id . '-' . ($position + 1));
         return "<tr><td>{$mainLink}</td><td>{$upLink}</td><td>{$downLink}</td></tr>";
     }
 

@@ -10,7 +10,22 @@ namespace Core\Model;
  * @author Nimja
  * @db-database live
  */
-class Page extends \Core\Model\Ordered {
+class Page extends \Core\Model\Ordered
+{
+    const AUTOSORT_NO = 'no';
+    const AUTOSORT_ALL = 'all';
+    const AUTOSORT_ROOT = 'root';
+    /**
+     * Set method for specific parents, or default method with "all".
+     *
+     * By default, the root is NOT sorted, you have to explicitly set it with the "root" key.
+     *
+     * Methods have to be a valid order method, like "date ASC".
+     *
+     * @var array
+     */
+    public static $autoSorting = [];
+
     /**
      * When to collapse or hide children.
      * @var int
@@ -88,15 +103,27 @@ class Page extends \Core\Model\Ordered {
     }
 
     /**
-     * How many siblings this page has..
+     * How many siblings this page has.
      *
      * @return int
      */
     public function getCount()
     {
-        return $this->getChildCount();
+        $re = $this->re();
+        return $re->db()->getCount($re->table, ['parentId' => $this->parentId]);
     }
 
+    /**
+     * Add support for autosort.
+     *
+     * @return \self
+     */
+    public function save()
+    {
+        $result = parent::save();
+        $this->autoSort();
+        return $result;
+    }
 
     /**
      * Get values that are used as saving. Easy to overwrite.
@@ -107,9 +134,30 @@ class Page extends \Core\Model\Ordered {
     {
         $values = parent::_getValuesForSave($re);
         if (empty($values['url'])) {
-            $values['url'] = $this->makeUrlFromTitle((string) $values['title']);
+            $values['url'] = $this->makeUrlFromTitle((string)$values['title']);
         }
         return $values;
+    }
+
+    /**
+     * Execute autosort after save.
+     *
+     * Autosort cannot happen with root, at this moment.
+     *
+     * @return void
+     */
+    protected function autoSort()
+    {
+        $order = self::getAutoSortOrder($this->parentId);
+        if (!$order) {
+            return;
+        }
+        $siblings = $this->getSiblings($order);
+        $count = 1;
+        foreach ($siblings as $child) {
+            $child->setPosition($count);
+            $count++;
+        }
     }
 
     /**
@@ -124,6 +172,38 @@ class Page extends \Core\Model\Ordered {
         $replaced = preg_replace("/[^a-z\-]/", ' ', $decoded);
         $underscored = preg_replace("/\s+/", '_', trim($replaced));
         return $underscored;
+    }
+
+
+    /**
+     * Get single sibling efficiently.
+     *
+     * @param boolean $left True for previous, false for next.
+     * @param boolean $end True for first/last.
+     * @return void
+     */
+    public function getSibling(bool $left, bool $end = false)
+    {
+        $search = sprintf(
+            'parentId|=%s;position|%s%s',
+            $this->parentId,
+            $left ? '<' : '>',
+            $this->position
+        );
+        if ($left) {
+            $order = $end ? ' ASC, id ASC' : ' DESC, id DESC';
+        } else {
+            $order = $end ? ' DESC, id DESC' : ' ASC, id ASC';
+        }
+        return self::findOne($search, self::POSITION . $order);
+    }
+
+    /**
+     * Get siblings.
+     */
+    public function getSiblings($order = self::POSITION . ' ASC, id ASC')
+    {
+        return self::getChildren($this->parentId, $order);
     }
 
     /* ------------------------------------------------------------
@@ -206,9 +286,9 @@ class Page extends \Core\Model\Ordered {
      * @param int $parentId
      * @return array
      */
-    public static function getChildren($parentId)
+    public static function getChildren($parentId, $order = self::POSITION . ' ASC, id ASC')
     {
-        return self::find(['parentId' => $parentId], 'position ASC');
+        return self::find(['parentId' => $parentId], $order);
     }
 
     /**
@@ -307,6 +387,21 @@ class Page extends \Core\Model\Ordered {
     }
 
     /**
+     * Return the order for sorting, or false if we use positions explicitly.
+     *
+     * By default, this is based on the autoSorting array.
+     *
+     * @param integer $id
+     * @return string|null
+     */
+    public static function getAutoSortOrder(int $id): ?string
+    {
+        $all = $id ? self::AUTOSORT_ALL : self::AUTOSORT_ROOT;
+        $order = getKey(self::$autoSorting, $id, getKey(self::$autoSorting, $all, null));
+        return $order == self::AUTOSORT_NO ? null : $order;
+    }
+
+    /**
      * Create multiple items at once with associative arrays.
      *
      * Use the 'children' to automatically set parentId.
@@ -354,5 +449,4 @@ class Page extends \Core\Model\Ordered {
         }
         return $count;
     }
-
 }
