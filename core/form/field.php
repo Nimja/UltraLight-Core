@@ -11,7 +11,7 @@ abstract class Field
     public $name;
     /**
      * Current value.
-     * @var string
+     * @var string|array
      */
     public $value;
     /**
