@@ -15,11 +15,6 @@ abstract class Field
      */
     public $value;
     /**
-     * If this object is an upload form element.
-     * @var boolean
-     */
-    public $isUpload = false;
-    /**
      * Flag if this object has an error.
      * @var boolean
      */

@@ -41,6 +41,13 @@ class Form
     private $_isHorizontal = false;
 
     /**
+     * If this form has a submit button.
+     *
+     * @var boolean
+     */
+    private $hasSubmit = false;
+
+    /**
      * Change the fieldset.
      * @param string $page
      * @param null|array $extra
@@ -173,8 +180,10 @@ class Form
         if ($field instanceof \Core\Form\Field) {
             $field->setValue($this->getValue($field->name));
             $field->setHorizontal($this->_isHorizontal);
-            if ($field->isUpload) {
+            if ($field instanceof \Core\Form\Field\Upload) {
                 $this->_containsUpload = true;
+            } else if ($field instanceof \Core\Form\Field\Submit) {
+                $this->hasSubmit = true;
             }
         }
         return $field;
@@ -287,7 +296,9 @@ class Form
             $tag = trim(substr($tag, 0, -1)) . ' enctype="multipart/form-data">';
         }
         $result = array_merge([$tag], $this->_data);
-        $result[] = $this->getCtrlSave();
+        if ($this->hasSubmit) {
+            $result[] = $this->getCtrlSave();
+        }
         $result[] = '</form>';
         return implode(PHP_EOL, $result);
     }
