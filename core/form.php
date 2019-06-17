@@ -1,5 +1,6 @@
 <?php
 namespace Core;
+
 /**
  * Beautifully simple form creator.
  *
@@ -260,6 +261,21 @@ class Form
     }
 
     /**
+     * Get capture of ctrl+s / cmd+s to press the first submit button.
+     *
+     * @return self
+     */
+    protected function getCtrlSave()
+    {
+        return '<script>$(document).keydown(' .
+                'function(e) {' .
+                'if((e.ctrlKey || e.metaKey) && e.which == 83) {' .
+                'e.preventDefault(); $(\'button[type="submit"]\').first().click(); return false;' .
+                '}' .
+                '});</script>';
+    }
+
+    /**
      * Very simple toString function.
      * @return string
      */
@@ -271,6 +287,7 @@ class Form
             $tag = trim(substr($tag, 0, -1)) . ' enctype="multipart/form-data">';
         }
         $result = array_merge([$tag], $this->_data);
+        $result[] = $this->getCtrlSave();
         $result[] = '</form>';
         return implode(PHP_EOL, $result);
     }
