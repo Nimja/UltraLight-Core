@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Static class to work with cookies, get and post.
  */
@@ -54,9 +55,27 @@ class Request
     }
 
     /**
+     * Return true if we are on HTTPS connection.
+     *
+     * @return boolean
+     */
+    public static function isSecure()
+    {
+        // In case of forwarding.
+        if (self::server('HTTP_X_PROTO') === 'SSL' || self::server('HTTP_X_PORT') === '443') {
+            return true;
+        }
+        // In case of SSL.
+        $https = self::server('HTTPS');
+        $port = self::server('SERVER_PORT');
+        return (!empty($https) && $https !== 'off') || self::server('SERVER_PORT') === '443';
+    }
+
+    /**
      * Get value from the global INPUT_SERVER
-     * @param type $name
-     * @param type $default
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
      */
     public static function server($name, $default = null)
     {
@@ -85,8 +104,8 @@ class Request
     public static function getValues()
     {
         if (self::$_values === null) {
-            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ? : [];
-            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ? : [];
+            $get = filter_input_array(INPUT_GET, FILTER_UNSAFE_RAW) ?: [];
+            $post = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?: [];
             self::$_values = Sanitize::clean(array_merge($get, $post));
         }
         return self::$_values;
@@ -157,7 +176,7 @@ class Request
     public static function getCookies()
     {
         if (self::$_cookies === null) {
-            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ? : [];
+            $cookies = filter_input_array(INPUT_COOKIE, FILTER_UNSAFE_RAW) ?: [];
             self::$_cookies = Sanitize::clean($cookies);
             self::$_hasCookies = !empty($cookies);
         }
@@ -275,7 +294,7 @@ class Request
         if (empty($data)) {
             throw new \Exception("No data to send.");
         }
-        $modifiedDate = $modified ? : time();
+        $modifiedDate = $modified ?: time();
         self::ifModifiedSince($modifiedDate);
         self::_sendOutputHeaders($mimeType, strlen($data), $fileName, time());
         echo $data;

@@ -37,6 +37,14 @@ class User extends Sessioned
      * @var int
      */
     public $role;
+
+    /**
+     * User IP address, a limit when not on HTTPS.
+     *
+     * @var string
+     */
+    public $ip;
+
     const ROLE_BLOCKED = 0;
     const ROLE_NEUTRAL = 1;
     const ROLE_EDITOR = 50;
@@ -110,12 +118,16 @@ class User extends Sessioned
 
     /**
      * Get a generated hash based on ID, IP and hashed name.
-     * @return type
+     *
+     * If the connection is over SSL, we skip IP.
+     *
+     * @return string
      */
     private function _getCookieHash()
     {
         if (!isset(self::$_hashes[$this->id])) {
-            self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . REMOTE_IP . $this->name);
+            $ip = \Request::isSecure() ? 'SSL' : REMOTE_IP;
+            self::$_hashes[$this->id] = $this->id . '-' . hash(HASH_TYPE, HASH_KEY . $ip . $this->name);
         }
         return self::$_hashes[$this->id];
     }
@@ -191,7 +203,13 @@ class User extends Sessioned
                 $result->saveSession();
             }
         }
-        if (!empty($result) && !empty($result->ip) && $result->ip != REMOTE_IP) {
+        // Skip IP check if we are on HTTPS.
+        if (!empty($result)
+            && !\Request::isSecure()
+            && !empty($result->ip)
+            && $result->ip != REMOTE_IP
+        ) {
+            \Show::fatal("Logging out?");
             $result = null;
         }
         return $result;
