@@ -114,7 +114,7 @@ class Breadcrumbs
             return '';
         }
         $items = $this->_createList();
-        return "<div class=\"container\"><ol class=\"breadcrumb\">
+        return "<div class=\"container hidden-print\"><ol class=\"breadcrumb\">
         {$items}
     <li class=\"active\">{$this->_title}</li>
 </ol></div>";
