@@ -239,7 +239,7 @@ class User extends Sessioned
     /**
      * Return a html form.
      * @param boolean $parsePost
-     * @return \Core\Form|
+     * @return \Core\Form|null
      */
     public static function formLogin($parsePost = true)
     {
@@ -276,8 +276,8 @@ class User extends Sessioned
 
     /**
      * Attempt login and return user if login is correct.
-     * @param type $user
-     * @param type $pass
+     * @param string $user
+     * @param string $pass
      * @return self
      */
     public static function attemptLogin($user, $pass, $class = null)
