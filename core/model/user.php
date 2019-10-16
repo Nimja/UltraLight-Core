@@ -85,7 +85,7 @@ class User extends Sessioned
 
     /**
      * Set the cookie for this user for remembering.
-     * @return \self
+     * @return self
      */
     public function setCookie()
     {
@@ -153,7 +153,7 @@ class User extends Sessioned
 
     /**
      * Check the current cookie and return a user object if it's vaild.
-     * @return null|\self
+     * @return self|null
      */
     public static function loadFromCookie()
     {
@@ -278,7 +278,7 @@ class User extends Sessioned
      * Attempt login and return user if login is correct.
      * @param type $user
      * @param type $pass
-     * @return \self
+     * @return self
      */
     public static function attemptLogin($user, $pass, $class = null)
     {

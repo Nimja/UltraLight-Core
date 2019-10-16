@@ -162,7 +162,7 @@ abstract class Controller
 
     /**
      * Create an instance, can only be done once.
-     * @return \self
+     * @return self
      */
     public static function create()
     {
