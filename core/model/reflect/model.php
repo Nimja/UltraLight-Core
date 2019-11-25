@@ -149,7 +149,7 @@ class Model {
     /**
      * Wrapper for callback.
      * @param string $class
-     * @return \self
+     * @return self
      */
     public static function get($class)
     {

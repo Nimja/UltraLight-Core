@@ -379,7 +379,7 @@ class Database
      * @param string $table
      * @param string|array $search
      * @param array $settings
-     * @return \self
+     * @return self
      */
     public function search($table, $search = null, $settings = null)
     {

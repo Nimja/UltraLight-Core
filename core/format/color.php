@@ -222,7 +222,7 @@ class Color
     /**
      * Allows named color or #123456 type color.
      * @param string $color
-     * @return \self
+     * @return self
      */
     public function setCss($color)
     {
@@ -308,7 +308,7 @@ class Color
      * @param type $hue
      * @param type $saturation
      * @param type $lightness
-     * @return \self
+     * @return self
      */
     public function adjustHsv($hue, $saturation = 0, $lightness = 0)
     {
@@ -325,7 +325,7 @@ class Color
      * Fade from this color to another, returning a new object.
      * @param Color $color
      * @param float $amount From 0 to 1.
-     * @return \self
+     * @return self
      */
     public function fadeTo($color, $amount)
     {
@@ -363,7 +363,7 @@ class Color
      *
      * @param float $brightness
      * @param float $fadeAmount
-     * @return \self
+     * @return self
      */
     public function setBrightness($brightness, $fadeAmount = 1)
     {
@@ -440,7 +440,7 @@ class Color
 
     /**
      * Get a copy from this object.
-     * @return \self
+     * @return self
      */
     public function copy()
     {

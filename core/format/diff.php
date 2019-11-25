@@ -502,7 +502,7 @@ class Diff
      * @param string $from
      * @param string $to
      * @param int $depth
-     * @return \self
+     * @return self
      */
     public static function compare($from, $to, $depth = self::DEPTH_WORDS)
     {

@@ -116,7 +116,7 @@ class Page extends \Core\Model\Ordered
     /**
      * Add support for autosort.
      *
-     * @return \self
+     * @return self
      */
     public function save()
     {

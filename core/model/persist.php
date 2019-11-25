@@ -239,7 +239,7 @@ class Persist extends Sessioned
 
     /**
      * Load persist class from cookie.
-     * @return \self||null
+     * @return self|null
      */
     private static function _loadFromCookie()
     {
