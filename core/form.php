@@ -276,12 +276,10 @@ class Form
      */
     protected function getCtrlSave()
     {
-        return '<script>$(document).keydown(' .
-                'function(e) {' .
-                'if((e.ctrlKey || e.metaKey) && e.which == 83) {' .
-                'e.preventDefault(); $(\'button[type="submit"]\').first().click(); return false;' .
-                '}' .
-                '});</script>';
+        return '<script>document.onkeydown = function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.keyCode == 83) {
+            e.preventDefault(); document.querySelector(\'button[type="submit"]\').click();
+            }};</script>';
     }
 
     /**
