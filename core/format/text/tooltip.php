@@ -20,6 +20,7 @@ class Tooltip extends Base
     {
         $text = $parts[0];
         $detail = htmlentities($this->_reverseParse($parts[1]));
-        return "<span class=\"hasTooltip\" data-toggle=\"tooltip\" title=\"{$detail}\">{$text}</span>";
+        $class = isset($parts[2]) ? $this->_reverseParse($parts[2]) : '';
+        return "<span class=\"hasTooltip {$class}\" data-toggle=\"tooltip\" title=\"{$detail}\">{$text}</span>";
     }
 }
