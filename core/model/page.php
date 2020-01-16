@@ -306,10 +306,16 @@ class Page extends \Core\Model\Ordered
         }
         $currentItemId = $entity ? $entity->id : -1;
         $selectValues = self::getEntityList($currentItemId);
+        $parentId = $form->getValue('parentId');
+        $parentLabel = 'Parent';
+        if (!empty($parentId)) {
+            $url = substr(\Core::$url, 0, strpos(\Core::$url, '/edit'));
+            $parentLabel = '<a href="/'. $url .'?parentId='. $parentId . '">Parent</a>';
+        }
         $form
             ->add(new \Core\Form\Field\Input('title', ['label' => 'Title']))
             ->add(new \Core\Form\Field\Input('url', ['label' => 'Url']))
-            ->add(new \Core\Form\Field\Select('parentId', ['label' => 'Parent', 'values' => $selectValues]))
+            ->add(new \Core\Form\Field\Select('parentId', ['label' => $parentLabel, 'values' => $selectValues]))
             ->add(new \Core\Form\Field\Input('description', ['label' => 'Description']))
             ->add(new \Core\Form\Field\Text('content', ['label' => 'Content', 'rows' => 20]))
             ->add(new \Core\Form\Field\Submit('submit', ['value' => 'Edit', 'class' => 'btn-primary']));
