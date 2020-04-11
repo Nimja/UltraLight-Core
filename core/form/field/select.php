@@ -13,11 +13,24 @@ class Select extends \Core\Form\Field
         $tag = $this->_isMultiple ? ' multiple="multiple"' : '';
         $nameExtra = $this->_isMultiple ? '[]' : '';
         $result = array("<select name=\"{$this->name}{$nameExtra}\"{$tag} {$extra}>");
-        foreach ($this->_getValues() as $key => $value) {
-            $selected = $this->_isSelected($key) ? 'selected="selected"' : '';
-            $result[] = "<option value=\"{$key}\" {$selected}>{$value}</option>";
+        $values = $this->_getValues();
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                $result[] = "<optgroup label=\"{$key}\">";
+                foreach ($value as $skey => $svalue) {
+                    $result[] = $this->renderOption($skey, $svalue);
+                }
+                $result[] = "</optgroup>";
+            } else {
+                $result[] = $this->renderOption($key, $value);
+            }
         }
         $result[] = "</select>";
         return implode(PHP_EOL, $result);
+    }
+
+    private function renderOption($key, $value) {
+        $selected = $this->_isSelected($key) ? 'selected="selected"' : '';
+        return "<option value=\"{$key}\" {$selected}>{$value}</option>";
     }
 }
