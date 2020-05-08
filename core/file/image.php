@@ -27,6 +27,11 @@ class Image
      */
     public $height = 0;
     /**
+     * JPeg quality of the output, default 75.
+     * @var int
+     */
+    public $quality = 75;
+    /**
      * Megapixels of this image.
      * @var float
      */
@@ -118,7 +123,7 @@ class Image
     {
         ob_start();
         if ($this->type == self::TYPE_JPEG) {
-            imagejpeg($this->img);
+            imagejpeg($this->img, null, $this->quality);
         } else {
             imagepng($this->img);
         }
