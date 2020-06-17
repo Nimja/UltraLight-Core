@@ -58,7 +58,7 @@ class Text
 
             // Switch, based on first character.
             switch ($first) {
-                // Basic H5 title.
+                // Basic H2+ title.
                 case '=': $open = '';
                     $line = self::_parseTitle($rest);
                     break;
@@ -143,9 +143,15 @@ class Text
         return self::parse($string, FALSE);
     }
 
+    /**
+     * Return a parsed title, starting at H2 (h1 is the page title).
+     *
+     * @param string $string
+     * @return string
+     */
     private static function _parseTitle($string)
     {
-        $size = 3;
+        $size = 2;
         while (substr($string, 0, 1) == '=') {
             $string = trim(substr($string, 1));
             $size++;
