@@ -458,7 +458,7 @@ class Core
         // Remove leading, trailing and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
         // We unify the url to use + instead of %20.
-        $clean2 = str_replace('%20', '+', $clean);
+        $clean2 = str_replace(' ', '+', $clean);
         // Remove /index.
         $final = str_replace('/index', '/', $clean2);
 
@@ -539,8 +539,7 @@ class Core
      * instead of /assets in front of CSS/JS files, and use a version number
      * in your code.
      *
-     * @param type $request
-     * @return type
+     * @param array $request
      */
     private function _outputStatic($request)
     {
