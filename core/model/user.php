@@ -192,7 +192,7 @@ class User extends Sessioned
 
     /**
      * Simple login function.
-     * @return Model_User
+     * @return self
      */
     public static function login()
     {
