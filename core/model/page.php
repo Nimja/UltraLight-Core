@@ -99,7 +99,8 @@ class Page extends \Core\Model\Ordered
     public function getChildCount()
     {
         $re = $this->re();
-        return $re->db()->getCount($re->table, ['parentId' => $this->id]);
+        $class = get_called_class();
+        return $re->db()->getCount($re->table, $class::getChildWhere($this->id));
     }
 
     /**
@@ -110,7 +111,8 @@ class Page extends \Core\Model\Ordered
     public function getCount()
     {
         $re = $this->re();
-        return $re->db()->getCount($re->table, ['parentId' => $this->parentId]);
+        $class = get_called_class();
+        return $re->db()->getCount($re->table, $class::getChildWhere($this->parentId));
     }
 
     /**
@@ -254,12 +256,14 @@ class Page extends \Core\Model\Ordered
      */
     public static function buildMenu()
     {
-        $re = self::re();
+        $class = get_called_class();
+        $re = $class::re();
         $db = $re->db();
         $table = $db->escape($re->table, true);
         $root = new Tool\Menu\Item(['id' => 0, 'title' => 'root', 'url' => '']);
         $items = [0 => $root];
-        $res = $db->query("SELECT id, title, url, parentId FROM $table ORDER BY `position` ASC");
+        $where = $db->searchToSql($class::getPublishedWhere());
+        $res = $db->query("SELECT id, title, url, parentId FROM $table WHERE $where ORDER BY `position` ASC");
         while ($row = $res->fetch_assoc()) {
             $items[$row['id']] = new Tool\Menu\Item($row);
         }
@@ -282,13 +286,37 @@ class Page extends \Core\Model\Ordered
     }
 
     /**
+     * Can be overridden for additional complexities for published pages.
+     *
+     * @return void
+     */
+    public static function getPublishedWhere()
+    {
+        return [];
+    }
+
+    /**
      * Get children pages for parentId.
      * @param int $parentId
      * @return array
      */
     public static function getChildren($parentId, $order = self::POSITION . ' ASC, id ASC')
     {
-        return self::find(['parentId' => $parentId], $order);
+        $class = get_called_class();
+        return self::find($class::getChildWhere($parentId), $order);
+    }
+
+    /**
+     * Get where query for children.
+     *
+     * @param int $parentId
+     * @return void
+     */
+    public static function getChildWhere($parentId)
+    {
+        $class = get_called_class();
+        $where = array_merge(['parentId' => $parentId], $class::getPublishedWhere());
+        return $where;
     }
 
     /**
@@ -370,7 +398,8 @@ class Page extends \Core\Model\Ordered
     public static function getOrdered($searchId = null)
     {
         $parentId = intval($searchId);
-        $pages = self::find(['parentId' => $parentId], self::POSITION . ' ASC, id ASC');
+        $class = get_called_class();
+        $pages = self::find($class::getChildWhere($parentId), self::POSITION . ' ASC, id ASC');
         $result = [];
         if ($parentId) {
             $parent = self::load($parentId);

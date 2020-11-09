@@ -37,11 +37,11 @@ abstract class Model {
     public $id = 0;
 
     /**
-     * Is true if a save succeeded successfully.
+     * After storing anything in DB, this is updated.
      *
      * @var boolean
      */
-    protected $_saved = false;
+    protected $is_changed = false;
 
     /**
      * Basic constructor, with error messages.
@@ -170,7 +170,7 @@ abstract class Model {
     /**
      * Save values, allowing to update only a single value.
      * @param array $values
-     * @return $this
+     * @return bool True if DB is updated, or false if not.
      */
     protected function _saveValues($values)
     {
@@ -178,12 +178,16 @@ abstract class Model {
         $db = $re->db();
         $id = intval($this->id);
         //Switch between update and insert automatically.
+        $result = false;
         if ($id > 0) {
-            $db->update($re->table, $values, $id);
+            // This returns number of rows changed.
+            $result = (bool) $db->update($re->table, $values, $id);
         } else {
             $this->id = $db->insert($re->table, $values);
+            $result = true;
         }
-        return $this;
+        $this->is_changed = $result;
+        return $result;
     }
 
     /**
