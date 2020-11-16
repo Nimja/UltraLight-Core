@@ -16,6 +16,7 @@ class Text
         'link' => \Core\Format\Text\Link::class,
         'page' => \Core\Format\Text\Page::class,
         'tooltip' => \Core\Format\Text\Tooltip::class,
+        'hr' => \Core\Format\Text\Hr::class,
     ];
     /**
      * Instantiated blockparsers.
