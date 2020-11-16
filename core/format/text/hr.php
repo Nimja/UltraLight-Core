@@ -18,8 +18,8 @@ class Hr extends Base
      */
     protected function _parse($parts)
     {
-        $class = isset($parts[0]) ? $this->_reverseParse($parts[0]) : false;
-        $extra = $class ? "class= \"{$class}\"" : '';
+        $class = isset($parts[0]) ? $this->_reverseParse($parts[0]) : '';
+        $extra = $class && (strlen($class) > 1)? "class= \"{$class}\"" : '';
         return "<hr {$extra} \>";
     }
 }
