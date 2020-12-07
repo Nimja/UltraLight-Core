@@ -12,6 +12,7 @@ class Text
      */
     private static $_blockParsers = [
         'image' => \Core\Format\Text\Image::class,
+        'imagelink' => \Core\Format\Text\Imagelink::class,
         'video' => \Core\Format\Text\Video::class,
         'link' => \Core\Format\Text\Link::class,
         'page' => \Core\Format\Text\Page::class,
