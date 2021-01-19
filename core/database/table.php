@@ -108,7 +108,7 @@ class Table {
             $column = new Table\Column($this->_db, $type);
             $sql .= "\t{$eField} {$column},\n";
         }
-        $sql .= "\t PRIMARY KEY  (`id`) \n) ENGINE=innodb DEFAULT CHARSET=latin1;";
+        $sql .= "\t PRIMARY KEY (`id`) \n) ENGINE=innodb;";
         if (\Core::$debug) {
             \Core::debug($sql, 'Creating table');
         } else {

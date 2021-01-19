@@ -36,6 +36,19 @@ class Request
     private static $_hasCookies = null;
 
     /**
+     * Headers in original form.
+     *
+     * @var array
+     */
+    private static $headers = null;
+    /**
+     * Headers with lowercase keys.
+     *
+     * @var array
+     */
+    private static $headersLower = null;
+
+    /**
      * Return true if current request is a post request.
      * @return boolean
      */
@@ -83,6 +96,35 @@ class Request
             self::$_server = filter_input_array(INPUT_SERVER);
         }
         return getKey(self::$_server, $name, $default);
+    }
+
+    /**
+     * Get all headers in original format or with lowercase keys.
+     *
+     * @param boolean $lowerKeys
+     * @return void
+     */
+    public static function getHeaders($lowerKeys = false) {
+        if (self::$headers === null) {
+            self::$headers = apache_request_headers();
+            self::$headersLower = [];
+            foreach (self::$headers as $key => $value) {
+                self::$headersLower[strtolower($key)] = $value;
+            }
+        }
+        return $lowerKeys ? self::$headersLower : self::$headers;
+    }
+
+    /**
+     * Get a value from the headers in case-insensitive manner.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return
+     */
+    public static function getHeader($key, $default = null)
+    {
+        return getKey(self::getHeaders(true), strtolower($key), $default);
     }
 
     /**
