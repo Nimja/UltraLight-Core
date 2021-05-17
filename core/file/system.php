@@ -200,6 +200,6 @@ class System
 				menu="false"
 				type="application/x-shockwave-flash"
 				pluginspage="http://www.adobe.com/go/getflashplayer" />
-			</object></div>';
+			</object></div><script src="//assets.nimja.com/js/ruffle/ruffle.js"></script>';
     }
 }
