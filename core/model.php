@@ -309,7 +309,7 @@ abstract class Model {
     /**
      * Load an object, with ID. This will return a cached object if present.
      * @param int $id
-     * @return self
+     * @return static
      */
     public static function load($id)
     {
@@ -333,7 +333,7 @@ abstract class Model {
      * Find a single objectby search.
      * @param string $search Like id|=4
      * @param string $order
-     * @return self
+     * @return static
      */
     public static function findOne($search, $order = null)
     {
@@ -353,7 +353,7 @@ abstract class Model {
      * @param string $search
      * @param string $order
      * @param string $limit
-     * @return self[]
+     * @return static[]
      */
     public static function find($search = null, $order = null, $limit = null)
     {

@@ -17,7 +17,7 @@ abstract class Sessioned extends \Core\Model
     private static $_session;
     /**
      * Save the object, to both DB and session.
-     * @return self
+     * @return $this
      */
     public function save()
     {
@@ -27,7 +27,7 @@ abstract class Sessioned extends \Core\Model
 
     /**
      * Save the current entity in the session.
-     * @return self
+     * @return $this
      */
     public function saveSession()
     {
@@ -50,7 +50,7 @@ abstract class Sessioned extends \Core\Model
     }
     /**
      * Load the current entity in the session.
-     * @return self|null
+     * @return static|null
      */
     public static function loadSession()
     {

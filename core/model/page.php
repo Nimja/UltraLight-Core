@@ -118,7 +118,7 @@ class Page extends \Core\Model\Ordered
     /**
      * Add support for autosort.
      *
-     * @return self
+     * @return $this
      */
     public function save()
     {
@@ -366,7 +366,7 @@ class Page extends \Core\Model\Ordered
      * Get recursive list with ID and title, or in the case of many children, a link to refine the list.
      * @param Tool\Menu\Item $entity
      * @param int $excludeId
-     * @param type $level
+     * @param int $level
      * @param boolean $collapsable
      * @param int $parentId
      * @return [];

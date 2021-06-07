@@ -134,7 +134,7 @@ class Table {
         if (empty($columns['id'])) {
             throw new \Exception("{$this->_table} has no id field.");
         } else if (!$default->compare($columns['id'])) {
-            throw new \Exception("{$this->_table} has wrong id field: {$columns['id']}");
+            throw new \Exception("{$this->_table} has wrong id field: {$columns['id']} is not: {$default}");
         } else {
             unset($columns['id']);
         }

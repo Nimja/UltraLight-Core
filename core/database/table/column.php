@@ -51,7 +51,7 @@ class Column
     {
         $this->_db = $db;
         if (empty($field)) {
-            $this->type = 'int(11) unsigned';
+            $this->type = 'int unsigned';
             $this->null = 'NOT null';
             $this->default = null;
             $this->extra = 'auto_increment';
@@ -81,7 +81,7 @@ class Column
         $typeExtra = '';
         if (substr($type, -3) == 'int') {
             $default = intval($default);
-            if (empty($length)) {
+            if (empty($length) && false) { // Disabled for now.
                 switch ($type) {
                     case 'tinyint': $length = 4;
                         break;
