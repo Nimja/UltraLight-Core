@@ -31,7 +31,8 @@ class Base
      * @param Item $item
      * @return void
      */
-    public function addItem(Item $item) {
+    public function addItem(Item $item)
+    {
         $item->setAsRss($this->asRss);
         $this->items[] = $item;
     }
@@ -53,7 +54,8 @@ class Base
      *
      * @return array
      */
-    protected function getPropertiesMap() {
+    protected function getPropertiesMap()
+    {
         if ($this->asRss) {
             return [
                 'title' => 'title',
@@ -129,7 +131,7 @@ class Base
             $result[] = "<link href=\"{$this->values['url']}\"/>";
         }
         if (array_key_exists('date', $this->values)) {
-            $xmlname = $this instanceof Item ? 'published' : 'updated';
+            $xmlname = $this instanceof Item ? 'updated' : 'updated';
             $result[] = $this->xmlLine($xmlname, $this->getDateString($this->values['date']));
         }
         return $result;

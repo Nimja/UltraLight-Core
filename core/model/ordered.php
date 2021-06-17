@@ -22,7 +22,7 @@ abstract class Ordered extends \Core\Model {
     /**
      * Add position if not set and, optionally, clear cache.
      *
-     * @return self
+     * @return $this
      */
     public function save()
     {
