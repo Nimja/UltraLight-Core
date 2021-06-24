@@ -1,19 +1,29 @@
 <?php
+
 namespace Core;
+
 /**
  * The basic view function, containing possibilities for filling variables into a another string.
  */
 class View
 {
     /**
-     * Variables like +varname:operator+.
+     * Variables like __varname:operator__ or legacy with +s.
      *
      * Valid characters are: letters, numbers, dot, dash, underscore and colon.
      */
-    const PREG_VARIABLES = '/\+([a-zA-Z0-9\.\_\-\:]+)\+/';
-    const VAR_PREFIX = '+';
-    const VAR_SUFFIX = '+';
+    const REGEX_VARIABLES = '/\+([a-zA-Z0-9\.\_\-\:]+)\+|__([a-zA-Z0-9\.\_\-\:]+)__/U';
+    /**
+     * The transform/value separator.
+     */
     const TRANSFORM = ':';
+    /**
+     * How to escape characters.
+     */
+    const ESCAPING = [
+        '+' => '-|',
+        '__' => '**|',
+    ];
     /**
      * List of included files
      * @var array
@@ -24,6 +34,14 @@ class View
      * @var \Core\View
      */
     private static $_instance;
+
+    /**
+     * Breadcrumbs to avoid recursion.
+     *
+     * @var array
+     */
+    private $breadcrumbs = [];
+
 
     /**
      * The current transformers, instantiated when needed.
@@ -60,71 +78,74 @@ class View
     }
 
     /**
-     * Enter a string and an associative array of values.
+     * Get all variables present in a string.
+     *
+     * @param string $string
+     * @return array|null
+     */
+    function getVariables($string)
+    {
+        $matches = null;
+        if (preg_match_all(self::REGEX_VARIABLES, $string, $matches)) {
+            $all_matches = array_merge($matches[1], $matches[2]);
+            return array_values(array_unique(array_filter($all_matches)));
+        }
+        return null;
+    }
+
+    /**
+     * Fill values in a string.
+     *
      * @param string $string
      * @param array $values
      * @return string
      */
-    public function fillValues($string, $values, $varName = '')
+    public function fillValues($string, $values)
     {
-        $variables = self::getVariables($string);
-        array_walk($values, function(&$item, $key) { $item = strval($item); });
-        if (!empty($variables)) {
-            $translate = $this->getTranslateArray($variables, $values, $varName);
-            //str_replace like this is about 30% faster than strtr.
-            $string = str_replace(array_keys($translate), $translate, $string);
-        }
-        return $string;
+        return preg_replace_callback(
+            self::REGEX_VARIABLES,
+            function ($matches) use ($values) {
+                return $this->translateValue($matches, $values);
+            },
+            $string
+        );
     }
 
     /**
-     * Get any variables present in the string.
-     * @param string $string
-     * @return null|array
-     */
-    public function getVariables($string)
-    {
-        $matches = null;
-        preg_match_all(self::PREG_VARIABLES, $string, $matches);
-        return !empty($matches) ? array_unique($matches[1]) : null;
-    }
-
-    /**
-     * Create a translation array for this.
+     * Translate value, used as regex callback.
      *
-     * This function is recursive together with fillValues, used when the values contain a placeholder.
-     *
-     * @param array $variables
+     * @param array $matches
      * @param array $values
-     * @param string $originVarName
-     * @return array
+     * @return void
      */
-    public function getTranslateArray($variables, $values, $originVarName = '')
+    private function translateValue(array $matches, array $values)
     {
-        $translate = [];
-        foreach ($variables as $name) {
-            // First translate the name of the variable, if need be.
-            if (strpos($name, self::TRANSFORM) !== false) {
-                $commands = explode(self::TRANSFORM, $name);
-                $varName = array_shift($commands);
-                $transform = array_shift($commands);
-            } else {
-                $transform = false;
-                $varName = $name;
-            }
-            $value = getKey($values, $varName, '');
-            if (self::hasVars($value)) {
-                if ($originVarName && $originVarName == $varName) {
-                    throw new \Exception("Recursion found in $varName");
-                }
-                $value = $this->fillValues($value, $values, $varName);
-            }
-            if ($transform && !blank($value)) {
-                $value = $this->_transform($transform, $value, $commands);
-            }
-            $translate[self::VAR_PREFIX . $name . self::VAR_SUFFIX] = $value;
+        $name = count($matches) == 3 ? $matches[2] : $matches[1];
+        // First get the name and possible transforms.
+        if (strpos($name, self::TRANSFORM) !== false) {
+            $commands = explode(self::TRANSFORM, $name);
+            $varName = array_shift($commands);
+            $transform = array_shift($commands);
+        } else {
+            $transform = false;
+            $varName = $name;
         }
-        return $translate;
+        if (!array_key_exists($varName, $values)) {
+            error_log("$varName: NOT FOUND in " . \Core::$requestUrl);
+            return $matches[0]; // Return the original string.
+        }
+        if (array_key_exists($varName, $this->breadcrumbs)) {
+            throw new \Exception("Recursion found in '{$varName}'");
+        }
+        // Set the breadcrumb to avoid recursion.
+        $this->breadcrumbs[$varName] = true;
+        $result = $this->fillValues($values[$varName], $values);
+        // Clear the breadcrumb.
+        unset($this->breadcrumbs[$varName]);
+        if ($transform && !blank($result)) {
+            $result = $this->_transform($transform, $result, $commands);
+        }
+        return $result;
     }
 
     /**
@@ -141,7 +162,7 @@ class View
             return false;
         }
         //Make sure data is an array and filled with default values.
-        $data = $data ? : [];
+        $data = $data ?: [];
         $site_vars = \Config::system()->section('site');
         foreach ($site_vars as $key => $value) {
             $data['site.' . $key] = $value;
@@ -244,22 +265,17 @@ class View
     }
 
     /**
-     * Quick check if a string contains variables.
-     * @param string $string
-     * @return boolean
-     */
-    public static function hasVars($string)
-    {
-        return preg_match(self::PREG_VARIABLES, $string);
-    }
-
-    /**
      * Escape placeholder values.
      * @param string $string
      * @return string
      */
-    public static function escape($string) {
-        return str_replace('+', '-|', $string);
+    public static function escape($string)
+    {
+        return str_replace(
+            array_keys(self::ESCAPING),
+            array_values(self::ESCAPING),
+            $string
+        );
     }
 
     /**
@@ -267,7 +283,12 @@ class View
      * @param string $string
      * @return string
      */
-    public static function unescape($string) {
-        return str_replace('-|', '+', $string);
+    public static function unescape($string)
+    {
+        return str_replace(
+            array_values(self::ESCAPING),
+            array_keys(self::ESCAPING),
+            $string
+        );
     }
 }
