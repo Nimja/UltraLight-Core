@@ -9,9 +9,16 @@ class Request
     const STATUS_REDIRECT_FOUND = 302;
     const STATUS_REDIRECT_SEE_OTHER = 303;
     const STATUS_NOT_MODIFIED = 304;
+    const STATUS_ERROR_BAD_REQUEST = 400;
     const STATUS_ERROR_FORBIDDEN = 403;
     const STATUS_ERROR_NOT_FOUND = 404;
     const STATUS_SERVER_ERROR = 500;
+    const STATUS_ERROR_MESSAGES = [
+        self::STATUS_ERROR_BAD_REQUEST => 'Bad request.',
+        self::STATUS_ERROR_FORBIDDEN => 'Forbidden, you do not have authorization.',
+        self::STATUS_ERROR_NOT_FOUND => 'Sorry, this page does not (or never did) exist...',
+        self::STATUS_SERVER_ERROR => 'There is a server error?',
+    ];
 
     /**
      * Contains the sanitized POST/GET variables.
@@ -104,7 +111,8 @@ class Request
      * @param boolean $lowerKeys
      * @return void
      */
-    public static function getHeaders($lowerKeys = false) {
+    public static function getHeaders($lowerKeys = false)
+    {
         if (self::$headers === null) {
             self::$headers = apache_request_headers();
             self::$headersLower = [];
@@ -259,8 +267,29 @@ class Request
      */
     public static function notFound()
     {
-        header("HTTP/1.0 404 Not Found", true, 404);
-        echo 'Sorry, this page does not (or never did) exist...';
+        self::showError(self::STATUS_ERROR_NOT_FOUND);
+    }
+
+    /**
+     * Show an error and exit/stop.
+     *
+     * @param int $errorCode
+     * @return void
+     */
+    public static function showError($errorCode)
+    {
+        http_response_code($errorCode);
+        $errorMessage = getKey(self::STATUS_ERROR_MESSAGES, $errorCode, 'Unknown error');
+        $title = $errorCode . ': ' . $errorMessage;
+        $html = [
+            "<html>",
+            "<head><title>{$title}</title></head>",
+            "<body><center>",
+            "<h1>HTTP Error {$errorCode}</h1><h2>{$errorMessage}</h2>",
+            "</center></body>",
+            "</html>",
+        ];
+        echo implode(PHP_EOL, $html);
         exit;
     }
 
