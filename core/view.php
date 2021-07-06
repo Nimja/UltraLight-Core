@@ -42,6 +42,19 @@ class View
      */
     private $breadcrumbs = [];
 
+    /**
+     * Errors for missing varnames.
+     *
+     * @var array
+     */
+    private $errors = [];
+
+    /**
+     * Errors for missing varnames.
+     *
+     * @var array
+     */
+    private static $reported = [];
 
     /**
      * The current transformers, instantiated when needed.
@@ -81,7 +94,7 @@ class View
      * Get all variables present in a string.
      *
      * @param string $string
-     * @return array|null
+     * @return array
      */
     function getVariables($string)
     {
@@ -90,7 +103,7 @@ class View
             $all_matches = array_merge($matches[1], $matches[2]);
             return array_values(array_unique(array_filter($all_matches)));
         }
-        return null;
+        return [];
     }
 
     /**
@@ -102,13 +115,21 @@ class View
      */
     public function fillValues($string, $values)
     {
-        return preg_replace_callback(
+        $result = preg_replace_callback(
             self::REGEX_VARIABLES,
             function ($matches) use ($values) {
                 return $this->translateValue($matches, $values);
             },
             $string
         );
+        $this->errors = array_diff($this->errors, self::$reported);
+        if (!empty($this->errors)) {
+            $varNames = implode(', ', $this->errors);
+            error_log("$varNames: NOT FOUND in " . \Core::$requestUrl . PHP_EOL . \Show::getTraceString(1));
+            self::$reported = array_merge(self::$reported, $this->errors);
+            $this->errors = [];
+        }
+        return $result;
     }
 
     /**
@@ -131,7 +152,7 @@ class View
             $varName = $name;
         }
         if (!array_key_exists($varName, $values)) {
-            error_log("$varName: NOT FOUND in " . \Core::$requestUrl);
+            $this->errors[] = $varName;
             return $matches[0]; // Return the original string.
         }
         if (array_key_exists($varName, $this->breadcrumbs)) {

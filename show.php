@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nice global class to show error/info messages in nice HTML.
  */
@@ -23,7 +24,7 @@ class Show
         . 'ul-error msg c:nth-child(even) { background: #f5f5f5;}' . PHP_EOL
         . '</style>' . PHP_EOL . PHP_EOL;
 
-    CONST STR_PAD = '  ';
+    const STR_PAD = '  ';
     const COLOR_SUCCESS = '#dfd'; // Green.
     const COLOR_NICE = '#def'; // Blue.
     const COLOR_NEUTRAL = '#eee'; // Gray.
@@ -130,7 +131,7 @@ class Show
     private static function _getDebug($fullTrace = null)
     {
         $option = defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
-        $traceArray = $fullTrace ? : debug_backtrace($option);
+        $traceArray = $fullTrace ?: debug_backtrace($option);
         $lines = [];
         foreach ($traceArray as $trace) {
             $isCore = false;
@@ -157,8 +158,25 @@ class Show
     }
 
     /**
+     * Get trace as string, skipping the first X lines.
+     *
+     * It might be useful to skip the first X lines for example because we already know where we are.
+     *
+     * @param integer $skiplines
+     * @return string
+     */
+    public static function getTraceString($skiplines = 0)
+    {
+        $lines = self::_getDebug();
+        if ($skiplines > 0) {
+            $lines = array_slice($lines, $skiplines);
+        }
+        return strip_tags(implode(PHP_EOL, $lines));
+    }
+
+    /**
      * Generate nifty trace HTML.
-     * @return type
+     * @return string
      */
     private static function _getTraceInfo($locations)
     {
