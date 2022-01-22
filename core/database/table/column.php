@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\Database\Table;
+
 class Column
 {
     /**
@@ -83,15 +85,20 @@ class Column
             $default = intval($default);
             if (empty($length) && false) { // Disabled for now.
                 switch ($type) {
-                    case 'tinyint': $length = 4;
+                    case 'tinyint':
+                        $length = 4;
                         break;
-                    case 'smallint': $length = 6;
+                    case 'smallint':
+                        $length = 6;
                         break;
-                    case 'mediumint': $length = 9;
+                    case 'mediumint':
+                        $length = 9;
                         break;
-                    case 'bigint': $length = 20;
+                    case 'bigint':
+                        $length = 20;
                         break;
-                    default: $length = 11;
+                    default:
+                        $length = 11;
                         break;
                 }
             }
@@ -109,6 +116,8 @@ class Column
             $length = 1;
             $type = 'tinyint';
             $default = intval($default);
+        } else if ($type == 'float' || $type == 'decimal') {
+            $default = floatval($default);
         } else if ($type == 'date') {
             $length = null;
         } else if ($type == 'timestamp') {
@@ -163,6 +172,4 @@ class Column
     {
         return "$this" == "$column";
     }
-
-
 }

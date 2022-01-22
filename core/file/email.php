@@ -28,7 +28,7 @@ class Email
     private function checkEmail($email)
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw \Exception("$email is not valid!");
+            throw new \Exception("$email is not valid!");
         }
         return $email;
     }

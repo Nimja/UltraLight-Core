@@ -1,4 +1,7 @@
-<?php namespace Core\Form;
+<?php
+
+namespace Core\Form;
+
 /**
  * A model with some automatic 'forms' based on the types.
  */
@@ -66,7 +69,7 @@ abstract class Field
 
     /**
      * Sanitize certain fields in extra.
-     * @param string $fields
+     * @param array $fields
      */
     protected function _sanitizeExtra($fields)
     {

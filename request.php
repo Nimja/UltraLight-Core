@@ -136,13 +136,26 @@ class Request
     }
 
     /**
-     * Retrieve POST/GET value, with sanitation.
+     * Old way of getting value, alias for getValue.
+     * @deprecated version
      * @param string $name
      * @param mixed $default
      * @param booelan|array $keepTags
      * @return mixed
      */
     public static function value($name, $default = null)
+    {
+        return getKey(self::getValues(), $name, $default);
+    }
+
+    /**
+     * Retrieve POST/GET value, with sanitation.
+     * @param string $name
+     * @param mixed $default
+     * @param booelan|array $keepTags
+     * @return mixed
+     */
+    public static function getValue($name, $default = null)
     {
         return getKey(self::getValues(), $name, $default);
     }
@@ -214,7 +227,7 @@ class Request
      */
     public static function setCookie($name, $value, $time = '+2 months')
     {
-        setcookie($name, $value, strtotime($time), '/');
+        setcookie($name, $value, strtotime($time), '/', "", true);
         self::getCookies();
         self::$_cookies[$name] = $value;
     }
