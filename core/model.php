@@ -7,7 +7,8 @@ namespace Core;
  * To understand the DB model; it uses reflection through Model_Reflect_Class.
  */
 
-abstract class Model {
+abstract class Model
+{
 
     const DATE_FORMAT_SHORT = 'Y-m-d';
     const DATE_FORMAT_LONG = 'Y-m-d H:i:s';
@@ -93,7 +94,8 @@ abstract class Model {
      * @param string $type
      * @param mixed $value
      */
-    protected function _setValue($field, $type, $value) {
+    protected function _setValue($field, $type, $value)
+    {
         if ($type == self::TYPE_BOOL) {
             $this->$field = $value ? true : false;
         } else if ($type == self::TYPE_SERIALIZE) {
@@ -101,8 +103,17 @@ abstract class Model {
         } else if ($type == self::TYPE_ARRAY) {
             if (empty($value)) {
                 $this->$field = [];
+            } else if (is_array($value)) {
+                $this->$field = $value;
+            } else if (is_string($value)) {
+                $val = explode(',', $value);
+                // If it is only integers, cast them to int.
+                if (preg_match("/^[0-9,]+$/", $value)) {
+                    $val = array_map('intval', $val);
+                }
+                $this->$field = $val;
             } else {
-                $this->$field = is_string($value) ? explode(',', $value) : $value;
+                $this->$field = $value;
             }
         } else {
             $this->$field = $value;
@@ -287,14 +298,15 @@ abstract class Model {
      */
     public static function re($class = null)
     {
-        $class = $class ? : get_called_class();
+        $class = $class ?: get_called_class();
         if (empty(self::$_reflections[$class])) {
             if (!isset(\Core::$classes[$class])) {
                 $lowerClass = strtolower($class);
                 foreach (array_keys(\Core::$classes) as $className) {
                     if (strtolower($className) == $lowerClass) {
                         \Show::fatal(
-                            ['called ' => $className, 'defined' => $class], "Capitalisation error, check spelling!"
+                            ['called ' => $className, 'defined' => $class],
+                            "Capitalisation error, check spelling!"
                         );
                     }
                 }
@@ -361,7 +373,7 @@ abstract class Model {
         $re = self::re($class);
         $db = $re->db();
         $listField = $re->listField;
-        $order = $order ? : "{$listField} ASC";
+        $order = $order ?: "{$listField} ASC";
         $settings = [
             'order' => $order,
             'limit' => $limit,
@@ -399,5 +411,4 @@ abstract class Model {
         }
         return $count;
     }
-
 }

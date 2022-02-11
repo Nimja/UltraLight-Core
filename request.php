@@ -65,6 +65,24 @@ class Request
     }
 
     /**
+     * Check if it is a post and return error page if the referrer is NOT this domain.
+     *
+     * @return boolean
+     */
+    public static function isSafePost()
+    {
+        if (!self::isPost()) {
+            return false;
+        }
+        $domain = strtolower(parse_url(self::server('HTTP_REFERER'), PHP_URL_HOST));
+        $ourdomain = strtolower(parse_url(\Config::system()->get('site', 'url'), PHP_URL_HOST));
+        if ($domain !== $ourdomain) {
+            return self::showError(self::STATUS_ERROR_BAD_REQUEST);
+        }
+        return true;
+    }
+
+    /**
      * Return true if current request is an ajax/xhtml request.
      * @return boolean
      */
