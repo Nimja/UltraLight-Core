@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Sanitation class for variables.
  */
@@ -10,13 +11,14 @@ class Sanitize
      *
      * @param mixed $value The value you wish to sanitize.
      * @param booelan|array $keepTags
-     * @return string Sanitized string.
+     * @return string|array Sanitized string (or each element of array).
      */
     public static function clean($value, $keepTags = true)
     {
         if (blank($value)) {
             $result = null;
-        } if (is_numeric($value)) {
+        }
+        if (is_numeric($value)) {
             $result = $value;
         } else if (is_array($value)) {
             $result = [];

@@ -1,4 +1,5 @@
 <?php
+
 namespace Core;
 
 /**
@@ -267,6 +268,26 @@ class Form
     public function getValue($field)
     {
         return getKey($this->_values, $field);
+    }
+
+    /**
+     * Get posted values, setting empty/false values for missing checkboxes.
+     *
+     * @return void
+     */
+    public function getValues()
+    {
+        $values = \Request::getValues();
+        if (!\Request::isPost()) {
+            return $values;
+        }
+        # On post, fill in checkboxes explicitly, since they are left out on submit.
+        foreach ($this->_data as $item) {
+            if ($item instanceof \Core\Form\Field\CheckBox) {
+                $values[$item->name] = (bool) getKey($values, $item->name, false);
+            }
+        }
+        return $values;
     }
 
     /**

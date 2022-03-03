@@ -1,4 +1,7 @@
-<?php namespace Core\Model\Tool;
+<?php
+
+namespace Core\Model\Tool;
+
 /**
  * Helper entity for page model, but can be used more broad.
  *
@@ -65,14 +68,14 @@ class Edit
     public function getEntity()
     {
         $class = $this->_entityClass;
-        $values = \Request::getValues();
         $entity = $class::load($this->_id);
         /* @var $entity \Core\Model */
         if (!empty($this->_id) && empty($entity)) {
             \Request::redirect($this->_editLink);
         }
+        $entity = $entity ?: new $class();
+        $values = $class::getForm($entity)->getValues();
         if (!empty($values) && \Request::isPost()) {
-            $entity = $entity ? : new $class();
             $entity->setValues($values);
             $this->warnings = $entity->validate();
             if (empty($this->warnings)) {

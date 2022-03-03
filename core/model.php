@@ -129,10 +129,14 @@ abstract class Model
     {
         $result = [];
         $re = $this->_re();
-        foreach ($re->fieldNames as $field) {
+        foreach ($re->fields as $field => $type) {
             $value = getAttr($this, $field);
             if (!blank($value) || isset($re->blankFields[$field])) {
-                $result[$field] = $this->$field;
+                $value = $this->$field;
+                if ($type == self::TYPE_BOOL) { // Boolean values should be explicitly set to true/false.
+                    $value = boolval($value);
+                }
+                $result[$field] = $value;
             }
         }
         if (!empty($this->id)) {
