@@ -327,10 +327,11 @@ class Page extends \Core\Model\Ordered
     public static function getForm($entity)
     {
         $form = new \Core\Form(null, ['class' => 'admin form-horizontal']);
+        // Set default.
+        $form->useValues(['date' => date('Y-m-d')]);
+        // Set from entity.
         if ($entity instanceof \Core\Model) {
             $form->useValues($entity->getValues());
-        } else {
-            $form->useValues(['date' => date('Y-m-d')]);
         }
         $currentItemId = $entity ? $entity->id : -1;
         $selectValues = self::getEntityList($currentItemId);
@@ -338,7 +339,7 @@ class Page extends \Core\Model\Ordered
         $parentLabel = 'Parent';
         if (!empty($parentId)) {
             $url = substr(\Core::$url, 0, strpos(\Core::$url, '/edit'));
-            $parentLabel = '<a href="/'. $url .'?parentId='. $parentId . '">Parent</a>';
+            $parentLabel = '<a href="/' . $url . '?parentId=' . $parentId . '">Parent</a>';
         }
         $form
             ->add(new \Core\Form\Field\Input('title', ['label' => 'Title']))

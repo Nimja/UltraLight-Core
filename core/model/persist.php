@@ -1,4 +1,7 @@
-<?php namespace Core\Model;
+<?php
+
+namespace Core\Model;
+
 /**
  * Persistent model accross sessions. Sets a single cookie with some protection.
  *
@@ -244,13 +247,15 @@ class Persist extends Sessioned
     private static function _loadFromCookie()
     {
         $cookie = \Request::getCookie(self::COOKIE_NAME);
-        if (empty($cookie)) {
+        # If the cookie is empty or does not contain the delimiter.
+        if (empty($cookie) || strpos($cookie, self::COOKIE_DELIMITER) === false) {
             return null;
         }
         list($id, $code) = explode(self::COOKIE_DELIMITER, $cookie, 2);
         $persist = self::load(intval($id));
         $result = null;
-        if ($persist->code == $code) {
+        // If the persist exists AND the code matches, we load it.
+        if ($persist && $persist->code == $code) {
             $result = $persist;
         }
         return $result;
