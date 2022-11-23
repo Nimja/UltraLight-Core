@@ -182,7 +182,7 @@ class Page extends \Core\Model\Ordered
      *
      * @param boolean $left True for previous, false for next.
      * @param boolean $end True for first/last.
-     * @return void
+     * @return static
      */
     public function getSibling(bool $left, bool $end = false)
     {
@@ -327,12 +327,12 @@ class Page extends \Core\Model\Ordered
     public static function getForm($entity)
     {
         $form = new \Core\Form(null, ['class' => 'admin form-horizontal']);
-        // Set default.
-        $form->useValues(['date' => date('Y-m-d')]);
         // Set from entity.
         if ($entity instanceof \Core\Model) {
             $form->useValues($entity->getValues());
         }
+        // Set default without forcing, if not yet filled.
+        $form->useValues(['date' => date('Y-m-d')]);
         $currentItemId = $entity ? $entity->id : -1;
         $selectValues = self::getEntityList($currentItemId);
         $parentId = $form->getValue('parentId');

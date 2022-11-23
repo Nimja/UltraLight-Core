@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\File;
+
 /**
  * Contains a bunch of helper functions that are semi-often used in places.
  */
@@ -34,7 +36,8 @@ class System
             $skip = ['.' => 1, '..' => 1];
             $objects = scandir($path);
             foreach ($objects as $entry) {
-                if (isset($skip[$entry])
+                if (
+                    isset($skip[$entry])
                     || (!empty($include) && $inc_func($entry, $include) === false)
                     || (!empty($exclude) && $exc_func($entry, $exclude) !== false)
                 ) {
@@ -130,8 +133,8 @@ class System
 
     /**
      * Get the extension of a file.
-     * @param type $file
-     * @return type
+     * @param string $file
+     * @return string
      */
     public static function getExtension($file)
     {
@@ -140,8 +143,8 @@ class System
 
     /**
      * Strip the extension of a file + path.
-     * @param type $file
-     * @return type
+     * @param string $file
+     * @return string
      */
     public static function stripExtension($file)
     {

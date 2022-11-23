@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\Form;
+
 /**
  * Validator for values, based on a validation array.
  */
@@ -63,7 +65,7 @@ class Validate
     /**
      * Validate a single field.
      * @param string $field
-     * @param array $rule
+     * @param string $rule
      * @param mixed $value
      * @return string Error.
      */
@@ -117,7 +119,7 @@ class Validate
                 );
                 break;
             case 'other':
-                if (empty($value) || ($value == 'other' && empty($this->_values[$field . '_other']) )) {
+                if (empty($value) || ($value == 'other' && empty($this->_values[$field . '_other']))) {
                     $result = 'has not been filled in';
                 }
             case 'selected': #At least one selected
@@ -143,7 +145,8 @@ class Validate
                 $result = $this->_filterVar($value, FILTER_VALIDATE_EMAIL, 'does not contain a valid email address');
                 break;
             case 'other_ignore':
-            case 'ignore': break;
+            case 'ignore':
+                break;
             default: #not empty
                 if (empty($value)) {
                     $result = 'is not filled in';
@@ -175,7 +178,8 @@ class Validate
      * @param string $error
      * @return string|null
      */
-    private function _filterVar($value, $filter, $error) {
+    private function _filterVar($value, $filter, $error)
+    {
         $result = null;
         if (!filter_var($value, $filter)) {
             $result = $error;

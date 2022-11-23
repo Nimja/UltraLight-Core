@@ -1,5 +1,7 @@
 <?php
+
 namespace Core;
+
 /**
  * Nice MySQL database interface class.
  *
@@ -7,6 +9,9 @@ namespace Core;
  */
 class Database
 {
+    const QUOTE_STRING = "'";
+    const QUOTE_FIELD = "`";
+
     /**
      * Array of connections
      *
@@ -62,7 +67,8 @@ class Database
      * Get last resource.
      * @return \mysqli_result
      */
-    public function getRes() {
+    public function getRes()
+    {
         return $this->_result;
     }
 
@@ -92,7 +98,7 @@ class Database
      */
     public function fetchRows($sql = null)
     {
-        $res = $sql ? $this->query($sql): $this->_result;
+        $res = $sql ? $this->query($sql) : $this->_result;
         return $res->fetch_all(MYSQLI_ASSOC);
     }
 
@@ -138,7 +144,7 @@ class Database
      */
     public function fetchFirstRow($sql = null)
     {
-        $res = $sql ? $this->query($sql): $this->_result;
+        $res = $sql ? $this->query($sql) : $this->_result;
         $result = null;
         if ($res && $res->num_rows > 0) {
             $result = $res->fetch_assoc();
@@ -170,7 +176,7 @@ class Database
      */
     public function fetchColumn($sql = null)
     {
-        $res = $sql ? $this->query($sql): $this->_result;
+        $res = $sql ? $this->query($sql) : $this->_result;
         $result = [];
         if ($res !== true) {
             while ($row = $res->fetch_assoc()) {
@@ -195,7 +201,7 @@ class Database
     {
 
         if (!is_array($value)) { //Any other value.
-            $quote = ($backticks) ? '`' : "'";
+            $quote = ($backticks) ? self::QUOTE_FIELD : self::QUOTE_STRING;
             if ($backticks && strpos($value, '.') !== false) {
                 $parts = explode('.', $value);
                 $result = implode('.', $this->escape($parts, true, $forceQuotes));
@@ -338,12 +344,12 @@ class Database
         foreach ($tables as $table) {
             $table = $this->escape($table, true);
             //Add the 'drop if exists'
-            $result [] = 'DROP TABLE IF EXISTS ' . $table . ';';
+            $result[] = 'DROP TABLE IF EXISTS ' . $table . ';';
 
             #Add the table creation string (thank god MySQL has this)
             $row = $this->fetchFirstRow('SHOW CREATE TABLE ' . $table);
             array_shift($row);
-            $result [] = array_shift($row);
+            $result[] = array_shift($row);
 
             $res = $this->query("SELECT * FROM $table ORDER BY id ASC");
             if ($res->num_rows > 0) {
@@ -439,7 +445,7 @@ class Database
      */
     public static function getInstance($database = null)
     {
-        $database = $database ? : \Config::system()->get('database', 'default');
+        $database = $database ?: \Config::system()->get('database', 'default');
         if (empty(self::$_instances[$database])) {
             self::$_instances[$database] = new self(self::_getSettingsForDatabase($database));
         }

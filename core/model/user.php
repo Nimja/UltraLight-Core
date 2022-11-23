@@ -1,4 +1,7 @@
-<?php namespace Core\Model;
+<?php
+
+namespace Core\Model;
+
 /**
  * Description of type
  *
@@ -204,7 +207,8 @@ class User extends Sessioned
             }
         }
         // Skip IP check if we are on HTTPS.
-        if (!empty($result)
+        if (
+            !empty($result)
             && !\Request::isSecure()
             && !empty($result->ip)
             && $result->ip != REMOTE_IP
@@ -282,12 +286,14 @@ class User extends Sessioned
      */
     public static function attemptLogin($user, $pass, $class = null)
     {
-        $class = $class ? : get_called_class();
+        $class = $class ?: get_called_class();
         if (empty($user) || empty($pass)) {
             throw new \Exception('Please enter both username and password.');
         }
         $userId = $class::getUserIdForLogin($user, $pass);
         if (empty($userId)) {
+            // If a password is incorrect, sleep for a few seconds to slow brute force.
+            sleep(rand(5, 10));
             throw new \Exception('Username or password incorrect.');
         }
         return $class::load($userId);

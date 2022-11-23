@@ -5,7 +5,8 @@ namespace Core\Database;
 /**
  * Basic table class for table creation and checking.
  */
-class Query {
+class Query
+{
     const SEARCH_PREG = '/(.+)(\|[l\:\=\<\>\!\[\]])(.+)/';
     const SEARCH_FIELD = 'field';
     const SEARCH_VALUE = 'value';
@@ -25,7 +26,7 @@ class Query {
      */
     private $sql;
 
-    public function __construct(\Core\Database $db, $search, $explicit=false)
+    public function __construct(\Core\Database $db, $search, $explicit = false)
     {
         $this->db = $db;
         if ($explicit) {
@@ -79,7 +80,7 @@ class Query {
     /**
      * Parse search string into nice array.
      *
-     * @param type $search
+     * @param string $search
      * @return array
      */
     protected function parseSearch($search)
@@ -127,18 +128,22 @@ class Query {
             } else {
                 $operand = '=';
                 switch ($operation) {
-                    case '|l': $field = "LENGTH($field)";
+                    case '|l':
+                        $field = "LENGTH($field)";
                         $operand = '>';
                         break;
-                    case '|!': $operand = '!=';
+                    case '|!':
+                        $operand = '!=';
                         break;
-                    case '|<': $operand = '<';
+                    case '|<':
+                        $operand = '<';
                         break;
-                    case '|>': $operand = '>';
+                    case '|>':
+                        $operand = '>';
                         break;
                     case '|:':
                         $operand = 'LIKE';
-                        trim($value, "'");
+                        $value = trim($value, \Core\Database::QUOTE_STRING);
                         $value = "'%{$value}%'";
                         break;
                     case '|n':

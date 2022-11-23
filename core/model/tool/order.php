@@ -1,4 +1,6 @@
-<?php namespace Core\Model\Tool;
+<?php
+
+namespace Core\Model\Tool;
 
 /**
  * Helper entity for page model, but can be used more broad.
@@ -181,7 +183,7 @@ class Order
     private function _makeLink($id, $title, $moveData = null)
     {
         $url = $this->_getOrderUrl($id);
-        $class = 'btn btn-clean';
+        $class = 'btn';
         if ($moveData) {
             $url .= '?move=' . urlencode($moveData);
             $class .= ' btn-block';
@@ -196,7 +198,7 @@ class Order
      */
     private function _fakeLink($title)
     {
-        return "<span class=\"btn btn-clean text-muted\">{$title}</span>";
+        return "<span class=\"btn text-muted\">{$title}</span>";
     }
 
     /**
