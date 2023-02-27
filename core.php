@@ -297,10 +297,6 @@ class Core
         }
         date_default_timezone_set(Config::system()->get('php', 'timezone', 'Europe/Paris'));
         mb_internal_encoding(Config::system()->get('php', 'encoding', 'UTF8'));
-        /**
-         * Enforce the random numbers to be random, using microtime.
-         */
-        srand(microtime(true) * 10000 + getmypid());
         return $this;
     }
 
@@ -418,7 +414,7 @@ class Core
          * which IP relates to the client computer.  We pick the first client IP as
          * this is the client closest to our upstream proxy.
          */
-        if (( $remote_addr == '127.0.0.1' || $remote_addr == $server_addr ) && $forwarded_for) {
+        if (($remote_addr == '127.0.0.1' || $remote_addr == $server_addr) && $forwarded_for) {
             $ips = explode(',', $forwarded_for);
             $remote_addr = end($ips);
         }
@@ -455,6 +451,8 @@ class Core
             $uri = parse_url(self::$requestFull, PHP_URL_PATH);
             self::$requestUrl = $siteUrl . $uri;
         }
+        // Prevent looping on url decoded urls.
+        $uri = urldecode($uri);
         // Remove leading, trailing and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
         // We unify the url to use + instead of %20.

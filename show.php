@@ -40,6 +40,13 @@ class Show
     public static $curError = 0;
 
     /**
+     * Level to log (and below).
+     *
+     * @var int
+     */
+    public static $errorLogLevel = LOG_ERR;
+
+    /**
      * Show a variable in a neat HTML friendly way. - VERY handy.
      *
      * @param mixed $var The variable you want to show.
@@ -50,17 +57,31 @@ class Show
      */
     public static function info($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false)
     {
+        return self::render($var, $title, $color, $return, LOG_INFO);
+    }
+
+    /**
+     * Show a variable in a neat HTML friendly way. - VERY handy.
+     *
+     * @param mixed $var The variable you want to show.
+     * @param string $title The optional title for this variable.
+     * @param string $color A CSS color.
+     * @param boolean $return Return the export as a string instead of echoing.
+     * @return string Optional return value, if $return is true.
+     * @return int Optional error level.
+     */
+    private static function render($var, $title = 'Export Variable', $color = self::COLOR_NEUTRAL, $return = false, $level = 0)
+    {
         self::$curError++;
         $result = \Core::$console ?
-            self::_renderForConsole($var, $title) :
-            self::_renderForWeb($var, $title, $color);
+            self::renderForConsole($var, $title) :
+            self::renderForWeb($var, $title, $color, $level);
         // Switch between returning or echoing. (echo is default);
         $resultClean = Core::cleanPath($result);
         if ($return) {
             return $resultClean;
-        } else {
-            echo $resultClean;
         }
+        echo $resultClean;
     }
 
     /**
@@ -70,7 +91,7 @@ class Show
      * @param string $title
      * @return string
      */
-    private static function _renderForConsole($var, $title)
+    private static function renderForConsole($var, $title)
     {
         $output = is_object($var) ? get_class($var) . ': ' : gettype($var) . ': ';
         if ($var instanceof \Exception) {
@@ -89,13 +110,21 @@ class Show
      * @param string $color
      * @return string
      */
-    private static function _renderForWeb($var, $title, $color)
+    private static function renderForWeb($var, $title, $color, $level)
     {
-        if ($var instanceof \Exception) {
-            $trace = self::_getTraceInfo(self::_getDebug($var->getTrace()));
-        } else {
-            $trace = self::_getTraceInfo(self::_getDebug());
+        // Get debuglines.
+        $traceLines = self::_getDebug($var instanceof \Exception ? $var->getTrace() : null);
+        // Log to error log when errors happen.
+        if ($level <= self::$errorLogLevel) {
+            $parts = [
+                $title,
+                print_r($var, true),
+                \Core::$requestFull,
+                self::getMiniTrace($traceLines)
+            ];
+            error_log(implode(' | ', $parts));
         }
+        $trace = self::_getTraceInfo($traceLines);
         $cleanTitle = Sanitize::clean($title);
         // Render content.
         $content = self::_showVariable($var);
@@ -190,6 +219,15 @@ class Show
     }
 
     /**
+     * Generate nifty trace HTML.
+     * @return string
+     */
+    private static function getMiniTrace($locations)
+    {
+        return implode(PHP_EOL, array_slice($locations, 0, 3));
+    }
+
+    /**
      * Show a variable in a nice strict format.
      *
      * @param mixed $var
@@ -214,7 +252,7 @@ class Show
      */
     public static function fatal($var, $title = 'Fatal error')
     {
-        self::info($var, $title, self::COLOR_FATAL);
+        self::render($var, $title, self::COLOR_FATAL, false, LOG_CRIT);
         exit;
     }
 
@@ -227,7 +265,7 @@ class Show
      */
     public static function error($var, $title = 'Error', $return = false)
     {
-        return self::info($var, $title, self::COLOR_ERROR, $return);
+        return self::render($var, $title, self::COLOR_ERROR, $return, LOG_ERR);
     }
 
     /**
@@ -239,7 +277,7 @@ class Show
      */
     public static function success($var, $title = 'Error', $return = false)
     {
-        return self::info($var, $title, self::COLOR_SUCCESS, $return);
+        return self::render($var, $title, self::COLOR_SUCCESS, $return, LOG_USER);
     }
 
     /**
@@ -251,7 +289,7 @@ class Show
      */
     public static function nice($var, $title = 'Error', $return = false)
     {
-        return self::info($var, $title, self::COLOR_NICE, $return);
+        return self::render($var, $title, self::COLOR_NICE, $return, LOG_USER);
     }
 
     /**
@@ -263,7 +301,7 @@ class Show
      */
     public static function debug($var, $title = 'Debug', $return = false)
     {
-        return self::info($var, $title, self::COLOR_DEBUG, $return);
+        return self::render($var, $title, self::COLOR_DEBUG, $return, LOG_DEBUG);
     }
 
     /**
@@ -286,7 +324,8 @@ class Show
      */
     public static function handleError($errNo, $errStr, $errFile, $errLine)
     {
-        self::error("Code: $errNo, Line: $errLine, File: $errFile", $errStr);
+        $printout = $errNo <= E_USER_WARNING;
+        self::error("Code: $errNo, Line: $errLine, File: $errFile", $errStr, !$printout);
     }
 
     /**

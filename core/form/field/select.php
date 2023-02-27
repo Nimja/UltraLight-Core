@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\Form\Field;
+
 /**
  * Select field, can switch between dropdown or multiselect with "multiple" extra flag.
  */
@@ -15,7 +17,7 @@ class Select extends \Core\Form\Field
         $result = array("<select name=\"{$this->name}{$nameExtra}\"{$tag} {$extra}>");
         $values = $this->_getValues();
         foreach ($values as $key => $value) {
-            if (is_array($value)) {
+            if (is_array($value) && !array_key_exists('isOption', $value)) { // Way to make NOT opt-group subarray.
                 $result[] = "<optgroup label=\"{$key}\">";
                 foreach ($value as $skey => $svalue) {
                     $result[] = $this->renderOption($skey, $svalue);
@@ -29,8 +31,28 @@ class Select extends \Core\Form\Field
         return implode(PHP_EOL, $result);
     }
 
-    private function renderOption($key, $value) {
-        $selected = $this->_isSelected($key) ? 'selected="selected"' : '';
-        return "<option value=\"{$key}\" {$selected}>{$value}</option>";
+    /**
+     * Render a single option.
+     *
+     * @param [type] $key
+     * @param [type] $value
+     * @return void
+     */
+    private function renderOption($key, $value)
+    {
+        $selected = $this->_isSelected($key) ? ' selected="selected"' : '';
+        $extra = '';
+        if (is_array($value)) { // Third depth assumes that there are other options.
+            $data = getKey($value, 'data');
+            $value = getKey($value, 'value');
+            if (!empty($data) && is_array($data)) {
+                $dataFields = [];
+                foreach ($data as $n => $v) { // Add data fields for an option, values are already escaped.
+                    $dataFields[] = "data-{$n}=\"{$v}\"";
+                }
+                $extra = ' ' . implode(' ', $dataFields);
+            }
+        }
+        return "<option value=\"{$key}\"{$selected}{$extra}>{$value}</option>";
     }
 }

@@ -42,9 +42,9 @@ class Page extends Base
         if (!array_key_exists($id, $lookup)) {
             return "ID not found: $id";
         }
-        $parts = $lookup[$id];
-        $url = $parts['url'];
-        $title = $parts['title'];
+        $menuParts = $lookup[$id];
+        $url = $menuParts['url'];
+        $title = $menuParts['title'];
         $class = isset($parts[1]) ? $this->_reverseParse($parts[1]) : false;
         $extra = $class ? "class= \"{$class}\"" : '';
         return "<a href=\"{$url}\" {$extra}>{$title}</a>";

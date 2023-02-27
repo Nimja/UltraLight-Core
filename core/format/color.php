@@ -1,4 +1,7 @@
-<?php namespace Core\Format;
+<?php
+
+namespace Core\Format;
+
 /**
  * Useful color class for fading and HSL/HSV calculations.
  * @property-read int $red Red value, from 0 to 255.
@@ -210,7 +213,7 @@ class Color
     public function __construct($color = null, $gamma = self::GAMMA)
     {
         if (is_array($color)) {
-            list ($red, $green, $blue) = $color;
+            list($red, $green, $blue) = $color;
             $this->setRgb($red, $green, $blue);
             $this->_valid = true;
         } else if ($color) {
@@ -265,18 +268,18 @@ class Color
      */
     public function setRgb($red, $green, $blue)
     {
-        $this->_red = $red;
-        $this->_green = $green;
-        $this->_blue = $blue;
+        $this->_red = round($red);
+        $this->_green = round($green);
+        $this->_blue = round($blue);
         $this->_calculateHsv();
         return $this;
     }
 
     /**
      * Set HSV.
-     * @param type $hue
-     * @param type $saturation
-     * @param type $lightness
+     * @param int $hue
+     * @param float $saturation
+     * @param float $lightness
      * @return Color
      */
     public function setHsv($hue, $saturation, $lightness)
@@ -305,9 +308,9 @@ class Color
 
     /**
      * Adjust HSV, returning a new object.
-     * @param type $hue
-     * @param type $saturation
-     * @param type $lightness
+     * @param int $hue
+     * @param int $saturation
+     * @param int $lightness
      * @return self
      */
     public function adjustHsv($hue, $saturation = 0, $lightness = 0)
@@ -373,16 +376,20 @@ class Color
         if ($fadeAmountLimited == 0) {
             return $result;
         }
+        // From 0 .. 1
         $gray = $this->getLiteralGray();
         $diff = ($brightnessTarget - $gray);
-        if ($diff === 0) {
+        if ($diff == 0) { // We're on target.
             return $result;
-        } else if ($diff > 0) {
+        } else if ($diff > 0) { // Destination is brighter.
             $fadeTo = 255;
-            $fadeAmount = $diff * (1 / (1 - $gray));
-        } else {
+            $range = 1 - $gray; // How much white is left.
+            $fadeAmount = $diff * (1 / $range); // Scale the fading by the range.
+            // $fadeAmount = $diff;
+        } else { // Destination is darker.
             $fadeTo = 0;
-            $fadeAmount = $diff * (-1 / $gray);
+            $range = $gray; // How much dark is left.
+            $fadeAmount = -$diff * (1 / $range);
         }
         $fadeAmount *= $fadeAmountLimited;
         $result->setRgb(
@@ -412,9 +419,9 @@ class Color
     public function getRgba($alpha = 1)
     {
         $values = [
-            intval($this->_red),
-            intval($this->_green),
-            intval($this->_blue),
+            $this->_red,
+            $this->_green,
+            $this->_blue,
             $alpha
         ];
         return 'rgba(' . implode(', ', $values) . ')';
@@ -483,10 +490,10 @@ class Color
      */
     private function _limitColors()
     {
-        $this->_red = $this->_limit($this->_red, 0, 255);
-        $this->_green = $this->_limit($this->_green, 0, 255);
-        $this->_blue = $this->_limit($this->_blue, 0, 255);
-        $this->_hue = $this->_hue % 360;
+        $this->_red = $this->_limit(round($this->_red), 0, 255);
+        $this->_green = $this->_limit(round($this->_green), 0, 255);
+        $this->_blue = $this->_limit(round($this->_blue), 0, 255);
+        $this->_hue = round($this->_hue) % 360;
         if ($this->_hue < 0) {
             $this->_hue += 360;
         }
@@ -537,6 +544,7 @@ class Color
             }
             $this->_hue = $h * 360;
         }
+        $this->_limitColors();
     }
 
     /**
@@ -589,6 +597,7 @@ class Color
         $this->_green = $green * 255;
         $this->_blue = $blue * 255;
         $this->_calculateGray();
+        $this->_limitColors();
     }
 
     /**

@@ -1,4 +1,7 @@
-<?php namespace Core\Format;
+<?php
+
+namespace Core\Format;
+
 /**
  * Basic String to HTML formatting class.
  *
@@ -39,6 +42,9 @@ class Text
      */
     public static function parse($str, $parseBlocks = true)
     {
+        if (empty($str)) {
+            return '';
+        }
         // Decode HTML entities
         $str = html_entity_decode($str);
         // Remove tags.
@@ -61,12 +67,14 @@ class Text
 
             // Switch, based on first character.
             switch ($first) {
-                // Basic H2+ title.
-                case '=': $open = '';
+                    // Basic H2+ title.
+                case '=':
+                    $open = '';
                     $line = self::_parseTitle($rest);
                     break;
-                // Unordered list.
-                case '*': $open = 'ul';
+                    // Unordered list.
+                case '*':
+                    $open = 'ul';
                     $line = '<li>' . $rest . '</li>';
                     break;
 
@@ -83,17 +91,21 @@ class Text
                     break;
 
                     // Ordered list.
-                case '#': $open = 'ol';
+                case '#':
+                    $open = 'ol';
                     $line = '<li>' . $rest . '</li>';
                     break;
-                // Empty lines, close open tags.
-                case '': $open = '';
+                    // Empty lines, close open tags.
+                case '':
+                    $open = '';
                     break;
 
-                // Forcing a normal line (for example, if we want to start with bold)
-                case '!': $line = $rest;
-                // Normal text lines, if we're already in a paragraph, use a linebreak.
-                default: $open = 'p';
+                    // Forcing a normal line (for example, if we want to start with bold)
+                case '!':
+                    $line = $rest;
+                    // Normal text lines, if we're already in a paragraph, use a linebreak.
+                default:
+                    $open = 'p';
                     if ($prevopen == $open) {
                         $line = '<br />' . $line;
                     }
@@ -195,11 +207,11 @@ class Text
     {
         return preg_replace_callback(
             '/\[([]a-z]+)\|([^\]]+)\]/',
-            function ($matches)
-            {
+            function ($matches) {
                 $parser = self::_getBlockParser($matches[1]);
                 return $parser->parse($matches[2]);
-            }, $string
+            },
+            $string
         );
     }
 

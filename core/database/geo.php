@@ -1,5 +1,8 @@
 <?php
+
 namespace Core\Database;
+
+require_once PATH_CORE . '../composer/vendor/autoload.php';
 /**
  * Interface to the GeoIP2 database, with simplified results if so desired.
  *
@@ -290,7 +293,7 @@ class Geo
     {
         $file = $useCity ? 'GeoLite2-City.mmdb' : 'GeoLite2-Country.mmdb';
         $this->_useCity = true;
-        $this->_geo = new \GeoIp2\Database\Reader(PATH_VENDOR . 'GeoIp2/' . $file);
+        $this->_geo = new \GeoIp2\Database\Reader(PATH_VENDOR . $file);
     }
 
     /**

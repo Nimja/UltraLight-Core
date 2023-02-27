@@ -115,6 +115,9 @@ class View
      */
     public function fillValues($string, $values)
     {
+        if (empty($string)) { // If there is nothing to replace, do nothing.
+            return $string;
+        }
         $result = preg_replace_callback(
             self::REGEX_VARIABLES,
             function ($matches) use ($values) {
@@ -292,6 +295,9 @@ class View
      */
     public static function escape($string)
     {
+        if (empty($string)) { // If there is nothing to replace, do nothing.
+            return $string;
+        }
         return str_replace(
             array_keys(self::ESCAPING),
             array_values(self::ESCAPING),

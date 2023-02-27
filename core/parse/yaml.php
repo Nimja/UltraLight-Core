@@ -1,5 +1,9 @@
 <?php
+
 namespace Core\Parse;
+
+require_once PATH_CORE . '../composer/vendor/autoload.php';
+
 /**
  * Yaml parser, parses an yaml file to associative array.
  */
@@ -14,13 +18,8 @@ class Yaml
     public static function parseString($string)
     {
         $result = null;
-        if (function_exists('yaml_parse')) {
-            $result = yaml_parse($string);
-        } else if (file_exists(PATH_VENDOR . 'Yaml/Parser.php')) {
-            //Vendor YAML parser, based on Symphony yaml parser.
-            $yaml = new \Yaml\Parser();
-            $result = $yaml->parse($string, false, false);
-        }
+        //Symphony YAML parser.
+        $result = \Symfony\Component\Yaml\Yaml::parse($string);
         return $result;
     }
 
@@ -31,14 +30,9 @@ class Yaml
      */
     public static function parse($fileName)
     {
-        $result = null;
-        if (function_exists('yaml_parse_file')) {
-            $result = yaml_parse_file($fileName);
-        } else if (file_exists(PATH_VENDOR . 'Yaml/Parser.php')) {
-            //Vendor YAML parser, based on Symphony yaml parser.
-            $yaml = new \Yaml\Parser();
-            $result = $yaml->parse(file_get_contents($fileName), false, false);
+        if (file_exists($fileName)) {
+            return self::parseString(file_get_contents($fileName));
         }
-        return $result;
+        return null;
     }
 }

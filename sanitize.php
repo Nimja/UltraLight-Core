@@ -30,11 +30,11 @@ class Sanitize
             //Remove magic quotes.
             $string = (ini_get('magic_quotes_gpc')) ? stripslashes($value) : $value;
             //Fix euro symbol.
-            $string = str_replace(chr(226) . chr(130) . chr(172), '&euro;', trim($string));
+            $string = str_replace(chr(226) . chr(130) . chr(172), '&euro;', trim($string ?: ''));
             //Remove non-printable characters (like 255 and others, but keep unicode characters intact).
             $string = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', '', $string);
             //$string = utf8_decode($string);
-            $string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
+            $string = html_entity_decode($string ?: '', ENT_COMPAT, 'UTF-8');
             //Normalize linebreaks to LINUX format.
             $string = str_replace(["\r\n", "\r"], "\n", $string);
             if ($stripHtml) {
@@ -54,7 +54,7 @@ class Sanitize
      */
     public static function fileName($string, $toLower = true)
     {
-        $string = ($toLower) ? strtolower(trim($string)) : trim($string);
+        $string = ($toLower) ? strtolower(trim($string ?: '')) : trim($string ?: '');
         //Strip unwanted characters.
         $string = preg_replace('/[^A-Za-z0-9\_\/\.]/', '', $string);
         //Remove double slashes.
