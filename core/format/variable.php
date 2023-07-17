@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\Format;
+
 /**
  * Basic String to HTML formatting class.
  *
@@ -26,21 +28,29 @@ class Variable
     {
         $type = gettype($variable);
         switch ($type) {
-            case 'boolean': $this->_addLine($variable ? 'true' : 'false', $depth, $parent, $parentIsArray);
+            case 'boolean':
+                $this->_addLine($variable ? 'true' : 'false', $depth, $parent, $parentIsArray);
                 break;
-            case 'double': $this->_addLine("{$variable}", $depth, $parent, $parentIsArray);
+            case 'double':
+                $this->_addLine("{$variable}", $depth, $parent, $parentIsArray);
                 break;
-            case 'integer':$this->_addInt($variable, $depth, $parent, $parentIsArray);
+            case 'integer':
+                $this->_addInt($variable, $depth, $parent, $parentIsArray);
                 break;
-            case 'string':$this->_addString($variable, $depth, $parent, $parentIsArray);
+            case 'string':
+                $this->_addString($variable, $depth, $parent, $parentIsArray);
                 break;
-            case 'array':$this->_addArray($variable, $depth, $parent, $parentIsArray);
+            case 'array':
+                $this->_addArray($variable, $depth, $parent, $parentIsArray);
                 break;
-            case 'object': $this->_addObject($variable, $depth, $parent, $parentIsArray);
+            case 'object':
+                $this->_addObject($variable, $depth, $parent, $parentIsArray);
                 break;
-            case 'resource': $this->_addLine($variable, $depth, $parent, $parentIsArray);
+            case 'resource':
+                $this->_addLine($variable, $depth, $parent, $parentIsArray);
                 break;
-            case 'NULL': $this->_addLine('NULL', $depth, $parent, $parentIsArray);
+            case 'NULL':
+                $this->_addLine('NULL', $depth, $parent, $parentIsArray);
                 break;
             default:
                 $string = 'UNKNOWN: ' . PHP_EOL . var_export($variable, true);

@@ -7,7 +7,8 @@ namespace Core\Model\Tool;
  *
  * @author Nimja
  */
-class Index {
+class Index
+{
 
     /**
      * The class we use.
@@ -80,9 +81,9 @@ class Index {
 
     /**
      * Make simple link.
-     * @param type $id
+     * @param int $id
      * @param string $title
-     * @return type
+     * @return string
      */
     private function _makeLink($id = 0, $title = null)
     {
@@ -105,5 +106,4 @@ class Index {
         }
         return "<a class=\"list-group-item{$active}\" href=\"{$link}\">{$title}</a>";
     }
-
 }

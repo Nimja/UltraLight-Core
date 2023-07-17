@@ -1,5 +1,7 @@
 <?php
+
 namespace Core\Bootstrap;
+
 /**
  * A simple class to assist in pagination. Only shows the correct links (previous, first etc.)
  */
@@ -73,34 +75,44 @@ class Pager
         $this->_lastPage = floor($total / $perPage) + 1;
         $this->_baseUrl = $baseUrl;
         $this->_total = $total;
-        $this->_page = $page < 1 ? 1 : $page > $this->_lastPage ? $this->_lastPage : $page;
+        if ($page < 1) {
+            $this->_page = 1;
+        } else if ($page > $this->_lastPage) {
+            $this->_page = $this->_lastPage;
+        } else {
+            $this->_page = $page;
+        }
     }
     /**
      * If we should show the first link.
-     * @return type
+     * @return bool
      */
-    protected function _showFirstLink() {
+    protected function _showFirstLink()
+    {
         return ($this->_page > 2);
     }
     /**
      * If we should show the previous link.
-     * @return type
+     * @return bool
      */
-    protected function _showPreviousLink() {
+    protected function _showPreviousLink()
+    {
         return ($this->_page > 1);
     }
     /**
      * If we should show the next link.
-     * @return type
+     * @return bool
      */
-    protected function _showNextLink() {
+    protected function _showNextLink()
+    {
         return ($this->_page <  $this->_lastPage);
     }
     /**
      * If we should show the last link.
-     * @return type
+     * @return bool
      */
-    protected function _showLastLink() {
+    protected function _showLastLink()
+    {
         return ($this->_page <  $this->_lastPage - 1);
     }
 

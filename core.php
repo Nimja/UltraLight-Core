@@ -453,6 +453,7 @@ class Core
         }
         // Prevent looping on url decoded urls.
         $uri = urldecode($uri);
+        $originalUri = str_replace(' ', '+', $uri); // Keep the +s.
         // Remove leading, trailing and double slashes.
         $clean = preg_replace('/\/{2,}/', '/', trim(urldecode($uri), '/ '));
         // We unify the url to use + instead of %20.
@@ -460,7 +461,8 @@ class Core
         // Remove /index.
         $final = str_replace('/index', '/', $clean2);
 
-        if ($uri != '/' . $final && !self::$console) {
+        // Original uri;
+        if ($originalUri != '/' . $final && !self::$console) {
             Request::redirect($final, 302, true);
         }
         self::$url = $final;

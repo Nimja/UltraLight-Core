@@ -7,9 +7,10 @@ namespace Core\Model\Tool\Menu;
  *
  * @author Nimja
  */
-class Item {
+class Item
+{
 
-    public static $_class = \Core\Model\Page::class;
+    public static $_entityClass = \Core\Model\Page::class;
 
     /**
      * Page id.
@@ -64,6 +65,16 @@ class Item {
     }
 
     /**
+     * Return true if this item has children.
+     *
+     * @return boolean
+     */
+    public function hasChildren()
+    {
+        return count($this->children) > 0;
+    }
+
+    /**
      * Get entity object, defaults to page.
      * @return \Core\Model\Page
      */
@@ -103,5 +114,4 @@ class Item {
             $child->buildFullUrlAndPath();
         }
     }
-
 }
