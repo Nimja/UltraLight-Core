@@ -88,6 +88,7 @@ class Contact
         $this->_values = \Request::getValues();
         // Check for posting.
         $this->_isValid = false;
+        // Validate the content to check if we want to send it or not.
         if (\Request::isPost()  && !empty($this->_values)) {
             $validator = new \Core\Form\Validate();
             $this->_isValid = $validator->validate($this->_values, $this->_rules);
@@ -103,14 +104,19 @@ class Contact
 
     public function __toString()
     {
-        return $this->_isValid ? $this->showThanks() : $this->getForm();
+        return $this->_isValid ? $this->showThanks() : strval($this->getForm());
     }
 
     protected function getContent()
     {
-        return html_entity_decode(getKey($this->_values, 'text'));
+        return \Sanitize::from_html_entities(getKey($this->_values, 'text'));
     }
 
+    /**
+     * Send email and redirect to the thank you page.
+     *
+     * @return string
+     */
     protected function showThanks()
     {
         $replyTo = getKey($this->_values, 'email');
@@ -129,7 +135,7 @@ class Contact
         $ln = "\r\n";
         $extra = $this->extra;
 
-        $content = "From: {$replyTo}{$ln}Subject: {$subjectText}{$ln}{$extra}Text: {$text}";
+        $content = "{$replyTo} wrote:{$ln}Subject: {$subjectText}{$ln}{$extra}Text: {$text}";
 
         $email = new Email('Contact');
         $email->setReplyTo($replyTo);
@@ -139,8 +145,14 @@ class Contact
             \Show::fatal("Error sending email?!?");
         }
         \Request::redirect($this->thanksPageUrl);
+        return 'Thank you!';
     }
 
+    /**
+     * Get form object., used for the contact form.
+     *
+     * @return \Core\Form
+     */
     protected function getForm()
     {
         $form = new \Core\Form(null, ['class' => 'form-horizontal']);
@@ -175,6 +187,6 @@ class Contact
         );
         $form->add(new \Core\Form\Field\Submit('submit', ['value' => 'Send', 'class' => 'btn-primary']));
         $form->add($script);
-        return "$form";
+        return $form;
     }
 }

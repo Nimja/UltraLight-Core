@@ -170,7 +170,7 @@ class Page extends \Core\Model\Ordered
      */
     protected function makeUrlFromTitle(string $title): string
     {
-        $decoded = strtolower(html_entity_decode($title));
+        $decoded = strtolower(\Sanitize::from_html_entities($title));
         $replaced = preg_replace("/[^a-z\-]/", ' ', $decoded);
         $underscored = preg_replace("/\s+/", '_', trim($replaced));
         return $underscored;

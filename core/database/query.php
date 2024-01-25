@@ -86,7 +86,7 @@ class Query
     protected function parseSearch($search)
     {
         $result = [];
-        $search = html_entity_decode($search);
+        $search = \Sanitize::from_html_entities($search);
         $searches = explode(';', $search);
         foreach ($searches as $search) {
             $matches = null;

@@ -66,6 +66,7 @@ class View
         'limit' => \Core\View\Transform\Limit::class,
         'math' => \Core\View\Transform\Math::class,
         'number' => \Core\View\Transform\Number::class,
+        'url' => \Core\View\Transform\Url::class,
         'random' => \Core\View\Transform\Random::class,
     ];
     /**

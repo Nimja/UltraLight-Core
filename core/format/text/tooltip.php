@@ -1,4 +1,7 @@
-<?php namespace Core\Format\Text;
+<?php
+
+namespace Core\Format\Text;
+
 /**
  * Basic String to HTML formatting class.
  *
@@ -19,7 +22,7 @@ class Tooltip extends Base
     protected function _parse($parts)
     {
         $text = $parts[0];
-        $detail = htmlentities($this->_reverseParse($parts[1]));
+        $detail = \Sanitize::to_html_entities($this->_reverseParse($parts[1]));
         $class = isset($parts[2]) ? $this->_reverseParse($parts[2]) : '';
         return "<span class=\"hasTooltip {$class}\" data-toggle=\"tooltip\" title=\"{$detail}\">{$text}</span>";
     }

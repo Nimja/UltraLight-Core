@@ -99,7 +99,7 @@ class Show
         } else {
             $output .= print_r($var, true);
         }
-        return html_entity_decode($title) . PHP_EOL . $output . PHP_EOL;
+        return \Sanitize::from_html_entities($title) . PHP_EOL . $output . PHP_EOL;
     }
 
     /**
@@ -125,7 +125,7 @@ class Show
             error_log(implode(' | ', $parts));
         }
         $trace = self::_getTraceInfo($traceLines);
-        $cleanTitle = Sanitize::clean($title);
+        $cleanTitle = \Sanitize::clean($title);
         // Render content.
         $content = self::_showVariable($var);
         // Create result.
@@ -238,7 +238,7 @@ class Show
         $lines = \Core\Format\Variable::parse($var);
         $result = [];
         foreach ($lines as $line) {
-            $line = htmlentities($line);
+            $line = \Sanitize::to_html_entities($line);
             $result[] = "<c>{$line}</c>";
         }
         return implode(PHP_EOL, $result);

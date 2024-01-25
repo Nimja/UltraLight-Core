@@ -46,11 +46,11 @@ class Text
             return '';
         }
         // Decode HTML entities
-        $str = html_entity_decode($str);
+        $str = \Sanitize::from_html_entities($str);
         // Remove tags.
         $str = \Sanitize::stripHtml($str);
         // Encode HTML entities, like <, &, >, etc.
-        $str = htmlentities($str);
+        $str = \Sanitize::to_html_entities($str);
         // Remove multiple spaces.
         $str = preg_replace('/ {2,}/', ' ', $str);
         // Split into lines.
@@ -275,12 +275,21 @@ class Text
     /**
      * Translate bytes to a human readable format.
      *
-     * @param type $size
-     * @return type
+     * @param int $size
+     * @return str
      */
     public static function bytesToHuman($size)
     {
+        $size = intval($size);
         $unit = ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
-        return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
+        return @round(
+            $size / pow(
+                1024,
+                (
+                    $i = floor(log($size, 1024))
+                )
+            ),
+            2
+        ) . ' ' . $unit[$i];
     }
 }
