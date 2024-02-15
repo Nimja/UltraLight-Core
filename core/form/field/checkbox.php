@@ -1,4 +1,7 @@
-<?php namespace Core\Form\Field;
+<?php
+
+namespace Core\Form\Field;
+
 /**
  * Checkbox for forms.
  *
@@ -13,9 +16,9 @@ class CheckBox extends \Core\Form\Field
      */
     protected $_label = '';
 
-    public function __construct($name, $extra = null)
+    public function __construct($name, $extra = null, $params = null)
     {
-        parent::__construct($name, $extra);
+        parent::__construct($name, $extra, $params);
         if (isset($this->_extra['label'])) {
             $this->_label = ' ' . $this->_extra['label'];
             unset($this->_extra['label']);

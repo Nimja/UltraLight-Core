@@ -53,8 +53,9 @@ abstract class Field
      * Construct with name and additional values.
      * @param string $name
      * @param array $extra
+     * @param array $params
      */
-    public function __construct($name, $extra = null)
+    public function __construct($name, $extra = null, $params = null)
     {
         $this->name = $name;
         if (empty($extra)) {
@@ -63,6 +64,11 @@ abstract class Field
             $this->_extra = is_array($extra) ? $extra : array('extra' => $extra);
             $this->_sanitizeExtra(['value', 'values', 'default']);
             $this->_isMultiple = $this->_isMultiple || !empty($this->_extra['multiple']);
+        }
+        if (is_array($params)) {
+            foreach ($params as $key => $value) {
+                $this->$key = $value;
+            }
         }
         $this->_setValue(getKey($this->_extra, 'value'));
     }
