@@ -141,7 +141,7 @@ class View
      *
      * @param array $matches
      * @param array $values
-     * @return void
+     * @return string
      */
     private function translateValue(array $matches, array $values)
     {
@@ -187,8 +187,26 @@ class View
             return false;
         }
         //Make sure data is an array and filled with default values.
-        $data = $data ?: [];
-        $site_vars = \Config::system()->section('site');
+        if (!is_array($data)) {
+            $data = [];
+        }
+        // Add default, overriding with existing values.
+        $data = array_merge($this->getDefaultViewVars(), $data);
+        // Load the template.
+        $view = $this->loadView($view);
+        // Fill in the data if all goes well.
+        return empty($view) ? false : $this->fillValues($view, $data);
+    }
+
+    /**
+     * Default vars for a view, will NOT override existing values.
+     *
+     * @return array
+     */
+    private function getDefaultViewVars()
+    {
+        $data = [];
+        $site_vars = \Config::system()->section('site', true);
         foreach ($site_vars as $key => $value) {
             $data['site.' . $key] = $value;
         }
@@ -196,10 +214,7 @@ class View
         $data['site.page.rest'] = \Core::$rest;
         $data['site.page.url'] = \Core::$url;
         $data['site.page.requestUrl'] = \Core::$requestUrl;
-        // Load the template.
-        $view = $this->loadView($view);
-        // Fill in the data if all goes well.
-        return empty($view) ? false : $this->fillValues($view, $data);
+        return $data;
     }
 
     /**
@@ -272,7 +287,7 @@ class View
             if (!isset(self::$_transformers[$type])) {
                 throw new \Exception("No transformer registered for type: $type");
             }
-            $class = self::$_transformers[$type];
+            $class = \Sanitize::className(self::$_transformers[$type]);
             self::$_transformerInstances[$type] = new $class();
         }
         return self::$_transformerInstances[$type];

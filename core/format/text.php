@@ -227,7 +227,7 @@ class Text
             if (!isset(self::$_blockParsers[$type])) {
                 throw new \Exception("No parser registered for type: $type");
             }
-            $class = self::$_blockParsers[$type];
+            $class = \Sanitize::className(self::$_blockParsers[$type]);
             self::$_blockParserInstances[$type] = new $class();
         }
         return self::$_blockParserInstances[$type];

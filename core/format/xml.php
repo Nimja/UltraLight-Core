@@ -21,7 +21,7 @@ class Xml
         /**
          * XML parser
          *
-         * @var resource xml parser
+         * @var \XMLParser xml parser
          */
         protected $_parser = null;
 
@@ -139,7 +139,10 @@ class Xml
          */
         protected function _getPaddingStr()
         {
-                return str_repeat($this->_options["paddingString"], $this->_depth * $this->_options["paddingMultiplier"]);
+                return str_repeat(
+                        $this->_options["paddingString"],
+                        $this->_depth * $this->_options["paddingMultiplier"]
+                );
         }
 
         /**

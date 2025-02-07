@@ -9,8 +9,22 @@ namespace Core\Feed;
  */
 class Base
 {
+    /**
+     * String translate to make sure values are escaped.
+     */
+    const XML_CHARACTERS_MAP = [
+        "&" => "&amp;",
+        "<" => "&lt;",
+        ">" => "&gt;",
+    ];
     protected $asRss;
     protected $values;
+    /**
+     * Items in this feed.
+     *
+     * @var array
+     */
+    protected $items;
 
     /**
      * Basic instantiation.
@@ -46,6 +60,7 @@ class Base
      */
     protected function xmlLine(string $name, string $value)
     {
+        $value = strtr($value, self::XML_CHARACTERS_MAP);
         return "<{$name}>{$value}</{$name}>\n";
     }
 

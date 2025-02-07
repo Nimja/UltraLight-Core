@@ -41,7 +41,7 @@ abstract class Controller
     private function __construct()
     {
         if (!\Core::$console && $this->_requiredRole > 0 && !empty($this->_userClass)) {
-            $class = $this->_userClass;
+            $class = \Sanitize::className($this->_userClass);
             $user = $class::login();
             $role = !empty($user) ? $user->role : 0;
             if ($role < $this->_requiredRole && \Core::$url != $this->_loginRedirect) {

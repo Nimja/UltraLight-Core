@@ -22,39 +22,47 @@ class System
      */
     public static function listFiles($path, $options = 0, $include = null, $exclude = null)
     {
+        // Fail fast.
+        if (!is_dir($path)) {
+            throw new \Exception("Not listing a directory: {$path}");
+        }
         $files = [];
         $dirs = [];
+        // Parse options.
         $recursive = ($options & self::RECURSIVE);
         $exclude_files = ($options & self::EXCLUDE_FILES);
         $exclude_dirs = ($options & self::EXCLUDE_DIRS);
         $inc_func = is_array($include) ? 'in_array' : 'strpos';
         $exc_func = is_array($exclude) ? 'in_array' : 'strpos';
-        if (is_dir($path)) {
-            if (substr($path, -1) == '/') {
-                $path = substr($path, 0, -1);
-            }
-            $skip = ['.' => 1, '..' => 1];
-            $objects = scandir($path);
-            foreach ($objects as $entry) {
-                if (
-                    isset($skip[$entry])
-                    || (!empty($include) && $inc_func($entry, $include) === false)
-                    || (!empty($exclude) && $exc_func($entry, $exclude) !== false)
-                ) {
-                    continue;
-                }
-                $curfile = $path . '/' . $entry;
-                $file = $entry;
-                if (is_dir($curfile)) {
-                    $dirs[$entry] = (!$recursive) ? [] : self::listFiles($curfile, $options, $include, $exclude);
-                } else {
-                    $files[$entry] = $file;
-                }
-            }
-        } else {
-            throw new \Exception("Not listing a directory: {$path}");
+        // Remove trailing slash.
+        if (substr($path, -1) == DIRECTORY_SEPARATOR) {
+            $path = substr($path, 0, -1);
         }
-        #Combine dirs and files in proper order, maintaining keys.
+        $objects = scandir($path);
+        foreach ($objects as $entry) {
+            $curfile = $path . DIRECTORY_SEPARATOR . $entry;
+            // Skip the recursive entries.
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            // Include list enabled and this file is not in it.
+            $isNotIncluded = (!empty($include) && $inc_func($entry, $include) === false);
+            // Exclude list enabled and this file is not in it.
+            $isNotExcluded = (!empty($exclude) && $exc_func($entry, $exclude) !== false);
+            // Is not a directory when we're recursive.
+            $isNotRecursiveDir = (!is_dir($curfile) || !$recursive);
+            if ($isNotRecursiveDir && ($isNotIncluded || $isNotExcluded)) {
+                continue;
+            }
+            // Add entry to results.
+            $file = $entry;
+            if (is_dir($curfile)) {
+                $dirs[$entry] = (!$recursive) ? [] : self::listFiles($curfile, $options, $include, $exclude);
+            } else {
+                $files[$entry] = $file;
+            }
+        }
+        // Combine dirs and files in proper order, maintaining keys.
         $result = [];
         if (!$exclude_dirs) {
             $result += $dirs;
@@ -84,7 +92,7 @@ class System
                 if (!$includeHidden && substr($entry, 0, 1) == '.') {
                     continue;
                 }
-                $file = $dir . '/' . $entry;
+                $file = $dir . DIRECTORY_SEPARATOR . $entry;
                 if (is_dir($file)) {
                     self::rrmdir($file);
                 } else {

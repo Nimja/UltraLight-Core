@@ -43,7 +43,7 @@ class Edit
      */
     public function __construct($class, $editLink, $id = null)
     {
-        $this->_entityClass = $class;
+        $this->_entityClass = \Sanitize::className($class);
         $this->_editLink = $editLink;
         $this->_id = $id;
     }

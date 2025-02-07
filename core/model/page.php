@@ -66,7 +66,7 @@ class Page extends \Core\Model\Ordered
 
     /**
      * Page content.
-     * @db-type text
+     * @db-type mediumtext
      * @validate empty|10
      * @var string
      */
@@ -288,7 +288,7 @@ class Page extends \Core\Model\Ordered
     /**
      * Can be overridden for additional complexities for published pages.
      *
-     * @return void
+     * @return array
      */
     public static function getPublishedWhere()
     {
@@ -310,7 +310,7 @@ class Page extends \Core\Model\Ordered
      * Get where query for children.
      *
      * @param int $parentId
-     * @return void
+     * @return array
      */
     public static function getChildWhere($parentId)
     {

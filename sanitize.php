@@ -7,6 +7,33 @@ class Sanitize
 {
 
     /**
+     * Sanitize classname, also make sure that there is a preceding backslash.
+     *
+     * Ideally to use it, you pass \App\Class::class
+     *
+     * @param string $className
+     * @return string
+     */
+    public static function className($className)
+    {
+        $backslash = "\\";
+        return $backslash . trim($className, $backslash);
+    }
+
+    /**
+     * Get proper string for class + method.
+     *
+     * @param string $className
+     * @param string $method
+     * @return string
+     */
+    public static function classMethod($className, $method)
+    {
+        $className = self::className($className);
+        return "{$className}::{$method}";
+    }
+
+    /**
      * Sanitation function to run on POST/GET variables.
      *
      * @param mixed $value The value you wish to sanitize.

@@ -27,14 +27,14 @@ class Persist extends Sessioned
     public $code;
     /**
      * Expire date unix timestamp.
-     * @db-type int
+     * @db-type bigint
      * @db-unsigned
      * @var int
      */
     public $expireDate;
     /**
      * Stored data.
-     * @db-type text
+     * @db-type mediumtext
      * @serialize
      * @var array
      */
@@ -162,7 +162,7 @@ class Persist extends Sessioned
 
     /**
      * Set model by class and object.
-     * @param type $class
+     * @param string $class
      * @param \Core\Model $entity
      * @param boolean $sessionOnly If set to true, we do not store it in the database.
      * @return \Core\Model\Persist
@@ -172,6 +172,7 @@ class Persist extends Sessioned
         if (empty($class) || !is_subclass_of($class, \Core\Model::class)) {
             return $this;
         }
+        $class = \Sanitize::className($class);
         if ($entity instanceof \Core\Model) {
             $this->sessionData[$class] = $entity;
             if ($sessionOnly) {
@@ -196,6 +197,7 @@ class Persist extends Sessioned
         if (empty($class) || !is_subclass_of($class, \Core\Model::class)) {
             return null;
         }
+        $class = \Sanitize::className($class);
         $result = null;
         $entity = getKey($this->sessionData, $class, null);
         $savedId = $this->get($class);

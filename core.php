@@ -598,7 +598,7 @@ class Core
 
     /**
      * Does a redirect if desiredUrl is different from the current Url.
-     * @param type $desiredUrl
+     * @param string $desiredUrl
      */
     public static function forceUrl($desiredUrl = '')
     {

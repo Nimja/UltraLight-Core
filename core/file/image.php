@@ -1,4 +1,7 @@
-<?php namespace Core\File;
+<?php
+
+namespace Core\File;
+
 /**
  * Image class, that wraps around loading an image and makes it easier.
  */
@@ -13,7 +16,7 @@ class Image
     public $type;
     /**
      * Current image object.
-     * @var resource an image resource identifier on success
+     * @var \GdImage an image resource identifier on success
      */
     public $img;
     /**
@@ -26,6 +29,11 @@ class Image
      * @var int
      */
     public $height = 0;
+    /**
+     * JPG Quality.
+     * @var int
+     */
+    public $jpgQuality = -1;
     /**
      * Megapixels of this image.
      * @var float
@@ -76,12 +84,15 @@ class Image
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         #Load image
         switch ($extension) {
-            case 'png': $this->img = imagecreatefrompng($fileName);
+            case 'png':
+                $this->img = imagecreatefrompng($fileName);
                 break;
             case 'jpg':
-            case 'jpeg': $this->img = imagecreatefromjpeg($fileName);
+            case 'jpeg':
+                $this->img = imagecreatefromjpeg($fileName);
                 break;
-            case 'gif': $this->img = imagecreatefromgif($fileName);
+            case 'gif':
+                $this->img = imagecreatefromgif($fileName);
                 break;
         }
         if ($this->img === false) {
@@ -118,7 +129,7 @@ class Image
     {
         ob_start();
         if ($this->type == self::TYPE_JPEG) {
-            imagejpeg($this->img);
+            imagejpeg($this->img, null, $this->jpgQuality);
         } else {
             imagepng($this->img);
         }

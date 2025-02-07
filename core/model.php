@@ -395,7 +395,7 @@ abstract class Model
      * Create multiple items at once with associative arrays.
      *
      * @param array $items
-     * @return void
+     * @return int
      */
     public static function addMultiple($items)
     {

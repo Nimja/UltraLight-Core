@@ -9,7 +9,7 @@ class Page extends Base
     /**
      * The static page class, we will use this to get the menu.
      *
-     * @var [type]
+     * @var string
      */
     public static $pageClass = \Core\Model\Page::class;
 
@@ -35,7 +35,7 @@ class Page extends Base
     {
         $id = intval($parts[0]);
         if (!$this->menu) {
-            $class = self::$pageClass;
+            $class = \Sanitize::className(self::$pageClass);
             $this->menu = $class::getMenu();
         }
         $lookup = $this->menu->lookup;

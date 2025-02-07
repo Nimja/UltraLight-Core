@@ -68,7 +68,7 @@ class Simple
      */
     public function __construct($class, $base = '', $edit = 'edit', $order = 'order')
     {
-        $this->_modelClass = $class;
+        $this->_modelClass = \Sanitize::className($class);
         $this->_modelName = substr($class, strrpos($class, '\\') + 1);
         $this->_linkBase = $base ? : '/' . \Core::$route;
         $this->_linkEdit = $edit;

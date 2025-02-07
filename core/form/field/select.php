@@ -8,6 +8,11 @@ namespace Core\Form\Field;
 class Select extends \Core\Form\Field
 {
 
+    /**
+     * Get HTML for htis field.
+     *
+     * @return string
+     */
     protected function _getHtml()
     {
         $this->_extra = $this->_addClass($this->_extra, 'form-control');
@@ -34,9 +39,9 @@ class Select extends \Core\Form\Field
     /**
      * Render a single option.
      *
-     * @param [type] $key
-     * @param [type] $value
-     * @return void
+     * @param string $key
+     * @param string $value
+     * @return string
      */
     private function renderOption($key, $value)
     {

@@ -31,9 +31,38 @@ class Config
      * @param string $section
      * @return mixed
      */
-    public function section($section)
+    public function section($section, $flat = false)
     {
-        return getKey($this->_values, $section, []);
+        $result = getKey($this->_values, $section, []);
+        if (!$flat) {
+            return $result;
+        } else {
+            return $this->getFlattenedSection($result, '');
+        }
+    }
+
+    /**
+     * Get a recursive, flat section of ini file.
+     *
+     * @param array $values
+     * @param string $base
+     * @return array
+     */
+    private function getFlattenedSection($values, $base)
+    {
+        if ($base) { // If we have a key before, we add the next pieces after a dot.
+            $base .= '.';
+        }
+        $result = [];
+        foreach ($values as $key => $value) {
+            $cur = $base . $key;
+            if (is_array($value)) { // Recurse if array.
+                $result += $this->getFlattenedSection($value, $cur);
+            } else {
+                $result[$cur] = $value;
+            }
+        }
+        return $result;
     }
 
     /**

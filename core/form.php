@@ -273,7 +273,7 @@ class Form
     /**
      * Get posted values, setting empty/false values for missing checkboxes.
      *
-     * @return void
+     * @return array
      */
     public function getValues()
     {

@@ -80,7 +80,7 @@ class Item
      */
     public function getEntity()
     {
-        $class = self::$_entityClass;
+        $class = \Sanitize::className(self::$_entityClass);
         return $class::load($this->id);
     }
 

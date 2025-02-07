@@ -45,6 +45,7 @@ class Install
      */
     public function install($class, $force = false)
     {
+        $class = \Sanitize::className($class);
         $re = $class::re();
         $fields = $re->columns;
         if (empty($fields)) {
@@ -77,6 +78,7 @@ class Install
     {
         $user = null;
         if (!empty($this->_installed["$class"])) {
+            $class = \Sanitize::className($class);
             $user = new $class(['name' => $name, 'role' => $role]);
             $user->password = $class::encryptPassword($name, $password);
             $user->save();

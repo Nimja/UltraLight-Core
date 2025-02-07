@@ -327,7 +327,7 @@ class Request
     /**
      * Simplified redirect function, needs to be called BEFORE output!
      *
-     * @param type $url The absolute or relative url you wish to redirect to.
+     * @param string $url The absolute or relative url you wish to redirect to.
      * @param int $code One of 301, 302 or 303
      */
     public static function redirect($url = '', $code = self::STATUS_REDIRECT_FOUND, $includeRequest = false)
