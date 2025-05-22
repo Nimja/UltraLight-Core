@@ -183,6 +183,24 @@ abstract class Model
     }
 
     /**
+     * Checks if all the values match the key/field values on the model.
+     *
+     * Returns false if ANY are not matching.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function matchesData($data)
+    {
+        foreach ($data as $key => $value) {
+            if ($this->{$key} != $value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Save values, allowing to update only a single value.
      * @param array $values
      * @return bool True if DB is updated, or false if not.
