@@ -118,7 +118,7 @@ class Order
      */
     private function _isMoveNeeded()
     {
-        $move = \Request::value('move');
+        $move = \Request::getValue('move');
         if (empty($move) || strpos($move, '-') === false) {
             return false;
         }

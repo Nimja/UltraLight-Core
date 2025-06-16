@@ -306,7 +306,7 @@ class Geo
         try {
             $data = $this->_geo->country($ip);
             $result = $data->country->isoCode;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $result = null;
         }
         return $result;

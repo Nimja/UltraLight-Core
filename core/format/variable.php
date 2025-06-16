@@ -143,8 +143,8 @@ class Variable
      */
     private function _addObject($variable, $depth, $parent, $parentIsArray)
     {
-        if ($variable instanceof \Exception) {
-            $this->_addLine("Exception: ", $depth, $parent, false);
+        if ($variable instanceof \Throwable) {
+            $this->_addLine("Exception: " . get_class($variable), $depth, $parent, false);
             $this->_addLine("file: {$variable->getFile()}", $depth, $parent, false);
             $this->_addLine("line: {$variable->getLine()}", $depth, $parent, false);
             $this->_addLine("message: {$variable->getMessage()}", $depth, $parent, false);

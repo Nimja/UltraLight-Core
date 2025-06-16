@@ -220,6 +220,20 @@ class Page extends \Core\Model\Ordered
     {
         $class = get_called_class();
         \Core::clearCache($class . '::buildMenu');
+        \Core::clearCache($class . '::load', false);
+    }
+
+    /**
+     * Get page ID for url.
+     *
+     * @param string $url
+     * @return int|null
+     */
+    private static function getPageIdForUrl($url)
+    {
+        $fullUrl = '/' . trim($url, '/');
+        $urls = self::getMenu()->urls;
+        return getKey($urls, $fullUrl);        
     }
 
     /**
@@ -229,10 +243,17 @@ class Page extends \Core\Model\Ordered
      */
     public static function getPageForUrl($url)
     {
-        $fullUrl = '/' . trim($url, '/');
-        $urls = self::getMenu()->urls;
-        $pageId = getKey($urls, $fullUrl);
-        return !empty($pageId) ? self::load($pageId) : null;
+        return self::load(self::getPageIdForUrl($url));
+    }
+
+    /**
+     * Get page entity for url.
+     * @param string $url
+     * @return \Core\Model\Page
+     */
+    public static function getPageForUrlCached($url)
+    {
+        return self::loadCached(self::getPageIdForUrl($url));
     }
 
     /**

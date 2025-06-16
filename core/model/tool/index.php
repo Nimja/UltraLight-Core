@@ -73,7 +73,7 @@ class Index
                 $result[] = $this->_makeLink($id, $title);
             }
             $result[] = '</div>';
-        } catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             $result = [\Show::output($ex, 'Exception!', \Show::COLOR_ERROR)];
         }
         return implode(PHP_EOL, $result);

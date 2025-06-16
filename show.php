@@ -94,7 +94,7 @@ class Show
     private static function renderForConsole($var, $title)
     {
         $output = is_object($var) ? get_class($var) . ': ' : gettype($var) . ': ';
-        if ($var instanceof \Exception) {
+        if ($var instanceof \Throwable) {
             $output .= $var->getMessage() . PHP_EOL . $var->getTraceAsString();
         } else {
             $output .= print_r($var, true);
@@ -113,7 +113,7 @@ class Show
     private static function renderForWeb($var, $title, $color, $level)
     {
         // Get debuglines.
-        $traceLines = self::_getDebug($var instanceof \Exception ? $var->getTrace() : null);
+        $traceLines = self::_getDebug($var instanceof \Throwable ? $var->getTrace() : null);
         // Log to error log when errors happen.
         if ($level <= self::$errorLogLevel) {
             $parts = [
@@ -263,9 +263,9 @@ class Show
      * @param string $title The optional title for this variable.
      * @param boolean $return
      */
-    public static function error($var, $title = 'Error', $return = false)
+    public static function error($var, $title = 'Error', $return = false, $color = self::COLOR_ERROR)
     {
-        return self::render($var, $title, self::COLOR_ERROR, $return, LOG_ERR);
+        return self::render($var, $title, $color, $return, LOG_ERR);
     }
 
     /**

@@ -25,7 +25,7 @@ abstract class Ajax extends \Core\Controller
         $this->_resultData['time'] = time();
         try {
             $this->_resultData['content'] = $this->_run();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->_resultData['error'] = $e->getMessage();
         }
         return $this->_jsonEncode($this->_resultData);

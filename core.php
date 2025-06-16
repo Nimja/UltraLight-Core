@@ -169,11 +169,11 @@ class Core
             if ($page) {
                 $page->display();
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (self::$console) {
                 throw $e;
             } else if (class_exists('\Show', true)) {
-                Show::error($e);
+                Show::error($e, "Uncaught exception: " . get_class($e), false, Show::COLOR_FATAL);
             } else {
                 echo '<pre>';
                 echo $e->getMessage() . PHP_EOL . PHP_EOL;

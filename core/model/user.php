@@ -252,11 +252,11 @@ class User extends Sessioned
         $user = null;
         if ($parsePost && \Request::isPost()) {
             try {
-                $user = self::attemptLogin(\Request::value('user'), \Request::value('pass'), $class);
-                if (\Request::value('remember') && $user) {
+                $user = self::attemptLogin(\Request::getValue('user'), \Request::getValue('pass'), $class);
+                if (\Request::getValue('remember') && $user) {
                     $user->setCookie();
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $warning = $e->getMessage();
             }
         }

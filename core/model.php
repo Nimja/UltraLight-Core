@@ -284,7 +284,7 @@ abstract class Model
     {
         try {
             $result = $this->getString();
-        } catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             $result = \Show::output($ex, "Exception!", \Show::COLOR_ERROR);
         }
         return $result;
@@ -361,6 +361,22 @@ abstract class Model
             $result = new $class($values);
         }
         return $result;
+    }
+
+    /**
+     * Load cached from file, if possible.
+     *
+     * @param int $id
+     * @return void
+     */
+    public static function loadCached($id)
+    {
+        $id = intval($id);
+        if (empty($id)) {
+            return null;
+        }
+        $class = get_called_class();
+        return \Core::wrapCache($class . '::load', [$id]);
     }
 
     /**

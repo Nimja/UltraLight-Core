@@ -74,7 +74,12 @@ abstract class Cache
      * @return string
      */
     protected function _cleanKey($key) {
-        $replace = ['/', '\\', ':'];
+        $replace = [
+            # For linux.
+            '/', # Slashes, obviously.
+            # For windows.
+            '<', '>', ':', '"', '\'', '\\', '|', '?', '*',
+        ];
         return trim(str_replace($replace, '+', \Core::cleanPath($key)), '+');
     }
 
