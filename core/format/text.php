@@ -19,6 +19,7 @@ class Text
         'video' => \Core\Format\Text\Video::class,
         'link' => \Core\Format\Text\Link::class,
         'page' => \Core\Format\Text\Page::class,
+        'pagecontent' => \Core\Format\Text\PageContent::class,
         'tooltip' => \Core\Format\Text\Tooltip::class,
         'hr' => \Core\Format\Text\Hr::class,
     ];

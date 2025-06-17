@@ -1,10 +1,11 @@
 <?php namespace Core\Format\Text;
 
 /**
- * Get a clean link to a page, with the title.
- *
+ * Class to get a page by id and return the formatted content.
+ * 
+ * Placeholders should be parsed recursively.
  */
-class Page extends Base
+class PageContent extends Base
 {
     /**
      * The static page class, we will use this to get the menu.
@@ -34,19 +35,11 @@ class Page extends Base
     protected function _parse($parts)
     {
         $id = intval($parts[0]);
-        if (!$this->menu) {
-            $class = \Sanitize::className(self::$pageClass);
-            $this->menu = $class::getMenu();
-        }
-        $lookup = $this->menu->lookup;
-        if (!array_key_exists($id, $lookup)) {
+        $class = \Sanitize::className(self::$pageClass);
+        $page = $class::load($id);
+        if (!$page) {
             return "ID not found: $id";
         }
-        $menuParts = $lookup[$id];
-        $url = $menuParts['url'];
-        $title = $menuParts['title'];
-        $class = isset($parts[1]) ? $this->_reverseParse($parts[1]) : false;
-        $extra = $class ? "class= \"{$class}\"" : '';
-        return "<a href=\"{$url}\" {$extra}>{$title}</a>";
+        return $page->getString();
     }
 }
