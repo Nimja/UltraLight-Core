@@ -15,6 +15,7 @@ class CheckBox extends \Core\Form\Field
      * @var string
      */
     protected $_label = '';
+    public $isChecked = false;
 
     public function __construct($name, $extra = null, $params = null)
     {
@@ -32,11 +33,13 @@ class CheckBox extends \Core\Form\Field
         if ($this->_isMultiple) {
             $value = $this->_extra[self::EXTRA_BOXVALUE];
             unset($this->_extra[self::EXTRA_BOXVALUE]);
-            $checked = $this->_isSelected($value) ? 'checked="checked"' : '';
+            $this->isChecked = $this->_isSelected($value);
+            $checked = $this->isChecked ? 'checked="checked"' : '';
             $checked .= " value=\"{$value}\"";
             $name .= '[]';
         } else {
-            $checked = !empty($this->value) ? 'checked="checked"' : '';
+            $this->isChecked = !empty($this->value);
+            $checked = $this->isChecked ? 'checked="checked"' : '';
         }
         return sprintf(
             '<label class="checkbox-inline"><input type="checkbox" name="%s" %s %s/>%s</label>',

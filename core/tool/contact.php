@@ -130,7 +130,7 @@ class Contact
         $text = $this->getContent();
         # Check for spam, if so, we redirect without emailing.
         if (\Nimja\Spam::isSpam($replyTo, $text)) {
-            \Request::redirect($this->thanksPageUrl . '#');
+            \Request::redirect($this->thanksPageUrl . '#', \Request::STATUS_REDIRECT_SEE_OTHER);
         }
         $ln = "\r\n";
         $extra = $this->extra;
@@ -144,7 +144,7 @@ class Contact
         if (!$result) {
             \Show::fatal("Error sending email?!?");
         }
-        \Request::redirect($this->thanksPageUrl);
+        \Request::redirect($this->thanksPageUrl, \Request::STATUS_REDIRECT_SEE_OTHER);
         return 'Thank you!';
     }
 

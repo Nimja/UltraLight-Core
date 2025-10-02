@@ -156,7 +156,7 @@ abstract class Controller
     {
         return [
             \Request::STATUS_ERROR_FORBIDDEN => 'Forbidden - You are not allowed to view this page.',
-            \Request::STATUS_ERROR_NOT_FOUND => 'Not found - The page you requested cannot be found.',
+            \Request::STATUS_ERROR_NOT_FOUND => 'Page not found - The page you requested cannot be found.',
         ];
     }
 

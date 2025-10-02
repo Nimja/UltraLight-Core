@@ -48,6 +48,13 @@ class Order
     protected $_sortableItems;
 
     /**
+     * Positions list ids.
+     *
+     * @var array
+     */
+    protected $_idPositions;
+
+    /**
      * Basic constructor.
      * @param string $class
      * @param string $orderLink
@@ -70,7 +77,7 @@ class Order
         $class = $this->_entityClass;
         $items = $class::getOrdered($this->_currentId);
         if (empty($items) && $this->_currentId > 0) {
-            \Request::redirect($this->_orderLink);
+            \Request::redirect($this->_orderLink, \Request::STATUS_REDIRECT_SEE_OTHER);
         }
         $index = 0;
         $this->_idPositions = [];
@@ -93,7 +100,7 @@ class Order
     {
         $items = $this->getItems();
         if ($this->_isMoveNeeded()) {
-            \Request::redirect($this->_getOrderUrl($this->_currentId));
+            \Request::redirect($this->_getOrderUrl($this->_currentId), \Request::STATUS_REDIRECT_SEE_OTHER);
         }
         $result = [
             '<table class="table table-striped table-bordered table-condensed">',

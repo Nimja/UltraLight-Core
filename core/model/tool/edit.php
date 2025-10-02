@@ -71,7 +71,7 @@ class Edit
         $entity = $class::load($this->_id);
         /* @var $entity \Core\Model */
         if (!empty($this->_id) && empty($entity)) {
-            \Request::redirect($this->_editLink);
+            \Request::redirect($this->_editLink, \Request::STATUS_REDIRECT_FOUND);
         }
         $entity = $entity ?: new $class();
         $values = $class::getForm($entity)->getValues();
@@ -80,7 +80,7 @@ class Edit
             $this->warnings = $entity->validate();
             if (empty($this->warnings)) {
                 $entity->save();
-                \Request::redirect($this->_editLink . '/' . $entity->id);
+                \Request::redirect($this->_editLink . '/' . $entity->id, \Request::STATUS_REDIRECT_SEE_OTHER);
             }
         }
         return $entity;

@@ -632,6 +632,18 @@ class Core
     }
 
     /**
+     * Return if the asset exits in the assets folder.
+     *
+     * @param [string $path
+     * @return bool
+     */
+    public static function assetExists($path)
+    {
+        $path = ltrim($path, "./"); # Make sure we can't go up.
+        return file_exists(PATH_ASSETS . '/' . $path);
+    }
+
+    /**
      * Wrap a function for caching.
      *
      * The beauty here is that the cache class will not be loaded if not needed.

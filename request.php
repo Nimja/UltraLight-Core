@@ -328,9 +328,9 @@ class Request
      * Simplified redirect function, needs to be called BEFORE output!
      *
      * @param string $url The absolute or relative url you wish to redirect to.
-     * @param int $code One of 301, 302 or 303
+     * @param int $code One of 301, 302 or 303 - Defaults to 303 (see other, which is correct).
      */
-    public static function redirect($url = '', $code = self::STATUS_REDIRECT_FOUND, $includeRequest = false)
+    public static function redirect($url = '', $code = self::STATUS_REDIRECT_SEE_OTHER, $includeRequest = false)
     {
         if (\Core::$console) {
             \Show::fatal("Redirect {$code} to: {$url}");
@@ -339,7 +339,11 @@ class Request
         if (substr($targetUrl, 0, 4) != 'http') {
             $targetUrl = Config::system()->get('site', 'url') . ltrim($targetUrl, '/');
         }
-        $validCodes = [self::STATUS_REDIRECT_PERMANENT, self::STATUS_REDIRECT_FOUND, self::STATUS_REDIRECT_SEE_OTHER];
+        $validCodes = [
+            self::STATUS_REDIRECT_PERMANENT,
+            self::STATUS_REDIRECT_FOUND,
+            self::STATUS_REDIRECT_SEE_OTHER
+        ];
         $code = in_array($code, $validCodes) ? $code : self::STATUS_REDIRECT_FOUND;
         $sameRequest = $targetUrl == \Core::$url && self::isPost();
         $query = self::server('QUERY_STRING');
