@@ -15,6 +15,7 @@ class Persist extends Sessioned
     const COOKIE_NAME = 'persist';
     const COOKIE_DELIMITER = '-';
     const COOKIE_EXPIRE = '+6 months';
+    const SESSION_MODEL_TIMEOUT = '+12 hours';
     /**
      * The code for this persitance session, can be MD5, imei or whatever.
      *
@@ -131,9 +132,6 @@ class Persist extends Sessioned
      */
     public function set($name, $value)
     {
-        if (!is_array($this->data)) {
-            $this->data = [];
-        }
         $curValue = $this->get($name);
         if ($curValue != $value || !$this->id) {
             if (!blank($value)) {
@@ -174,6 +172,7 @@ class Persist extends Sessioned
         }
         $class = \Sanitize::className($class);
         if ($entity instanceof \Core\Model) {
+            $this->sessionData[$class . '.time'] = strtotime(self::SESSION_MODEL_TIMEOUT);
             $this->sessionData[$class] = $entity;
             if ($sessionOnly) {
                 $this->saveSession();
@@ -202,8 +201,13 @@ class Persist extends Sessioned
         $entity = getKey($this->sessionData, $class, null);
         $savedId = $this->get($class);
         if ($entity instanceof \Core\Model && $entity->id == $savedId) {
-            $result = $entity;
-        } else if (!empty($savedId)) {
+            $savetime = intval(getKey($this->sessionData, $class . '.time', 0));
+            # If the reference/saved object is not stale.
+            if ($savetime > time()) {
+                return $entity;
+            }
+        }
+        if (!empty($savedId)) {
             $result = $class::load($savedId);
             if ($result) {
                 $this->setModel($class, $result);

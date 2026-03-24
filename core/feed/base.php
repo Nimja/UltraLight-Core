@@ -56,11 +56,14 @@ class Base
      *
      * @param string $name
      * @param string $value
+     * @param bool $quote
      * @return string
      */
-    protected function xmlLine(string $name, string $value)
+    protected function xmlLine(string $name, string $value, bool $quote=true)
     {
-        $value = strtr($value, self::XML_CHARACTERS_MAP);
+        if ($quote) {
+            $value = strtr($value, self::XML_CHARACTERS_MAP);
+        }
         return "<{$name}>{$value}</{$name}>\n";
     }
 
@@ -128,7 +131,7 @@ class Base
                 $this->xmlLine('title', $this->values['title']),
                 $this->xmlLine('link', $this->values['url']),
             ];
-            $result[] = $this->xmlLine('image', implode("", $image));
+            $result[] = $this->xmlLine('image', implode("", $image), false);
         }
         return $result;
     }
@@ -137,7 +140,7 @@ class Base
     {
         $result = [];
         if (array_key_exists('author', $this->values)) {
-            $result[] = $this->xmlLine('author', $this->xmlLine('name', $this->values['author']));
+            $result[] = $this->xmlLine('author', $this->xmlLine('name', $this->values['author']), false);
         }
         if (array_key_exists('icon', $this->values)) {
             $result[] = $this->xmlLine('icon', $this->values['icon']);
@@ -158,13 +161,13 @@ class Base
         if ($this->asRss) {
             $result[] = '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">';
             $result[] = '<channel>';
-            $result[] = sprintf('<atom:link href="%s" rel="self" type="application/rss+xml" />', \Core::$requestUrl);
+            $result[] = sprintf('<atom:link href="%s" rel="self" type="application/rss+xml" />', \Core::$requestFull);
             $result[] = '%s';
             $result[] = '</channel>';
             $result[] = '</rss>';
         } else {
             $result[] = '<feed xmlns="http://www.w3.org/2005/Atom">';
-            $result[] = sprintf('<link href="%s" rel="self"/>', \Core::$requestUrl);
+            $result[] = sprintf('<link href="%s" rel="self"/>', \Core::$requestFull);
             $result[] = '%s';
             $result[] = '</feed>';
         }

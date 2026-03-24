@@ -138,6 +138,19 @@ class Simple
     }
 
     /**
+     * Get relevant model.
+     *
+     * @return \Core\Model|null
+     */
+    public function getEntity() {
+        if (!$this->_id) {
+            return null;
+        }
+        $class = $this->_modelClass;
+        return $class::load($this->_id);
+    }
+
+    /**
      * Get content for list mode.
      * @result string
      */

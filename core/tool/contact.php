@@ -107,9 +107,25 @@ class Contact
         return $this->_isValid ? $this->showThanks() : strval($this->getForm());
     }
 
+    /**
+     * Get content.
+     *
+     * @return void
+     */
     protected function getContent()
     {
-        return \Sanitize::from_html_entities(getKey($this->_values, 'text'));
+        return $this->getFormValue('text');
+    }
+
+    /**
+     * Get value from form.
+     *
+     * @param [type] $name
+     * @return void
+     */
+    protected function getFormValue($name)
+    {
+        return \Sanitize::from_html_entities(getKey($this->_values, $name));
     }
 
     /**
@@ -119,7 +135,7 @@ class Contact
      */
     protected function showThanks()
     {
-        $replyTo = getKey($this->_values, 'email');
+        $replyTo = $this->getFormValue('email');
         $subject = \Config::system()->get('site', 'host', 'host');
         $chosenSubject = getKey($this->_values, 'subject');
         $subject .= ' - ' . $chosenSubject;

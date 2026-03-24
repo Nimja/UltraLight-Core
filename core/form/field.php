@@ -62,7 +62,7 @@ abstract class Field
             $this->_extra = [];
         } else {
             $this->_extra = is_array($extra) ? $extra : array('extra' => $extra);
-            $this->_sanitizeExtra(['value', 'values', 'default']);
+            $this->_sanitizeExtra(['value', 'values', 'default', 'placeholder']);
             $this->_isMultiple = $this->_isMultiple || !empty($this->_extra['multiple']);
         }
         if (is_array($params)) {
